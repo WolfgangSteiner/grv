@@ -112,6 +112,8 @@ bool grv_str_ends_with_cstr(grv_str*, char*);
 void grv_str_lstrip(grv_str*);
 void grv_str_rstrip(grv_str*);
 
+grv_str grv_str_join(grv_str*, grv_str*, char*);
+
 grv_strarr grv_strarr_new();
 
 // push a string on the list

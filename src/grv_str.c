@@ -136,6 +136,23 @@ void grv_str_append_cstr(grv_str* s, char* cstr) {
   grv_str_set_size(s, grv_str_len(s) + cstr_len);
 }
 
+grv_str grv_str_join(grv_str* s1, grv_str* s2, char* join_str) {
+  grv_str res;
+  size_t len1 = grv_str_len(s1);
+  size_t len2 = grv_str_len(s2);
+  size_t join_len = strlen(join_str);
+  grv_str_init_with_capacity(&res, len1 + len2 + join_len);
+  char* dst = grv_str_get_buffer(&res);
+  char* src1 = grv_str_get_buffer(s1);
+  char* src2 = grv_str_get_buffer(s2);
+  memcpy(dst, src1, len1);
+  memcpy(dst + len1, join_str, join_len);
+  memcpy(dst + len1 + join_len, src2, len2);
+  dst[len1 + join_len + len2] = 0;
+  grv_str_set_size(&res, len1 + len2 + join_len);
+  return res;
+}
+
 bool grv_str_starts_with_cstr(grv_str* s, char* cstr) {
   size_t len = strlen(cstr);
   char* buffer = grv_str_get_buffer(s);

@@ -150,6 +150,14 @@ GRV_TEST_BEGIN(grv_str_rstrip)
   GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_cstr(&s), "");
 GRV_TEST_END()
 
+GRV_TEST_BEGIN(grv_str_join)
+  grv_str a = grv_str_new("Hello");
+  grv_str b = grv_str_new("World");
+  grv_str c = grv_str_join(&a, &b, " ");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&c), "Hello World");
+GRV_TEST_END()
+
+
 
 int main(void) {
   GRV_TEST_PERFORM(grv_str_new);
@@ -161,4 +169,5 @@ int main(void) {
   GRV_TEST_PERFORM(grv_str_starts_with);
   GRV_TEST_PERFORM(grv_str_lstrip);
   GRV_TEST_PERFORM(grv_str_rstrip);
+  GRV_TEST_PERFORM(grv_str_join);
 }
