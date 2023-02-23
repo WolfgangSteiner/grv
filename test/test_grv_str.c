@@ -248,6 +248,17 @@ GRV_TEST_BEGIN(grv_str_center)
   GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&t), "     Hello World     ");
 GRV_TEST_END()
 
+
+GRV_TEST_BEGIN(grv_str_split_head_from_front)
+  grv_str s = grv_str_new("Hello World");
+  grv_str t = grv_str_split_head_from_front(&s, " ");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&t), "Hello");
+  s = grv_str_new("Hello / to / my / World");
+  t = grv_str_split_head_from_front(&s, " / ");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&t), "Hello");
+GRV_TEST_END()
+
+
 GRV_TEST_BEGIN(grv_str_split_tail_from_back)
   grv_str s = grv_str_new("Hello World");
   grv_str t = grv_str_split_tail_from_back(&s, " ");
@@ -256,6 +267,7 @@ GRV_TEST_BEGIN(grv_str_split_tail_from_back)
   t = grv_str_split_tail_from_back(&s, " / ");
   GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&t), "World");
 GRV_TEST_END()  
+
 
 int main(void) {
   GRV_TEST_INIT(grv_str);

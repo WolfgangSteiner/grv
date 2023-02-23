@@ -83,6 +83,27 @@ grv_str grv_str_substr(grv_str* s, u64 start, u64 end) {
   return res;
 }
 
+grv_str grv_str_split_head_from_front(grv_str* s, char* delim) {
+  grv_str res = {};
+  char* buffer = grv_str_get_buffer(s);
+  size_t len = grv_str_len(s);
+  size_t delim_len = strlen(delim);
+  if (len <= delim_len) {
+    return res;
+  }
+
+  size_t pos = 0;
+  while (pos < len - delim_len) {
+    if (memcmp(buffer + pos, delim, delim_len) == 0) {
+      res = grv_str_substr(s, 0, pos);
+      break;
+    }
+    pos++;
+  }
+
+  return res;
+}
+
 grv_str grv_str_split_tail_from_back(grv_str* s, char* delim) {
   grv_str res = {};
   char* buffer = grv_str_get_buffer(s);

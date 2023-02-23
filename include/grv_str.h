@@ -114,7 +114,7 @@ char* grv_str_copy_cstr(grv_str*);
 
 grv_str grv_str_slice(grv_str*, u64, u64);
 
-
+grv_str grv_str_split_head_from_front(grv_str*, char* delim);
 grv_str grv_str_split_tail_from_back(grv_str*, char* delim);
 
 void grv_str_rchop(grv_str*, u64);
@@ -179,6 +179,9 @@ void grv_strarr_push_cstr(grv_strarr*, char*);
 // push a string on the list
 // the array takes ownership of the string, in case of a reference, the string is copied
 void grv_strarr_push(grv_strarr*, grv_str*);
+
+// append the contents of one string array to another
+void grv_strarr_append(grv_strarr*, grv_strarr*);
 
 grv_str* grv_strarr_at(grv_strarr*, size_t);
 grv_str* grv_strarr_front(grv_strarr*);

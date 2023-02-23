@@ -56,6 +56,13 @@ void grv_strarr_push(grv_strarr* a, grv_str* s) {
   }
 }
 
+void grv_strarr_append(grv_strarr* a, grv_strarr* b) {
+  for (size_t i = 0; i < b->size; i++) {
+    grv_str s = grv_str_copy(&b->arr[i]);
+    grv_strarr_push(a, &s);
+  }
+}
+
 grv_str* grv_strarr_at(grv_strarr* arr, size_t idx) {
   return &arr->arr[idx];
 }
