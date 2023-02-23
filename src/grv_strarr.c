@@ -5,6 +5,15 @@ grv_strarr grv_strarr_new() {
   return r;
 }
 
+grv_strarr grv_strarr_from_cstr_array(char** arr, size_t size) {
+  grv_strarr r = { .size=size, .capacity=size };
+  r.arr = calloc(size, sizeof(grv_str));
+  for (size_t i = 0; i < size; i++) {
+    r.arr[i] = grv_str_new(arr[i]);
+  }
+  return r;
+} 
+
 size_t grv_strarr_size(grv_strarr* a) {
   return a->size;
 }

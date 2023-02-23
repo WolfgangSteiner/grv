@@ -161,6 +161,8 @@ grv_strarr grv_str_split(grv_str*, char*);
 // create a new string array
 grv_strarr grv_strarr_new();
 
+grv_strarr grv_strarr_from_cstr_array(char**, size_t);
+
 // get the size of the string array
 size_t grv_strarr_size(grv_strarr*);
 
