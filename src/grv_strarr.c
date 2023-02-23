@@ -81,6 +81,14 @@ grv_str grv_strarr_pop_front(grv_strarr* arr) {
   return res;
 }
 
+void grv_strarr_remove_front(grv_strarr* arr) {
+  grv_str_free(&arr->arr[0]);
+  for (size_t i = 0; i < arr->size - 1; ++i) {
+    arr->arr[i] = arr->arr[i + 1];
+  }
+  arr->size--;
+}
+
 grv_str grv_strarr_join(grv_strarr* arr, char* join_str) {
   grv_str res;
   size_t join_len = strlen(join_str);

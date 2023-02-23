@@ -187,6 +187,7 @@ grv_str* grv_strarr_back(grv_strarr*);
 grv_str grv_strarr_get_copy(grv_strarr*, size_t);
 
 grv_str grv_strarr_pop_front(grv_strarr*);
+void grv_strarr_remove_front(grv_strarr*);
 
 grv_str grv_strarr_join(grv_strarr*, char*);
 #endif
