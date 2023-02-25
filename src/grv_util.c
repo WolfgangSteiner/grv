@@ -28,6 +28,7 @@ grv_strarr grv_system(grv_str* cmd) {
   char* cmd_cstr = grv_str_copy_cstr(cmd);
   grv_strarr result = grv_system_cstr(cmd_cstr); 
   free(cmd_cstr);
+  return result;
 }
 
 grv_strarr grv_system_cstr(char* cmd) {  
