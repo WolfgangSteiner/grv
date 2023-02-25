@@ -56,6 +56,16 @@ void grv_strarr_push(grv_strarr* a, grv_str* s) {
   }
 }
 
+void grv_strarr_push_front(grv_strarr* a, grv_str* s) {
+  if (a->size == a->capacity) {
+    a->capacity *= GRV_STRARR_GROW_FACTOR;
+    a->arr = realloc(a->arr, a->capacity);
+  }
+  memmove(&a->arr[1], &a->arr[0], a->size * sizeof(grv_str));
+  a->arr[0] = *s;
+  a->size++;
+}
+
 void grv_strarr_append(grv_strarr* a, grv_strarr* b) {
   for (size_t i = 0; i < b->size; i++) {
     grv_str s = grv_str_copy(&b->arr[i]);

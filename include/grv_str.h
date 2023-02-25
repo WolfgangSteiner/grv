@@ -180,6 +180,9 @@ void grv_strarr_push_cstr(grv_strarr*, char*);
 // the array takes ownership of the string, in case of a reference, the string is copied
 void grv_strarr_push(grv_strarr*, grv_str*);
 
+// push a string on the front of the list
+void grv_strarr_push_front(grv_strarr*, grv_str*);
+
 // append the contents of one string array to another
 void grv_strarr_append(grv_strarr*, grv_strarr*);
 
