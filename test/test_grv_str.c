@@ -266,6 +266,19 @@ GRV_TEST_BEGIN(grv_str_split_tail_from_back)
   s = grv_str_new("Hello / to / my / World");
   t = grv_str_split_tail_from_back(&s, " / ");
   GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&t), "World");
+  s = grv_str_new(" / Hello");
+  t = grv_str_split_tail_from_back(&s, " / ");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&t), "Hello");
+  s = grv_str_new("Hello / ");
+  t = grv_str_split_tail_from_back(&s, " / ");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&t), "");
+  s = grv_str_new("Hello /  ");
+  t = grv_str_split_tail_from_back(&s, " / ");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&t), " ");
+  s = grv_str_new("Volume: front-left: 23253 /  35% / -27.00 dB,   front-right: 23253 /  35% / -27.00 dB");
+  t = grv_str_split_tail_from_back(&s, " / ");
+  GRV_TEST_ASSERT_EQUAL(grv_str_len(&s), 85);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&t), "-27.00 dB");
 GRV_TEST_END()  
 
 

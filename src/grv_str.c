@@ -114,7 +114,7 @@ grv_str grv_str_split_tail_from_back(grv_str* s, char* delim) {
   }
 
   size_t pos = len - delim_len;
-  while (pos > 0) {
+  while (pos >= 0) {
     if (memcmp(buffer + pos, delim, delim_len) == 0) {
       res = grv_str_substr(s, pos + delim_len, len);
       break;
@@ -236,10 +236,10 @@ void grv_str_resize(grv_str* s, size_t size) {
 }
 
 char* grv_str_get_buffer(grv_str* s) {
-  if (s->descriptor & GRV_STR_FLAG_IS_LARGE_STRING) {
-    return s->buffer + s->start;
-  } else {
+  if (grv_str_is_short(s)) {
     return s->sso;
+  } else {
+    return s->buffer + s->start;
   }
 }
 

@@ -75,9 +75,9 @@ static inline bool grv_str_is_short(grv_str* s) {
 
 // compute the length of the string
 static inline u64 grv_str_len(grv_str* s) { 
-  return s->descriptor & GRV_STR_FLAG_IS_LARGE_STRING
-    ? s->end - s->start
-    : s->descriptor & GRV_STR_SSO_SIZE_MASK;
+  return grv_str_is_short(s) 
+    ? s->descriptor & GRV_STR_SSO_SIZE_MASK
+    : s->end - s->start;
 }
 
 static inline u64 grv_str_get_start(grv_str* s) {
