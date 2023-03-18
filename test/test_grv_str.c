@@ -302,4 +302,5 @@ int main(void) {
   GRV_TEST_RUN(grv_str_copy);
   GRV_TEST_RUN(grv_str_center);
   GRV_TEST_RUN(grv_str_split_tail_from_back);
+  GRV_TEST_RUN(grv_str_split_head_from_front);
 }
