@@ -42,8 +42,10 @@ typedef struct {
 // create a new string object
 grv_str grv_str_new(char*);
 
+// create a copy of the given string
 grv_str grv_str_copy(grv_str*);
 
+// initialize a string object with a c string
 void grv_str_init_with_cstr(grv_str*, char*);
 
 // create a new string reference object given a c string, a start and end index
@@ -65,6 +67,7 @@ void grv_str_destroy(grv_str*);
 
 char* grv_str_get_buffer(grv_str*);
 
+// check if the string is a short string
 static inline bool grv_str_is_short(grv_str* s) {
   if (s->descriptor & GRV_STR_FLAG_IS_LARGE_STRING || s->descriptor & GRV_STR_FLAG_IS_REFERENCE) {
     return false;
