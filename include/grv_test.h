@@ -31,7 +31,7 @@
     grv_test_total_count++; \
     if ((A) != (B)) { \
       grv_test_failed_count++; \
-      printf("\n  [ERROR] %s:%d %s is %d, expected %d.", FILE, LINE, #A, A, B); \
+      printf("\n  [ERROR] %s:%d %s is %d, expected %d.", FILE, LINE, #A, (int)(A), (int)(B)); \
     }
 
 #define GRV_TEST_ASSERT_EQUAL_STR_IMPL(A, B, FILE, LINE) \
