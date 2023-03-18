@@ -4,3 +4,5 @@ tags:
 priority: 0.0
 status: open
 
+- We need to check whether the new size will still fit inside of a short string.
+- If not: convert to large string.
