@@ -24,6 +24,13 @@
 #define GRV_TEST_RUN(NAME) \
   test_##NAME();
 
+#define GRV_TEST_ASSERT_TRUE(A) \
+    grv_test_total_count++; \
+    if (!(A)) { \
+      grv_test_failed_count++; \
+      printf("\n  [ERROR] %s:%d %s is false, expected true.", __FILE__, __LINE__, #A); \
+    }
+
 #define GRV_TEST_ASSERT_EQUAL(A, B) GRV_TEST_ASSERT_EQUAL_IMPL(A, B, __FILE__, __LINE__)
 #define GRV_TEST_ASSERT_EQUAL_STR(A, B) GRV_TEST_ASSERT_EQUAL_STR_IMPL(A, B, __FILE__, __LINE__)
 

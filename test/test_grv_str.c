@@ -11,7 +11,7 @@ GRV_TEST_BEGIN(grv_str_new)
   GRV_TEST_ASSERT_EQUAL(grv_str_get_capacity(&s), GRV_STR_SSO_CAPACITY);
   GRV_TEST_ASSERT_EQUAL(grv_str_len(&s), 4);
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&s), true);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&s), "TEST");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&s), "TEST");
   
   grv_str s2 = grv_str_new(lorem);
   size_t lorem_length = strlen(lorem);
@@ -26,7 +26,7 @@ GRV_TEST_BEGIN(grv_str_new)
   GRV_TEST_ASSERT_EQUAL(grv_str_len(&s2), lorem_length);
   GRV_TEST_ASSERT_EQUAL(grv_str_get_capacity(&s2), s2_capacity);
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&s2), false);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&s2), lorem);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&s2), lorem);
 GRV_TEST_END()
 
 
@@ -34,32 +34,32 @@ GRV_TEST_BEGIN(grv_str_cat)
   grv_str a = grv_str_new("Hello");
   grv_str b = grv_str_new("World");
   grv_str r = grv_str_cat(&a, &b);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&r), "HelloWorld");
-  GRV_TEST_ASSERT_EQUAL(grv_str_len(&r), (int)strlen(grv_str_get_buffer(&r)));
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&r), "HelloWorld");
+  GRV_TEST_ASSERT_EQUAL(grv_str_len(&r), (int)strlen(grv_str_cstr(&r)));
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&r), true);
 
   grv_str longstr = grv_str_new(lorem); 
   grv_str r2 = grv_str_cat(&a, &longstr);
   char* r2_cstr = malloc(4096);
-  strcpy(r2_cstr, grv_str_get_buffer(&a));
+  strcpy(r2_cstr, grv_str_cstr(&a));
   strcat(r2_cstr, lorem);
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&r2), false);
   GRV_TEST_ASSERT_EQUAL(grv_str_len(&r2), strlen(r2_cstr));
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&r2), r2_cstr);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&r2), r2_cstr);
 
   strcpy(r2_cstr, lorem);
-  strcat(r2_cstr, grv_str_get_buffer(&b));
+  strcat(r2_cstr, grv_str_cstr(&b));
   r2 = grv_str_cat(&longstr, &b);
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&r2), false);
   GRV_TEST_ASSERT_EQUAL(grv_str_len(&r2), strlen(r2_cstr));
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&r2), r2_cstr);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&r2), r2_cstr);
 
   strcpy(r2_cstr, lorem);
   strcat(r2_cstr, lorem);
   r2 = grv_str_cat(&longstr, &longstr);
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&r2), false);
   GRV_TEST_ASSERT_EQUAL(grv_str_len(&r2), strlen(r2_cstr));
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&r2), r2_cstr);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&r2), r2_cstr);
 GRV_TEST_END()
 
 GRV_TEST_BEGIN(grv_str_resize)
@@ -71,25 +71,25 @@ GRV_TEST_BEGIN(grv_str_resize)
   grv_str_resize(&s1, 32);
   GRV_TEST_ASSERT_EQUAL(grv_str_get_capacity(&s1), GRV_STR_ALLOC_GRANULARITY);
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&s1), false);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&s1), "Hello");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&s1), "Hello");
 GRV_TEST_END()
 
 GRV_TEST_BEGIN(grv_str_append)
   grv_str s1 = grv_str_new("Hello");
   grv_str s2 = grv_str_new("World");
   grv_str_append(&s1, &s2);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&s1), "HelloWorld");
-  GRV_TEST_ASSERT_EQUAL(grv_str_len(&s1), (int)strlen(grv_str_get_buffer(&s1)));
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&s1), "HelloWorld");
+  GRV_TEST_ASSERT_EQUAL(grv_str_len(&s1), (int)strlen(grv_str_cstr(&s1)));
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&s1), true);
 
   char* r2_cstr = malloc(4096);
-  strcpy(r2_cstr, grv_str_get_buffer(&s1));
+  strcpy(r2_cstr, grv_str_cstr(&s1));
   strcat(r2_cstr, lorem);
   grv_str longstr = grv_str_new(lorem); 
   grv_str_append(&s1, &longstr);
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&s1), false);
   GRV_TEST_ASSERT_EQUAL(grv_str_len(&s1), strlen(r2_cstr));
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&s1), r2_cstr);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&s1), r2_cstr);
 GRV_TEST_END()
 
 GRV_TEST_BEGIN(grv_str_copy_cstr)
@@ -111,7 +111,7 @@ GRV_TEST_BEGIN(grv_str_append_cstr)
   grv_str s1 = grv_str_new("Hello");
   grv_str_append_cstr(&s1, " ");
   grv_str_append_cstr(&s1, "World");
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&s1), "Hello World");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&s1), "Hello World");
   grv_str_append_cstr(&s1, "0123456789");
   GRV_TEST_ASSERT_EQUAL(grv_str_len(&s1), 21);
   grv_str_append_cstr(&s1, "012345678");
@@ -121,7 +121,7 @@ GRV_TEST_BEGIN(grv_str_append_cstr)
   GRV_TEST_ASSERT_EQUAL(grv_str_len(&s1), 31);
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&s1), false);
   GRV_TEST_ASSERT_EQUAL(grv_str_get_capacity(&s1), GRV_STR_ALLOC_GRANULARITY);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&s1), "Hello World01234567890123456789");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&s1), "Hello World01234567890123456789");
   grv_str_append_cstr(&s1, lorem);
   GRV_TEST_ASSERT_EQUAL(grv_str_get_capacity(&s1), (strlen(lorem) + 31 + (GRV_STR_ALLOC_GRANULARITY - 1)) / GRV_STR_ALLOC_GRANULARITY * GRV_STR_ALLOC_GRANULARITY );
 GRV_TEST_END()
@@ -176,39 +176,39 @@ GRV_TEST_BEGIN(grv_str_join)
   grv_str a = grv_str_new("Hello");
   grv_str b = grv_str_new("World");
   grv_str c = grv_str_join(&a, &b, " ");
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&c), "Hello World");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&c), "Hello World");
 GRV_TEST_END()
 
-GRV_TEST_BEGIN(grv_str_slice)
+GRV_TEST_BEGIN(grv_str_copy_substr)
   grv_str s = grv_str_new("Hello World");
-  grv_str t = grv_str_slice(&s, 0, 5);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&t), "Hello");
-  t = grv_str_slice(&s, 6, 11);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&t), "World");
-  t = grv_str_slice(&s, 0, 11);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&t), "Hello World");
-  t = grv_str_slice(&s, 0, 0);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&t), "");
-  t = grv_str_slice(&s, 0, 1);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&t), "H");
-  t = grv_str_slice(&s, 0, 2);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&t), "He");
-  t = grv_str_slice(&s, 0, 3);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&t), "Hel");
-  t = grv_str_slice(&s, 0, 4);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&t), "Hell");
-  t = grv_str_slice(&s, 0, 5);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&t), "Hello");
-  t = grv_str_slice(&s, 0, 6);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&t), "Hello ");
-  t = grv_str_slice(&s, 0, 7);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&t), "Hello W");
-  t = grv_str_slice(&s, 0, 8);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&t), "Hello Wo");
-  t = grv_str_slice(&s, 0, 9);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&t), "Hello Wor");
-  t = grv_str_slice(&s, 0, 10);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&t), "Hello Worl");
+  grv_str t = grv_str_copy_substr(&s, 0, 5);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&t), "Hello");
+  t = grv_str_copy_substr(&s, 6, 11);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&t), "World");
+  t = grv_str_copy_substr(&s, 0, 11);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&t), "Hello World");
+  t = grv_str_copy_substr(&s, 0, 0);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&t), "");
+  t = grv_str_copy_substr(&s, 0, 1);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&t), "H");
+  t = grv_str_copy_substr(&s, 0, 2);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&t), "He");
+  t = grv_str_copy_substr(&s, 0, 3);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&t), "Hel");
+  t = grv_str_copy_substr(&s, 0, 4);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&t), "Hell");
+  t = grv_str_copy_substr(&s, 0, 5);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&t), "Hello");
+  t = grv_str_copy_substr(&s, 0, 6);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&t), "Hello ");
+  t = grv_str_copy_substr(&s, 0, 7);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&t), "Hello W");
+  t = grv_str_copy_substr(&s, 0, 8);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&t), "Hello Wo");
+  t = grv_str_copy_substr(&s, 0, 9);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&t), "Hello Wor");
+  t = grv_str_copy_substr(&s, 0, 10);
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&t), "Hello Worl");
 GRV_TEST_END()
 
 GRV_TEST_BEGIN(grv_str_lchop)
@@ -235,17 +235,17 @@ GRV_TEST_END()
 GRV_TEST_BEGIN(grv_str_copy)
   grv_str a = grv_str_new("Hello");
   grv_str b = grv_str_copy(&a);
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&a), grv_str_get_buffer(&b));
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&a), grv_str_cstr(&b));
 GRV_TEST_END()
 
 GRV_TEST_BEGIN(grv_str_center)
   grv_str s = grv_str_new("Hello World");
   grv_str t = grv_str_copy(&s);
   grv_str_center(&t, 20, ' ');
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&t), "    Hello World     ");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&t), "    Hello World     ");
   t = grv_str_copy(&s);
   grv_str_center(&t, 21, ' ');
-  GRV_TEST_ASSERT_EQUAL_STR(grv_str_get_buffer(&t), "     Hello World     ");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&t), "     Hello World     ");
 GRV_TEST_END()
 
 
@@ -256,6 +256,22 @@ GRV_TEST_BEGIN(grv_str_split_head_from_front)
   s = grv_str_new("Hello / to / my / World");
   t = grv_str_split_head_from_front(&s, " / ");
   GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&t), "Hello");
+GRV_TEST_END()
+
+
+GRV_TEST_BEGIN(grv_str_split_head_from_back) 
+  grv_str s = grv_str_new("Hello World");
+  grv_str t = grv_str_split_head_from_back(&s, " ");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&t), "Hello");
+  s = grv_str_new("Hello To My World");
+  t = grv_str_split_head_from_back(&s, " ");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&t), "Hello To My");
+  s = grv_str_new("Hello / to / my / World");
+  t = grv_str_split_head_from_back(&s, " / ");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&t), "Hello / to / my");
+  s = grv_str_new("Hello / to / my / World / ");
+  t = grv_str_split_head_from_back(&s, " / ");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&t), "Hello / to / my / World");
 GRV_TEST_END()
 
 
@@ -296,11 +312,12 @@ int main(void) {
   GRV_TEST_RUN(grv_str_lstrip);
   GRV_TEST_RUN(grv_str_rstrip);
   GRV_TEST_RUN(grv_str_join);
-  GRV_TEST_RUN(grv_str_slice);
+  GRV_TEST_RUN(grv_str_copy_substr);
   GRV_TEST_RUN(grv_str_lchop);
   GRV_TEST_RUN(grv_str_rchop);
   GRV_TEST_RUN(grv_str_copy);
   GRV_TEST_RUN(grv_str_center);
-  GRV_TEST_RUN(grv_str_split_tail_from_back);
   GRV_TEST_RUN(grv_str_split_head_from_front);
+  GRV_TEST_RUN(grv_str_split_head_from_back);
+  GRV_TEST_RUN(grv_str_split_tail_from_back);
 }

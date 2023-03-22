@@ -1,5 +1,6 @@
 #include "grv_util.h"
 #include <stdio.h>
+#include <glob.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -52,5 +53,24 @@ grv_strarr grv_system_cstr(char* cmd) {
     free(line);
   }
 
+  return result;
+}
+
+grv_strarr grv_util_glob(grv_str* pattern) {
+  // iterate over contents of directory
+  grv_strarr result = grv_strarr_new();
+  char* pattern_cstr = grv_str_copy_cstr(pattern);
+  glob_t glob_result;
+  glob(pattern_cstr, GLOB_TILDE, NULL, &glob_result);
+  if (glob_result.gl_pathc == 0) {
+    globfree(&glob_result);
+    return result;
+  }
+
+  for (size_t i = 0; i < glob_result.gl_pathc; ++i) {
+    grv_str path = grv_str_new(glob_result.gl_pathv[i]);
+    grv_strarr_push(&result, &path);
+  }
+  globfree(&glob_result);
   return result;
 }

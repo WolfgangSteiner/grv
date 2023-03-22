@@ -1,3 +1,5 @@
+#include "grv_str.h"
+
 // grv_strarr
 grv_strarr grv_strarr_new() {
   grv_strarr r = { .size=0, .capacity=GRV_STRARR_DEFAULT_CAPACITY };
@@ -98,13 +100,30 @@ grv_str grv_strarr_pop_front(grv_strarr* arr) {
   return res;
 }
 
+grv_str grv_strarr_pop_back(grv_strarr* arr) {
+  return arr->arr[--arr->size];
+}
+
 void grv_strarr_remove_front(grv_strarr* arr) {
+  if (arr->size == 0) {
+    return;
+  }
+
   grv_str_free(&arr->arr[0]);
   for (size_t i = 0; i < arr->size - 1; ++i) {
     arr->arr[i] = arr->arr[i + 1];
   }
   arr->size--;
 }
+
+void grv_strarr_remove_back(grv_strarr* arr) {
+  if (arr->size == 0) {
+    return;
+  }
+  grv_str_free(&arr->arr[arr->size - 1]);
+  arr->size--;
+}
+
 
 grv_str grv_strarr_join(grv_strarr* arr, char* join_str) {
   grv_str res;
@@ -115,10 +134,10 @@ grv_str grv_strarr_join(grv_strarr* arr, char* join_str) {
   }
   total_len += (arr->size - 1) * join_len;
   grv_str_init_with_capacity(&res, total_len + 1);
-  char* dst = grv_str_get_buffer(&res);
+  char* dst = grv_str_cstr(&res);
   for (size_t i = 0; i < arr->size; ++i) {
     grv_str* s = &arr->arr[i];
-    char* src = grv_str_get_buffer(s);
+    char* src = grv_str_cstr(s);
     size_t len = grv_str_len(s);
     memcpy(dst, src, len);
     dst += len;
@@ -130,4 +149,13 @@ grv_str grv_strarr_join(grv_strarr* arr, char* join_str) {
   *dst = 0;
   grv_str_set_size(&res, total_len);
   return res;
+}
+
+bool grv_strarr_contains_cstr(grv_strarr* arr, char* cstr) {
+  for (size_t i = 0; i < arr->size; ++i) {
+    if (grv_str_eq_cstr(&arr->arr[i], cstr)) {
+      return true;
+    }
+  }
+  return false;
 }
