@@ -172,6 +172,7 @@ grv_str grv_str_cat(grv_str*, grv_str*);
 //grv_str grv_str_cat_cstr(grv_str, char*);
 //#define grv_str_cat(A, B) _Generic((B), grv_str: grv_str_cat(A, B), char*: grv_str_cat_cstr(A, B))
 
+// append a string
 void grv_str_append(grv_str*, grv_str*);
 
 // append a character to the string 
