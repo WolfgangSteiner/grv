@@ -8,7 +8,7 @@ GRV_TEST_BEGIN(grv_str_new)
   grv_str s = grv_str_new("TEST");
   GRV_TEST_ASSERT_EQUAL(grv_str_get_start(&s), 0);
   GRV_TEST_ASSERT_EQUAL(grv_str_get_end(&s), 4);
-  GRV_TEST_ASSERT_EQUAL(grv_str_get_capacity(&s), GRV_STR_SSO_CAPACITY);
+  GRV_TEST_ASSERT_EQUAL(grv_str_capacity(&s), GRV_STR_SSO_CAPACITY);
   GRV_TEST_ASSERT_EQUAL(grv_str_len(&s), 4);
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&s), true);
   GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&s), "TEST");
@@ -24,7 +24,7 @@ GRV_TEST_BEGIN(grv_str_new)
   GRV_TEST_ASSERT_EQUAL(grv_str_get_start(&s2), 0);
   GRV_TEST_ASSERT_EQUAL(grv_str_get_end(&s2), lorem_length);
   GRV_TEST_ASSERT_EQUAL(grv_str_len(&s2), lorem_length);
-  GRV_TEST_ASSERT_EQUAL(grv_str_get_capacity(&s2), s2_capacity);
+  GRV_TEST_ASSERT_EQUAL(grv_str_capacity(&s2), s2_capacity);
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&s2), false);
   GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&s2), lorem);
 GRV_TEST_END()
@@ -64,12 +64,12 @@ GRV_TEST_END()
 
 GRV_TEST_BEGIN(grv_str_resize)
   grv_str s1 = grv_str_new("Hello");
-  GRV_TEST_ASSERT_EQUAL(grv_str_get_capacity(&s1), GRV_STR_SSO_CAPACITY);
+  GRV_TEST_ASSERT_EQUAL(grv_str_capacity(&s1), GRV_STR_SSO_CAPACITY);
   grv_str_resize(&s1, 10);
-  GRV_TEST_ASSERT_EQUAL(grv_str_get_capacity(&s1), GRV_STR_SSO_CAPACITY);
+  GRV_TEST_ASSERT_EQUAL(grv_str_capacity(&s1), GRV_STR_SSO_CAPACITY);
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&s1), true);
   grv_str_resize(&s1, 32);
-  GRV_TEST_ASSERT_EQUAL(grv_str_get_capacity(&s1), GRV_STR_ALLOC_GRANULARITY);
+  GRV_TEST_ASSERT_EQUAL(grv_str_capacity(&s1), GRV_STR_ALLOC_GRANULARITY);
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&s1), false);
   GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&s1), "Hello");
 GRV_TEST_END()
@@ -120,10 +120,10 @@ GRV_TEST_BEGIN(grv_str_append_cstr)
   grv_str_append_cstr(&s1, "9");
   GRV_TEST_ASSERT_EQUAL(grv_str_len(&s1), 31);
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&s1), false);
-  GRV_TEST_ASSERT_EQUAL(grv_str_get_capacity(&s1), GRV_STR_ALLOC_GRANULARITY);
+  GRV_TEST_ASSERT_EQUAL(grv_str_capacity(&s1), GRV_STR_ALLOC_GRANULARITY);
   GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&s1), "Hello World01234567890123456789");
   grv_str_append_cstr(&s1, lorem);
-  GRV_TEST_ASSERT_EQUAL(grv_str_get_capacity(&s1), (strlen(lorem) + 31 + (GRV_STR_ALLOC_GRANULARITY - 1)) / GRV_STR_ALLOC_GRANULARITY * GRV_STR_ALLOC_GRANULARITY );
+  GRV_TEST_ASSERT_EQUAL(grv_str_capacity(&s1), (strlen(lorem) + 31 + (GRV_STR_ALLOC_GRANULARITY - 1)) / GRV_STR_ALLOC_GRANULARITY * GRV_STR_ALLOC_GRANULARITY );
 GRV_TEST_END()
 
 GRV_TEST_BEGIN(grv_str_append_char)

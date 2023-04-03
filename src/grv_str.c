@@ -296,7 +296,7 @@ void gvr_str_destroy(grv_str* s) {
 
 void grv_str_resize(grv_str* s, size_t size) {
   size_t new_capacity = grv_str_compute_capacity(size);
-  if (grv_str_get_capacity(s) >= size + 1) {
+  if (grv_str_capacity(s) >= size + 1) {
     return;  
   } else if (grv_str_is_short(s)) {
     char* new_buffer = malloc(new_capacity);

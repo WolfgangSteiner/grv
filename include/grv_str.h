@@ -119,7 +119,7 @@ static inline u64 grv_str_get_end(grv_str* s) {
 }
 
 // get the capacity of the string
-static inline u64 grv_str_get_capacity(grv_str* s) {
+static inline u64 grv_str_capacity(grv_str* s) {
   if (grv_str_is_short(s)) {
     return GRV_STR_SSO_MAX_LENGTH + 1;
   } else {
