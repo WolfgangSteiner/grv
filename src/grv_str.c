@@ -546,6 +546,13 @@ grv_strarr grv_str_split(grv_str* s, char* delim) {
   return r;
 }
 
+grv_str grv_str_from_s32(int32_t i) {
+  grv_str s = {};
+  size_t len = snprintf(grv_str_cstr(&s), GRV_STR_SSO_CAPACITY, "%d", i);
+  grv_str_set_len_impl(&s, len);
+  return s;
+}
+
 f32 grv_str_to_f32(grv_str* s) {
   return strtod(grv_str_cstr(s), NULL);
 }

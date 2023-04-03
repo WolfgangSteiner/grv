@@ -207,6 +207,9 @@ void grv_str_strip(grv_str*);
 
 void grv_str_remove_trailing_newline(grv_str*);
 
+// create a string from a signed 32-bit integer
+grv_str grv_str_from_s32(s32 x);
+
 f32 grv_str_to_f32(grv_str*);
 
 grv_str grv_str_join(grv_str*, grv_str*, char*);
