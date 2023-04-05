@@ -84,7 +84,7 @@ end
 
 function grvbld.build_exe(name, ...)
   local dst = grvbld.make_path(grvbld.build_config.build_dir, name)
-  local cmd = {grvbld.build_cmd(), "-o", dst}
+  local cmd = {grvbld.build_cmd(), "-DGRV_DEBUG_MEMORY", "-o", dst}
   grvbld.append_table(cmd, {...})
   cmd = grvbld.join(cmd)
   grvbld.log(cmd)
@@ -108,8 +108,6 @@ end
 function grvbld.run_tests()
   for i = 1,#grvbld.test_executables do
     local test = grvbld.test_executables[i]
-    print()
-    grvbld.log(test)
     os.execute(test)
   end
 end

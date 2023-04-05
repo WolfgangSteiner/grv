@@ -67,6 +67,19 @@ void grv_str_append(grv_str* s, grv_str* t) {
   grv_str_set_size(s, len + tlen);
 }
 
+void grv_str_prepend_cstr(grv_str* s, char* cstr) {
+  size_t len = grv_str_len(s);
+  size_t clen = strlen(cstr);
+  grv_str_resize(s, len + clen);
+  char* dst = grv_str_cstr(s) + clen;
+  char* src = grv_str_cstr(s);
+  memcpy(dst, src, len);
+  memcpy(grv_str_cstr(s), cstr, clen);
+  grv_str_cstr(s)[len + clen] = 0x0;
+  grv_str_set_size(s, len + clen);
+}
+
+
 void grv_str_remove_trailing_newline(grv_str* s) {
   if (grv_str_is_short(s)) {
     size_t len = grv_str_len(s);
@@ -354,6 +367,19 @@ grv_str grv_str_cat(grv_str* a, grv_str* b) {
   return r;
 }
   
+grv_str grv_str_cat_cstr_cstr(char* a, char* b) {
+  u64 len = strlen(a) + strlen(b); 
+  grv_str r;
+  grv_str_init_with_capacity(&r, len + 1);
+  char* dst = grv_str_cstr(&r);
+  memcpy(dst, a, strlen(a));
+  memcpy(dst + strlen(a), b, strlen(b));
+  grv_str_set_len_impl(&r, len);
+  grv_str_add_null_terminator(&r);
+  return r;
+}
+
+  
 void grv_str_append_char(grv_str* s, char c) {
   grv_str_resize(s, grv_str_len(s) + 1);
   char* buffer = grv_str_cstr(s);
@@ -402,8 +428,9 @@ void grv_str_center(grv_str* s, u64 width, char pad_char) {
 }
 
 // consruct a grv_str by giving a char and a number of times to repeat it
-grv_str grv_str_repeat_char(char c, u64 n) {
-  grv_str res;
+grv_str grv_str_repeat_char(char c, s32 n) {
+  grv_str res = {};
+  if (n <= 0) return res;
   grv_str_init_with_capacity(&res, n + 1);
   char* buffer = grv_str_cstr(&res);
   memset(buffer, c, n);
@@ -555,4 +582,22 @@ grv_str grv_str_from_s32(int32_t i) {
 
 f32 grv_str_to_f32(grv_str* s) {
   return strtod(grv_str_cstr(s), NULL);
+}
+
+grv_str grv_str_from_u64(u64 n) {
+  grv_str res = {};
+  res.descriptor = 16;
+  res.sso[16] = 0x0;
+  for (int i = 0; i < 16; ++i) {
+    u8 nibble = n & 0xf;
+    res.sso[15 - i] = nibble < 0xa ? '0' + nibble : 'a' + nibble - 0xa;
+    n = n >> 4;
+  }
+  return res;
+}
+
+bool grv_str_is_float(grv_str* s) {
+  char* endptr;
+  strtod(grv_str_cstr(s), &endptr);
+  return *endptr == 0;
 }

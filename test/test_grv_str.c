@@ -62,6 +62,13 @@ GRV_TEST_BEGIN(grv_str_cat)
   GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&r2), r2_cstr);
 GRV_TEST_END()
 
+GRV_TEST_BEGIN(grv_str_cat_cstr_cstr)
+  grv_str r = grv_str_cat_cstr_cstr("Hello", "World");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&r), "HelloWorld");
+  GRV_TEST_ASSERT_EQUAL(grv_str_len(&r), strlen("HelloWorld"));
+  GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&r), true);
+GRV_TEST_END()
+
 GRV_TEST_BEGIN(grv_str_resize)
   grv_str s1 = grv_str_new("Hello");
   GRV_TEST_ASSERT_EQUAL(grv_str_capacity(&s1), GRV_STR_SSO_CAPACITY);
@@ -297,11 +304,23 @@ GRV_TEST_BEGIN(grv_str_split_tail_from_back)
   GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&t), "-27.00 dB");
 GRV_TEST_END()  
 
+GRV_TEST_BEGIN(grv_str_prepend_cstr)
+  grv_str s = grv_str_new("World");
+  grv_str_prepend_cstr(&s, "Hello ");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&s), "Hello World");
+  grv_str_prepend_cstr(&s, "Hello ");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&s), "Hello Hello World");
+  grv_str_prepend_cstr(&s, "Hello Hello Hello ");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&s), "Hello Hello Hello Hello Hello World");
+  GRV_TEST_ASSERT_FALSE(grv_str_is_short(&s));
+GRV_TEST_END()
+
 
 int main(void) {
   GRV_TEST_INIT(grv_str);
   GRV_TEST_RUN(grv_str_new);
   GRV_TEST_RUN(grv_str_cat);
+  GRV_TEST_RUN(grv_str_cat_cstr_cstr);
   GRV_TEST_RUN(grv_str_resize);
   GRV_TEST_RUN(grv_str_append)
   GRV_TEST_RUN(grv_str_copy_cstr);
@@ -320,4 +339,5 @@ int main(void) {
   GRV_TEST_RUN(grv_str_split_head_from_front);
   GRV_TEST_RUN(grv_str_split_head_from_back);
   GRV_TEST_RUN(grv_str_split_tail_from_back);
+  GRV_TEST_RUN(grv_str_prepend_cstr);
 }

@@ -1,7 +1,7 @@
 #include "grv_test.h"
 #include "grv_strmap.h"
 
-GRV_TEST_BEGIN(strmap_insert_find)
+GRV_TEST_BEGIN(grv_strmap_insert_find)
     grv_strmap map;
     grv_strmap_init(&map);
 
@@ -27,6 +27,6 @@ GRV_TEST_BEGIN(strmap_insert_find)
 GRV_TEST_END()
 
 int main() {
-    GRV_TEST_INIT();
-    GRV_TEST_RUN(strmap_insert_find);
+    GRV_TEST_INIT(grv_strmap);
+    GRV_TEST_RUN(grv_strmap_insert_find);
 }

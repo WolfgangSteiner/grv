@@ -7,6 +7,8 @@
 #else
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <sys/time.h>
+#include <sys/random.h>
 #endif
 
 int grv_util_get_terminal_width() {
@@ -73,4 +75,87 @@ grv_strarr grv_util_glob(grv_str* pattern) {
   }
   globfree(&glob_result);
   return result;
+}
+
+#define GRV_UTIL_EPOCH 1679604975
+#define GRV_UTIL_UID_NUM_RANDOM_BITS 20
+
+u64 grv_util_generate_uid() {
+  u64 result = 0;
+  
+  // get the number of microseconds since the epoch
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  u64 seconds = tv.tv_sec - GRV_UTIL_EPOCH;
+  u64 miliseconds = tv.tv_usec / 1000;
+  u64 timestamp = seconds * 1000 + miliseconds;
+
+  u32 random_part;
+  grv_util_random_bytes(&random_part, sizeof(random_part));
+
+  result = (timestamp << GRV_UTIL_UID_NUM_RANDOM_BITS) | (random_part & ((1 << GRV_UTIL_UID_NUM_RANDOM_BITS) - 1));
+  return result;
+} 
+
+
+void grv_util_random_bytes(void* buffer, size_t buffer_size) {
+  getrandom(buffer, buffer_size, 0);
+}
+size_t grv_util_calc_alloc_size(size_t size) {
+  size_t mask = sizeof(void*) - 1;
+  size_t result = (size + mask) & ~mask;
+  #ifdef GRV_DEBUG_MEMORY
+    result += sizeof(void*);
+  #endif
+  return result;
+}
+void* grv_alloc(u64 size) {
+  size_t alloc_size = grv_util_calc_alloc_size(size);
+  void* result = malloc(alloc_size);
+  if (result == NULL) return result;
+  #ifdef GRV_ZERO_MEMORY
+    memset(result, 0, alloc_size);
+  #elif defined(GRV_DEBUG_MEMORY)
+    memset(result, 0xef, alloc_size);
+    *(size_t*)result = alloc_size;
+    result += sizeof(void*);
+  #endif
+  return result;
+}
+void* grv_realloc(void* ptr, u64 size) {
+  size_t alloc_size = grv_util_calc_alloc_size(size);
+  #ifdef GRV_DEBUG_MEMORY
+    ptr -= sizeof(void*);
+    size_t old_alloc_size = *((size_t*)ptr);
+    if (old_alloc_size > alloc_size) {
+      memset(ptr + alloc_size, 0xcd, old_alloc_size - alloc_size);
+    }
+  #endif
+  void* result = realloc(ptr, alloc_size);
+  if (result == NULL) return result;
+  #ifdef GRV_ZERO_MEMORY
+    memset(result, 0, alloc_size);
+  #elif defined(GRV_DEBUG_MEMORY)
+    if (old_alloc_size < alloc_size) {
+      memset(result + old_alloc_size, 0xef, alloc_size - old_alloc_size);
+    }
+    *(size_t*)result = alloc_size;
+    result += sizeof(void*);
+  #endif
+  return result;
+}
+void grv_free(void* ptr) {
+  #ifdef GRV_DEBUG_MEMORY
+    size_t alloc_size = *((size_t*)ptr - 1);
+    memset(ptr - sizeof(size_t), 0xcd, alloc_size); 
+    ptr -= sizeof(size_t);
+  #endif
+  free(ptr); 
+}
+
+void grv_free_prepare(void* ptr) {
+  #ifdef GRV_DEBUG_MEMORY
+    size_t alloc_size = *((size_t*)ptr - 1);
+    memset(ptr - sizeof(size_t), 0xcd, alloc_size); 
+  #endif
 }

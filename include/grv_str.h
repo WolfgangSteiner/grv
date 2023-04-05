@@ -169,11 +169,19 @@ void grv_str_lchop(grv_str*, u64);
 
 // concatenate two strings
 grv_str grv_str_cat(grv_str*, grv_str*);
+
+// concatenate a two cstrings
+grv_str grv_str_cat_cstr_cstr(char*, char*);
+
 //grv_str grv_str_cat_cstr(grv_str, char*);
 //#define grv_str_cat(A, B) _Generic((B), grv_str: grv_str_cat(A, B), char*: grv_str_cat_cstr(A, B))
 
 // append a string
 void grv_str_append(grv_str*, grv_str*);
+
+// prepend a cstring to the string
+void grv_str_prepend_cstr(grv_str*, char*);
+
 
 // append a character to the string 
 void grv_str_append_char(grv_str*, char);
@@ -184,7 +192,7 @@ void grv_str_rpad(grv_str*, u64, char);
 void grv_str_lpad(grv_str*, u64, char);
 void grv_str_center(grv_str*, u64, char);
 
-grv_str grv_str_repeat_char(char c, u64 n);
+grv_str grv_str_repeat_char(char c, s32 n);
 
 void grv_str_append_cstr(grv_str*, char*);
 
@@ -210,7 +218,15 @@ void grv_str_remove_trailing_newline(grv_str*);
 // create a string from a signed 32-bit integer
 grv_str grv_str_from_s32(s32 x);
 
+// convert a string to a float value
 f32 grv_str_to_f32(grv_str*);
+
+// check if the represents a float
+bool grv_str_is_float(grv_str*);
+
+// format a u64 as a hex string
+grv_str grv_str_from_u64(u64);
+
 
 grv_str grv_str_join(grv_str*, grv_str*, char*);
 
@@ -224,6 +240,9 @@ bool grv_str_eq(grv_str*, grv_str*);
 // create a new string array
 grv_strarr grv_strarr_new();
 
+
+// create a new string array from a c string array
+// the strings are copied to new grv_str objects
 grv_strarr grv_strarr_from_cstr_array(char**, size_t);
 
 // get the size of the string array
