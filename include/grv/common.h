@@ -28,4 +28,7 @@ typedef double f64;
 #define S32_MIN INT32_MIN
 #define S32_MAX INT32_MAX
 
+size_t min_size_t(size_t, size_t);
+size_t max_size_t(size_t, size_t);
+
 #endif
