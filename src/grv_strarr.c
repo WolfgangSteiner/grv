@@ -1,4 +1,6 @@
 #include "grv_str.h"
+#include <stdlib.h>
+#include <string.h>
 
 // grv_strarr
 grv_strarr grv_strarr_new() {

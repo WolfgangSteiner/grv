@@ -22,4 +22,9 @@ grv_str grv_fs_read_file(grv_str* path);
 // get the size of a file
 size_t grv_fs_file_size(FILE* file);
 
+#ifdef _WIN32
+char* grv_win_path_to_posix_path(wchar_t* win_path);
+wchar_t* grv_posix_path_to_win_path(char* posix_path);
+#endif
+
 #endif

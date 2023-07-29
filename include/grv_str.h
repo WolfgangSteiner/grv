@@ -1,8 +1,9 @@
 #ifndef GRV_STR_H
 #define GRV_STR_H
 
-#include "grv_defines.h"
+#include "grv/common.h"
 #include <stddef.h>
+#include <errno.h>
 
 #define GRV_STR_ALLOC_GRANULARITY 64
 #define GRV_STR_FLAG_IS_LARGE_STRING 0x80
@@ -164,8 +165,8 @@ grv_str grv_str_split_head_from_front(grv_str*, char* delim);
 grv_str grv_str_split_head_from_back(grv_str*, char* delim);
 grv_str grv_str_split_tail_from_back(grv_str*, char* delim);
 
-void grv_str_rchop(grv_str*, u64);
-void grv_str_lchop(grv_str*, u64);
+void grv_str_rchop(grv_str*, size_t);
+void grv_str_lchop(grv_str*, size_t);
 
 // concatenate two strings
 grv_str grv_str_cat(grv_str*, grv_str*);
@@ -295,4 +296,7 @@ grv_str grv_strarr_join(grv_strarr*, char*);
 // check if the string array contains the given cstring
 bool grv_strarr_contains_cstr(grv_strarr*, char*);
 
+int grv_strcpy(char* dst, size_t dstsz, const char* src);
+int grv_strcat(char* dst, size_t dstsz, const char* src);
+size_t grv_strlen(const char* s, size_t max);
 #endif

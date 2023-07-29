@@ -41,21 +41,21 @@ GRV_TEST_BEGIN(grv_str_cat)
   grv_str longstr = grv_str_new(lorem); 
   grv_str r2 = grv_str_cat(&a, &longstr);
   char* r2_cstr = malloc(4096);
-  strcpy(r2_cstr, grv_str_cstr(&a));
-  strcat(r2_cstr, lorem);
+  grv_strcpy(r2_cstr, 4096, grv_str_cstr(&a));
+  grv_strcat(r2_cstr, 4096, lorem);
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&r2), false);
   GRV_TEST_ASSERT_EQUAL(grv_str_len(&r2), strlen(r2_cstr));
   GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&r2), r2_cstr);
 
-  strcpy(r2_cstr, lorem);
-  strcat(r2_cstr, grv_str_cstr(&b));
+  grv_strcpy(r2_cstr, 4096, lorem);
+  grv_strcat(r2_cstr, 4096, grv_str_cstr(&b));
   r2 = grv_str_cat(&longstr, &b);
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&r2), false);
   GRV_TEST_ASSERT_EQUAL(grv_str_len(&r2), strlen(r2_cstr));
   GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&r2), r2_cstr);
 
-  strcpy(r2_cstr, lorem);
-  strcat(r2_cstr, lorem);
+  grv_strcpy(r2_cstr, 4096, lorem);
+  grv_strcat(r2_cstr, 4096, lorem);
   r2 = grv_str_cat(&longstr, &longstr);
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&r2), false);
   GRV_TEST_ASSERT_EQUAL(grv_str_len(&r2), strlen(r2_cstr));
@@ -90,8 +90,8 @@ GRV_TEST_BEGIN(grv_str_append)
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&s1), true);
 
   char* r2_cstr = malloc(4096);
-  strcpy(r2_cstr, grv_str_cstr(&s1));
-  strcat(r2_cstr, lorem);
+  grv_strcpy(r2_cstr, 4096, grv_str_cstr(&s1));
+  grv_strcat(r2_cstr, 4096, lorem);
   grv_str longstr = grv_str_new(lorem); 
   grv_str_append(&s1, &longstr);
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&s1), false);

@@ -8,6 +8,7 @@ grvbld.build_config = {
   build_dir = "build"
 }
 
+
 grvbld.build_test("str")
 grvbld.build_test("strarr")
 grvbld.build_test("util")

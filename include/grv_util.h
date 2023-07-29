@@ -1,7 +1,7 @@
 #ifndef GRV_UTIL_H
 #define GRV_UTIL_H
 
-#include "grv_defines.h"
+#include "grv/common.h"
 #include "grv_str.h"
 
 // Returns the width of the terminal
@@ -27,5 +27,6 @@ f32 grv_timestamp();
 void* grv_alloc(u64 size);
 void* grv_realloc(void* ptr, u64 size);
 void grv_free(void* ptr);
+
 
 #endif

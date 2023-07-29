@@ -1,10 +1,11 @@
-#include "grv_defines.h"
+#include "grv/common.h"
 #include "grv_str.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h> 
 
 // set the length value of the string
-static inline void grv_str_set_len_impl(grv_str* s, u32 len) {
+static inline void grv_str_set_len_impl(grv_str* s, size_t len) {
   if (grv_str_is_short(s)) {
     s->descriptor = len & GRV_STR_SSO_SIZE_MASK;
   } else {
@@ -19,10 +20,10 @@ static inline u64 grv_str_compute_capacity(u64 length) {
 }
 
 void grv_str_init_with_cstr(grv_str* s, char* cstr) {
-  u32 len = strlen(cstr);
+  size_t len = strlen(cstr);
   if (len <= GRV_STR_SSO_MAX_LENGTH) {
     s->descriptor = len & GRV_STR_SSO_SIZE_MASK;
-    strcpy(s->sso, cstr);
+    grv_strcpy(s->sso, GRV_STR_SSO_CAPACITY, cstr);
   } else {
     u64 capacity = grv_str_compute_capacity(len);
     s->capacity = capacity << 8;
@@ -30,7 +31,7 @@ void grv_str_init_with_cstr(grv_str* s, char* cstr) {
     s->start = 0;
     s->end = len;
     s->buffer = malloc(capacity);
-    strncpy(s->buffer, cstr, capacity);
+    grv_strcpy(s->buffer, capacity, cstr);
     s->buffer[capacity - 1] = 0x0;
   }
 }
@@ -105,7 +106,7 @@ grv_str grv_str_ref(char* cstr, u64 start, u64 end) {
 }
 
 grv_str grv_str_substr(grv_str* s, u64 start, u64 end) {
-  grv_str res = {};
+  grv_str res = {0};
   size_t len = end - start;
   if (len < GRV_STR_SSO_MAX_LENGTH) {
     res.descriptor = len & GRV_STR_SSO_SIZE_MASK;
@@ -121,7 +122,7 @@ grv_str grv_str_substr(grv_str* s, u64 start, u64 end) {
 }
 
 grv_str grv_str_copy_substr(grv_str* s, u64 start, u64 end) {
-  grv_str res = {};
+  grv_str res = {0};
   size_t len = end - start;
   grv_str_init_with_capacity(&res, len + 1);
   memcpy(grv_str_cstr(&res), grv_str_cstr(s) + start, len);
@@ -131,7 +132,7 @@ grv_str grv_str_copy_substr(grv_str* s, u64 start, u64 end) {
 }
 
 grv_str grv_str_split_head_from_front(grv_str* s, char* delim) {
-  grv_str res = {};
+  grv_str res = {0};
   char* buffer = grv_str_cstr(s);
   size_t len = grv_str_len(s);
   size_t delim_len = strlen(delim);
@@ -153,7 +154,7 @@ grv_str grv_str_split_head_from_front(grv_str* s, char* delim) {
 }
 
 grv_str grv_str_split_head_from_back(grv_str* s, char* delim) {
-  grv_str res = {};
+  grv_str res = {0};
   char* buffer = grv_str_cstr(s);
   size_t len = grv_str_len(s);
   size_t delim_len = strlen(delim);
@@ -174,7 +175,7 @@ grv_str grv_str_split_head_from_back(grv_str* s, char* delim) {
 }
 
 grv_str grv_str_split_tail_from_back(grv_str* s, char* delim) {
-  grv_str res = {};
+  grv_str res = {0};
   char* buffer = grv_str_cstr(s);
   size_t len = grv_str_len(s);
   size_t delim_len = strlen(delim);
@@ -195,7 +196,7 @@ grv_str grv_str_split_tail_from_back(grv_str* s, char* delim) {
 }
 
 grv_str grv_str_copy(grv_str* s) {
-  grv_str res = {};
+  grv_str res = {0};
   size_t len = grv_str_len(s);
   if (grv_str_is_short(s)) {
     res.descriptor = s->descriptor;
@@ -233,9 +234,10 @@ void grv_str_slice(grv_str* s, u64 start, u64 end) {
   grv_str_add_null_terminator(s);
 }
 
-void grv_str_rchop(grv_str* s, u64 n) {
+void grv_str_rchop(grv_str* s, size_t n) {
+  n = min_size_t(n, grv_str_len(s));
   if (grv_str_is_short(s)) {
-    s->descriptor -= n;
+    s->descriptor -= (u8)n;
     s->sso[s->descriptor & GRV_STR_SSO_SIZE_MASK] = 0x0;
   } else {
     s->end -= n;
@@ -243,7 +245,7 @@ void grv_str_rchop(grv_str* s, u64 n) {
   }
 }
 
-void grv_str_lchop(grv_str* s, u64 n) {
+void grv_str_lchop(grv_str* s, size_t n) {
   if (grv_str_is_short(s)) {
     size_t new_len = grv_str_len(s) - n;
     s->descriptor -= n;
@@ -255,7 +257,7 @@ void grv_str_lchop(grv_str* s, u64 n) {
 }
 
 grv_str grv_str_empty() {
-  grv_str res = {};
+  grv_str res = {0};
   return res;
 }
 
@@ -429,7 +431,7 @@ void grv_str_center(grv_str* s, u64 width, char pad_char) {
 
 // consruct a grv_str by giving a char and a number of times to repeat it
 grv_str grv_str_repeat_char(char c, s32 n) {
-  grv_str res = {};
+  grv_str res = {0};
   if (n <= 0) return res;
   grv_str_init_with_capacity(&res, n + 1);
   char* buffer = grv_str_cstr(&res);
@@ -574,7 +576,7 @@ grv_strarr grv_str_split(grv_str* s, char* delim) {
 }
 
 grv_str grv_str_from_s32(int32_t i) {
-  grv_str s = {};
+  grv_str s = {0};
   size_t len = snprintf(grv_str_cstr(&s), GRV_STR_SSO_CAPACITY, "%d", i);
   grv_str_set_len_impl(&s, len);
   return s;
@@ -585,7 +587,7 @@ f32 grv_str_to_f32(grv_str* s) {
 }
 
 grv_str grv_str_from_u64(u64 n) {
-  grv_str res = {};
+  grv_str res = {0};
   res.descriptor = 16;
   res.sso[16] = 0x0;
   for (int i = 0; i < 16; ++i) {
@@ -600,4 +602,44 @@ bool grv_str_is_float(grv_str* s) {
   char* endptr;
   strtod(grv_str_cstr(s), &endptr);
   return *endptr == 0;
+}
+
+int grv_strcpy(char* dst, size_t dst_size, const char* src) {
+  size_t len = strlen(src);
+  int res = 0;
+
+  if (dst == NULL || dst_size == 0) return EINVAL;
+  if (len >= dst_size) {
+    len = dst_size - 1;
+    res = ERANGE;
+  }
+  memcpy(dst, src, len);
+  dst[len] = '\0';
+  return res;
+}
+
+int grv_strcat(char* dst, size_t dstsz, const char* src) {
+  if (dst == NULL || dstsz == 0) return EINVAL;
+
+  size_t dst_len = grv_strlen(dst, dstsz - 1);
+  if (dst_len == dstsz - 1) return ERANGE;
+
+  size_t src_len = strlen(src);
+  int res = 0;
+
+  if (dst_len + src_len >= dstsz) {
+    src_len = dstsz - dst_len - 1;
+    res = ERANGE;
+  }
+  memcpy(dst + dst_len, src, src_len);
+  dst[dst_len + src_len] = '\0';
+  return res;
+}
+
+size_t grv_strlen(const char* s, size_t max_len) {
+  size_t len = 0;
+  while (len < max_len && s[len] != '\0') {
+    len++;
+  }
+  return len;
 }
