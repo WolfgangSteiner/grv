@@ -7,50 +7,50 @@
   #include <windows.h>
 #endif
 
-grv_str grv_fs_basename(grv_str* path) {
+grv_str_t grv_fs_basename(grv_str_t* path) {
   if (grv_str_len(path) == 0 
       || grv_str_eq_cstr(path, ".")
       || grv_str_eq_cstr(path, "..")
       || grv_str_ends_with_cstr(path, "/")) {
     return grv_str_new("");
   } else {
-    grv_strarr path_components = grv_fs_split_path(path);
-    grv_str basename = grv_strarr_pop_back(&path_components);
+    grv_strarr_t path_components = grv_fs_split_path(path);
+    grv_str_t basename = grv_strarr_pop_back(&path_components);
     grv_strarr_free(&path_components);
     return basename;
   }
 }
 
-grv_str grv_fs_stem(grv_str* path) {
+grv_str_t grv_fs_stem(grv_str_t* path) {
   if (grv_str_len(path) == 0 
       || grv_str_eq_cstr(path, ".")
       || grv_str_eq_cstr(path, "..")
       || grv_str_ends_with_cstr(path, "/")) {
     return grv_str_new("");
   } else {
-    grv_strarr path_components = grv_fs_split_path(path);
-    grv_str basename = grv_strarr_pop_back(&path_components);
-    grv_str stem = grv_str_split_head_from_front(&basename, ".");
+    grv_strarr_t path_components = grv_fs_split_path(path);
+    grv_str_t basename = grv_strarr_pop_back(&path_components);
+    grv_str_t stem = grv_str_split_head_from_front(&basename, ".");
     grv_strarr_push(&path_components, &stem);
-    grv_str result = grv_fs_join_path(&path_components);
+    grv_str_t result = grv_fs_join_path(&path_components);
     grv_str_free(&basename);
     grv_strarr_free(&path_components);
     return result;
   }
 }
 
-grv_strarr grv_fs_split_path(grv_str* path) {
-  grv_strarr result = grv_str_split(path, "/");
+grv_strarr_t grv_fs_split_path(grv_str_t* path) {
+  grv_strarr_t result = grv_str_split(path, "/");
   return result;
 }
 
-grv_str grv_fs_join_path(grv_strarr* path_components) {
-  grv_str result = grv_strarr_join(path_components, "/");
+grv_str_t grv_fs_join_path(grv_strarr_t* path_components) {
+  grv_str_t result = grv_strarr_join(path_components, "/");
   return result;
 }
 
-grv_str grv_fs_read_file(grv_str *path) {
-  grv_str result = {0};
+grv_str_t grv_fs_read_file(grv_str_t *path) {
+  grv_str_t result = {0};
   FILE *file = fopen(grv_str_cstr(path), "r");
   if (file) {
     size_t file_size = grv_fs_file_size(file);

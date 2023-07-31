@@ -8,11 +8,11 @@
 int grv_util_get_terminal_width();
 
 // executes a command and returns the output as a grv_strarr
-grv_strarr grv_system(grv_str* cmd);
-grv_strarr grv_system_cstr(char* cmd);
+grv_strarr_t grv_system(grv_str_t* cmd);
+grv_strarr_t grv_system_cstr(char* cmd);
 
 // Returns list of files given a pattern 
-grv_strarr grv_util_glob(grv_str* pattern);
+grv_strarr_t grv_util_glob(grv_str_t* pattern);
 
 
 // generate a unique id

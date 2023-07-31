@@ -12,8 +12,8 @@
 #endif
 
 typedef struct {
-  grv_str key;
-  grv_str value; 
+  grv_str_t key;
+  grv_str_t value; 
   u64 hash;
 } grv_strmap_entry;
 
@@ -24,7 +24,7 @@ typedef struct {
 } grv_strmap;
 
 // hash function for grv_strmap
-u64 grv_strmap_hash(grv_str *key);
+u64 grv_strmap_hash(grv_str_t *key);
 
 // initialize a new grv_strmap
 void grv_strmap_init(grv_strmap *map);
@@ -34,7 +34,7 @@ void grv_strmap_free(grv_strmap *map);
 
 // insert a new entry into a grv_strmap
 // ownership of the key and value is transferred to the grv_strmap
-void grv_strmap_insert(grv_strmap *map, grv_str *key, grv_str *value);
+void grv_strmap_insert(grv_strmap *map, grv_str_t *key, grv_str_t* value);
 
 // insert a new entry into a grv_strmap
 // key and value are copied into the grv_strmap
@@ -42,20 +42,20 @@ void grv_strmap_insert_cstr(grv_strmap* map, char* key, char* value);
 
 // find an entry in a grv_strmap
 // returns NULL if the key is not found
-grv_strmap_entry* grv_strmap_find(grv_strmap* map, grv_str* key);
+grv_strmap_entry* grv_strmap_find(grv_strmap* map, grv_str_t* key);
 
 // find an entry in a grv_strmap
 // returns NULL if the key is not found
 grv_strmap_entry* grv_strmap_find_cstr(grv_strmap* map, char* key);
 
 // get the value for a key from a grv_strmap
-// ownership of the returned grv_str is transferred to the caller
+// ownership of the returned grv_str_t is transferred to the caller
 // returns NULL if the key is not found
-grv_str* grv_strmap_get(grv_strmap *map, grv_str *key);
+grv_str_t* grv_strmap_get(grv_strmap *map, grv_str_t *key);
 
 // get the value for a key from a grv_strmap
-// ownership of the returned grv_str is transferred to the caller
+// ownership of the returned grv_str_t is transferred to the caller
 // returns NULL if the key is not found
-grv_str* grv_strmap_get_cstr(grv_strmap *map, char *key);
+grv_str_t* grv_strmap_get_cstr(grv_strmap *map, char *key);
 
 #endif

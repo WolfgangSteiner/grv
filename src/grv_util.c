@@ -27,15 +27,15 @@ int grv_util_get_terminal_width() {
 }
 
 
-grv_strarr grv_system(grv_str* cmd) {
+grv_strarr_t grv_system(grv_str_t* cmd) {
   char* cmd_cstr = grv_str_copy_cstr(cmd);
-  grv_strarr result = grv_system_cstr(cmd_cstr); 
+  grv_strarr_t result = grv_system_cstr(cmd_cstr); 
   free(cmd_cstr);
   return result;
 }
 
-grv_strarr grv_system_cstr(char* cmd) {  
-  grv_strarr result = grv_strarr_new();
+grv_strarr_t grv_system_cstr(char* cmd) {  
+  grv_strarr_t result = grv_strarr_new();
   FILE* fp = popen(cmd, "r");
   if (fp == NULL) {
     return result;
@@ -45,7 +45,7 @@ grv_strarr grv_system_cstr(char* cmd) {
   size_t len = 0;
   ssize_t read;
   while ((read = getline(&line, &len, fp)) != -1) {
-    grv_str line_str = grv_str_new(line);
+    grv_str_t line_str = grv_str_new(line);
     grv_str_remove_trailing_newline(&line_str); 
     grv_strarr_push(&result, &line_str);
   }
@@ -58,9 +58,9 @@ grv_strarr grv_system_cstr(char* cmd) {
   return result;
 }
 
-grv_strarr grv_util_glob(grv_str* pattern) {
+grv_strarr_t grv_util_glob(grv_str_t* pattern) {
   // iterate over contents of directory
-  grv_strarr result = grv_strarr_new();
+  grv_strarr_t result = grv_strarr_new();
   char* pattern_cstr = grv_str_copy_cstr(pattern);
   glob_t glob_result;
   glob(pattern_cstr, GLOB_TILDE, NULL, &glob_result);
@@ -70,7 +70,7 @@ grv_strarr grv_util_glob(grv_str* pattern) {
   }
 
   for (size_t i = 0; i < glob_result.gl_pathc; ++i) {
-    grv_str path = grv_str_new(glob_result.gl_pathv[i]);
+    grv_str_t path = grv_str_new(glob_result.gl_pathv[i]);
     grv_strarr_push(&result, &path);
   }
   globfree(&glob_result);

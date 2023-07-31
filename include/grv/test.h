@@ -49,7 +49,7 @@
 #define GRV_TEST_END() \
     bool success = grv_test_failed_count == 0; \
     if (success) { \
-      grv_str padding = grv_str_repeat_char('.', GRV_TEST_ALIGN_WIDTH - (s32)strlen(grv_test_current) - 4);\
+      grv_str_t padding = grv_str_repeat_char('.', GRV_TEST_ALIGN_WIDTH - (s32)strlen(grv_test_current) - 4);\
       if (GRV_TEST_VERBOSITY) printf(" %s " GRV_TEST_GREEN(ok) "\n", grv_str_cstr(&padding)); \
       grv_str_free(&padding); \
     } \
