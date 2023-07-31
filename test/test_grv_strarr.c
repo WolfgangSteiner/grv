@@ -1,5 +1,5 @@
 #include "grv_str.h"
-#include "grv_test.h"
+#include "grv/test.h"
 #include <stdlib.h>
 
 GRV_TEST_BEGIN(grv_strarr_join)
