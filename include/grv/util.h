@@ -2,7 +2,7 @@
 #define GRV_UTIL_H
 
 #include "grv/common.h"
-#include "grv_str.h"
+#include "grv/str.h"
 
 // Returns the width of the terminal
 int grv_util_get_terminal_width();

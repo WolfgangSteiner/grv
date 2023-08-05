@@ -5,7 +5,7 @@
 #include <string.h>
 #include "grv/common.h"
 #include <math.h>
-#include "grv_str.h"
+#include "grv/str.h"
 
 #ifndef GRV_TEST_ALIGN_WIDTH
   #define GRV_TEST_ALIGN_WIDTH 64

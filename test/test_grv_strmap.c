@@ -1,5 +1,5 @@
 #include "grv/test.h"
-#include "grv_strmap.h"
+#include "grv/strmap.h"
 
 GRV_TEST_BEGIN(grv_strmap_insert_find)
     grv_strmap map;

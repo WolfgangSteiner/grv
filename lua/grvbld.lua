@@ -56,6 +56,7 @@ function grvbld.build_cmd()
 
   local cmd = cc
   cmd = cmd .. " --std=" .. std
+  cmd = cmd .. " -lm"
 
   if inc then
     for i = 1, #inc do
@@ -87,20 +88,29 @@ function grvbld.build_exe(name, ...)
   local cmd = {grvbld.build_cmd(), "-DGRV_DEBUG_MEMORY", "-o", dst}
   grvbld.append_table(cmd, {...})
   cmd = grvbld.join(cmd)
-  grvbld.log(cmd)
+  -- grvbld.log(cmd)
   local success = os.execute(cmd)
   return success
 end
 
 
 function grvbld.build_test(name)
-  local dst = "test_grv_" .. name
+  local dst = "test_" .. name
   local src = "test/" .. dst .. ".c"
   local success = grvbld.build_exe(dst, "-g", src, "src/grv.c")
   if success then
     grvbld.append(
       grvbld.test_executables,
       grvbld.make_path(grvbld.build_config.build_dir, dst))
+  end
+end
+
+function grvbld.test(name)
+  local dst = "test_" .. name
+  local src = "test/" .. dst .. ".c"
+  local success = grvbld.build_exe(dst, "-g", src, "src/grv.c")
+  if success then
+    os.execute(grvbld.make_path(grvbld.build_config.build_dir, dst))
   end
 end
 

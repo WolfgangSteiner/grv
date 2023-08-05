@@ -1,7 +1,7 @@
 #ifndef GRV_STRMAP_H
 #define GRV_STRMAP_H
 
-#include "grv_str.h"
+#include "grv/str.h"
 
 #ifndef GRV_STRMAP_DEFAULT_CAPACITY
 #define GRV_STRMAP_DEFAULT_CAPACITY 16

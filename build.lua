@@ -9,9 +9,9 @@ grvbld.build_config = {
 }
 
 
-grvbld.build_test("str")
-grvbld.build_test("strarr")
-grvbld.build_test("util")
-grvbld.build_test("fs") 
-grvbld.build_test("strmap")
-grvbld.run_tests()
+grvbld.test("grv_common")
+grvbld.test("grv_str")
+grvbld.test("grv_strarr")
+grvbld.test("grv_util")
+grvbld.test("grv_fs") 
+grvbld.test("grv_strmap")

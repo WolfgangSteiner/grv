@@ -1,5 +1,5 @@
 #include "grv/test.h"
-#include "grv_util.h"
+#include "grv/util.h"
 #include <assert.h>
 #include <stdlib.h>
 

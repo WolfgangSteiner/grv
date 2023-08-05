@@ -2,7 +2,7 @@
 #define GRV_FS_H
 
 #include <stdio.h>
-#include "grv_str.h"
+#include "grv/str.h"
 
 // returns the basename of a path
 grv_str_t grv_fs_basename(grv_str_t* path);
