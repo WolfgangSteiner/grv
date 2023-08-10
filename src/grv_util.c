@@ -97,10 +97,10 @@ u64 grv_util_generate_uid() {
   return result;
 } 
 
-
 void grv_util_random_bytes(void* buffer, size_t buffer_size) {
   getrandom(buffer, buffer_size, 0);
 }
+
 size_t grv_util_calc_alloc_size(size_t size) {
   size_t mask = sizeof(void*) - 1;
   size_t result = (size + mask) & ~mask;
