@@ -1,5 +1,5 @@
-#include "grv/common.h"
-#include "grv/str.h"
+#include "grv/grv_base.h"
+#include "grv/grv_str.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h> 

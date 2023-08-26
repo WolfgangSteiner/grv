@@ -1,4 +1,4 @@
-#include "grv/util.h"
+#include "grv/grv_util.h"
 #include <stdio.h>
 #include <glob.h>
 
@@ -10,6 +10,7 @@
 #include <sys/time.h>
 #include <sys/random.h>
 #endif
+
 
 int grv_util_get_terminal_width() {
   #ifdef _WIN32

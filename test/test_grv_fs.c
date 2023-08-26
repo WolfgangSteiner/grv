@@ -1,5 +1,5 @@
-#include "grv/test.h"
-#include "grv/fs.h"
+#include "grv/grv_test.h"
+#include "grv/grv_fs.h"
 
 GRV_TEST_BEGIN(grv_fs_basename)
   grv_str_t path = grv_str_new("test/test_grv_fs.c");

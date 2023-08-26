@@ -1,4 +1,4 @@
-#include "grv/strmap.h"
+#include "grv/grv_strmap.h"
 
 u64 grv_strmap_hash(grv_str_t* str) {
     u64 hash = 5381;

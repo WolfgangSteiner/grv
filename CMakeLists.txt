@@ -1,16 +1,20 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(grv VERSION 0.1.0)
 include_directories(include)
+set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} -lm") 
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DGRV_DEBUG_MEMORY")
 
-add_executable(test_grv_str test/test_grv_str.c src/grv.c)
+add_library(libgrv src/grv.c)
 
-# build executable for testing grv_strarr
-add_executable(test_grv_strarr test/test_grv_strarr.c src/grv.c)
+function(add_test test_name)
+    add_executable(${test_name} test/${test_name}.c)
+    target_link_libraries(${test_name} libgrv)
+    add_custom_target(run_${test_name} ALL COMMAND ${test_name} DEPENDS ${test_name})
+endfunction()
 
-# run all executables
-add_custom_target(run_tests ALL
-    COMMAND test_grv_str
-    COMMAND test_grv_strarr
-    DEPENDS test_grv_str test_grv_strarr
-    COMMENT "Running tests"
-)
+# execute all tests
+file(GLOB TEST_FILES "${CMAKE_SOURCE_DIR}/test/test_grv*.c")
+foreach(FILE_PATH ${TEST_FILES})
+    get_filename_component(test_name ${FILE_PATH} NAME_WE)
+    add_test(${test_name})
+endforeach()

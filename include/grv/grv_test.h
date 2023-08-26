@@ -3,9 +3,9 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "grv/common.h"
 #include <math.h>
-#include "grv/str.h"
+#include "grv_base.h"
+#include "grv_str.h"
 
 #ifndef GRV_TEST_ALIGN_WIDTH
   #define GRV_TEST_ALIGN_WIDTH 64

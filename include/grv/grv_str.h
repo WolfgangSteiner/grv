@@ -1,7 +1,7 @@
 #ifndef GRV_STR_H
 #define GRV_STR_H
 
-#include "grv/common.h"
+#include "grv_base.h"
 #include <stddef.h>
 #include <errno.h>
 
