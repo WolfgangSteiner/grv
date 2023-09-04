@@ -172,6 +172,7 @@ void grv_free(void* ptr) {
 }
 
 void grv_free_prepare(void* ptr) {
+  (void)ptr;
   #ifdef GRV_DEBUG_MEMORY
     size_t alloc_size = grv_impl_get_alloc_size(ptr);
     size_t* alloc_ptr = grv_impl_get_alloc_ptr(ptr);
