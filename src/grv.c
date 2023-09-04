@@ -1,4 +1,5 @@
 #include "grv_common.c"
+#include "grv_math.c"
 #include "grv_fs.c"
 #include "grv_str.c"
 #include "grv_strarr.c"

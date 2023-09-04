@@ -1,6 +1,6 @@
 #include <math.h>
-#include "grv/math.h"
-#include "sin_cos_lut.c"
+#include "grv/grv_math.h"
+#include "grv_math_sin_cos_lut.c"
 #include <assert.h>
 
 f32 unit_sin_f32(f32 arg) {
