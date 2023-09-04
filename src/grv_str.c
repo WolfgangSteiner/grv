@@ -19,26 +19,54 @@ static inline u64 grv_str_compute_capacity(u64 length) {
     return (c + (s - 1)) / s * s;
 }
 
+static inline void grv_str_impl_init_large_string(grv_str_t* s, size_t len) {
+  u64 capacity = grv_str_compute_capacity(len);
+  s->capacity = capacity << 8;
+  s->descriptor = GRV_STR_FLAG_IS_LARGE_STRING;
+  s->start = 0;
+  s->end = 0;
+  s->buffer = malloc(capacity);
+  s->buffer[0] = 0x0;
+}
+
 void grv_str_init_with_cstr(grv_str_t* s, char* cstr) {
   size_t len = strlen(cstr);
   if (len <= GRV_STR_SSO_MAX_LENGTH) {
     s->descriptor = len & GRV_STR_SSO_SIZE_MASK;
     grv_strcpy(s->sso, GRV_STR_SSO_CAPACITY, cstr);
   } else {
-    u64 capacity = grv_str_compute_capacity(len);
-    s->capacity = capacity << 8;
-    s->descriptor = GRV_STR_FLAG_IS_LARGE_STRING;
-    s->start = 0;
+    grv_str_impl_init_large_string(s, len);
+    memcpy(s->buffer, cstr, len);
     s->end = len;
-    s->buffer = malloc(capacity);
-    grv_strcpy(s->buffer, capacity, cstr);
-    s->buffer[capacity - 1] = 0x0;
+    s->buffer[len] = 0x0;
+  }
+}
+
+void grv_str_init_with_cstr_and_length(grv_str_t* s, char* cstr, size_t len) {
+  size_t str_len = strlen(cstr);
+  assert(str_len >= len);
+
+  if (len <= GRV_STR_SSO_MAX_LENGTH) {
+    s->descriptor = len & GRV_STR_SSO_SIZE_MASK;
+    memcpy(s->sso, cstr, len);
+    s->sso[len] = '\0';
+  } else {
+    grv_str_impl_init_large_string(s, len);
+    s->end = len;
+    memcpy(s->buffer, cstr, len);
+    s->buffer[len] = 0x0;
   }
 }
 
 grv_str_t grv_str_new(char* cstr) {
   grv_str_t res;
   grv_str_init_with_cstr(&res, cstr);
+  return res;
+}
+
+grv_str_t grv_str_new_with_len(char* cstr, size_t len) {
+  grv_str_t res;
+  grv_str_init_with_cstr_and_length(&res, cstr, len);
   return res;
 }
 
@@ -163,12 +191,15 @@ grv_str_t grv_str_split_head_from_back(grv_str_t* s, char* delim) {
   }
 
   size_t pos = len - delim_len;
-  while (pos >= 0) {
-    if (memcmp(buffer + pos, delim, delim_len) == 0) {
-      res = grv_str_substr(s, 0, pos);
+  char* cmp_ptr = buffer + pos;
+
+  while (cmp_ptr >= buffer) {
+    if (memcmp(cmp_ptr, delim, delim_len) == 0) {
+      size_t cp_len = cmp_ptr - buffer;
+      res = grv_str_new_with_len(buffer, cp_len);
       break;
     }
-    pos--;
+    cmp_ptr--;
   }
 
   return res;
@@ -184,12 +215,16 @@ grv_str_t grv_str_split_tail_from_back(grv_str_t* s, char* delim) {
   }
 
   size_t pos = len - delim_len;
-  while (pos >= 0) {
-    if (memcmp(buffer + pos, delim, delim_len) == 0) {
-      res = grv_str_substr(s, pos + delim_len, len);
+  char* cmp_ptr = buffer + pos;
+  size_t res_len = 0;
+
+  while (cmp_ptr >= buffer) {
+    if (memcmp(cmp_ptr, delim, delim_len) == 0) {
+      res = grv_str_new_with_len(cmp_ptr + delim_len, res_len);
       break;
     }
-    pos--;
+    res_len++;
+    cmp_ptr--;
   }
 
   return res;
@@ -536,20 +571,26 @@ void grv_str_lstrip(grv_str_t* s) {
 void grv_str_rstrip(grv_str_t* s) {
   size_t end;
   size_t len = grv_str_len(s);
+  if (len == 0) return;
+
   char* buffer = grv_str_cstr(s);
-  for (end = len - 1; end >= 0; end--) {
-    char c = buffer[end];
+
+  end = len;
+
+  for (end = len; end > 0; end--) {
+    char c = buffer[end - 1];
     if (!(c == ' ' || c == '\n' || c == '\t')) break;
   }
   
-  if (end == len - 1) return;
+  if (end == len) return;
 
   if (grv_str_is_short(s)) {
-    s->sso[end + 1] = 0;
-    s->descriptor = (end + 1) & GRV_STR_SSO_SIZE_MASK;
+    s->sso[end] = 0;
+    s->descriptor = (end) & GRV_STR_SSO_SIZE_MASK;
   }
   else {
-    s->end = s->start + end + 1;
+    s->end = s->start + end;
+    s->buffer[s->end] = 0;
   }
 }
 

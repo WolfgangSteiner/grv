@@ -43,7 +43,8 @@ GRV_TEST_BEGIN(grv_alloc_realloc_free)
   for (size_t i = 0; i < alloc_size; ++i) {
     GRV_TEST_ASSERT_EQUAL_HEX(byte_ptr[i], 0xcd);
   }
-  free(ptr - sizeof(size_t));  
+  void* alloc_ptr = (u8*)ptr - sizeof(size_t);
+  free(alloc_ptr);
 GRV_TEST_END()
 
 int main(void) {

@@ -2,6 +2,7 @@
 #define GRV_MATH_H
 
 #include "grv_base.h"
+#include <math.h>
 
 #define PI_F32  3.141592653589793f
 #define TWO_PI_F32 (2.0f * PI_F32)

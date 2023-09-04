@@ -1,2 +1,0 @@
-o  mv basic math functions to common.h
-o  write unit tests for basic math functions

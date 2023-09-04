@@ -110,53 +110,71 @@ size_t grv_util_calc_alloc_size(size_t size) {
   #endif
   return result;
 }
+
+#ifdef GRV_DEBUG_MEMORY
+  static size_t grv_impl_get_alloc_size(void* ptr) {
+    size_t* alloc_ptr = ptr;
+    alloc_ptr--;
+    return *alloc_ptr;
+  }
+
+  static size_t* grv_impl_get_alloc_ptr(void* ptr) {
+    size_t* alloc_ptr = ptr;
+    alloc_ptr--;
+    return alloc_ptr;
+  }
+#endif
+
+
 void* grv_alloc(u64 size) {
   size_t alloc_size = grv_util_calc_alloc_size(size);
-  void* result = malloc(alloc_size);
+  size_t* alloc_ptr = malloc(alloc_size);
+  void* result = alloc_ptr;
   if (result == NULL) return result;
   #ifdef GRV_ZERO_MEMORY
-    memset(result, 0, alloc_size);
+    memset(alloc_ptr, 0, alloc_size);
   #elif defined(GRV_DEBUG_MEMORY)
-    memset(result, 0xef, alloc_size);
-    *(size_t*)result = alloc_size;
-    result += sizeof(void*);
+    memset(alloc_ptr, 0xef, alloc_size);
+    *alloc_ptr = alloc_size;
+    result = alloc_ptr + 1;
   #endif
   return result;
 }
+
 void* grv_realloc(void* ptr, u64 size) {
-  size_t alloc_size = grv_util_calc_alloc_size(size);
-  #ifdef GRV_DEBUG_MEMORY
-    ptr -= sizeof(void*);
-    size_t old_alloc_size = *((size_t*)ptr);
-    if (old_alloc_size > alloc_size) {
-      memset(ptr + alloc_size, 0xcd, old_alloc_size - alloc_size);
-    }
-  #endif
-  void* result = realloc(ptr, alloc_size);
-  if (result == NULL) return result;
-  #ifdef GRV_ZERO_MEMORY
-    memset(result, 0, alloc_size);
-  #elif defined(GRV_DEBUG_MEMORY)
-    if (old_alloc_size < alloc_size) {
-      memset(result + old_alloc_size, 0xef, alloc_size - old_alloc_size);
-    }
-    *(size_t*)result = alloc_size;
-    result += sizeof(void*);
-  #endif
-  return result;
+  assert(ptr != NULL);
+  assert(size != 0L);
+#ifdef GRV_DEBUG_MEMORY
+  // always realloc to a new pointer
+  void* new_ptr = grv_alloc(size);
+  if (new_ptr == NULL) return NULL;
+  size_t old_alloc_size = grv_impl_get_alloc_size(ptr);
+  size_t new_alloc_size = grv_impl_get_alloc_size(new_ptr);
+  size_t cpy_size = min_u64(old_alloc_size, new_alloc_size) - sizeof(size_t);
+  memcpy(new_ptr, ptr, cpy_size);
+  grv_free(ptr);
+  return new_ptr;
+#else
+  return realloc(ptr, size);
+#endif
 }
+
 void grv_free(void* ptr) {
+  assert(ptr != NULL);
   #ifdef GRV_DEBUG_MEMORY
-    size_t alloc_size = *((size_t*)ptr - 1);
-    memset(ptr - sizeof(size_t), 0xcd, alloc_size); 
-    ptr -= sizeof(size_t);
+    size_t alloc_size = grv_impl_get_alloc_size(ptr);
+    size_t* alloc_ptr = grv_impl_get_alloc_ptr(ptr);
+    memset(alloc_ptr, 0xcd, alloc_size); 
+    free(alloc_ptr);
+  #else
+    free(ptr); 
   #endif
-  free(ptr); 
 }
 
 void grv_free_prepare(void* ptr) {
   #ifdef GRV_DEBUG_MEMORY
-    size_t alloc_size = *((size_t*)ptr - 1);
-    memset(ptr - sizeof(size_t), 0xcd, alloc_size); 
+    size_t alloc_size = grv_impl_get_alloc_size(ptr);
+    size_t* alloc_ptr = grv_impl_get_alloc_ptr(ptr);
+    memset(alloc_ptr, 0xcd, alloc_size); 
   #endif
 }

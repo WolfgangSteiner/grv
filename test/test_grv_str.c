@@ -35,7 +35,7 @@ GRV_TEST_BEGIN(grv_str_cat)
   grv_str_t b = grv_str_new("World");
   grv_str_t r = grv_str_cat(&a, &b);
   GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&r), "HelloWorld");
-  GRV_TEST_ASSERT_EQUAL(grv_str_len(&r), (int)strlen(grv_str_cstr(&r)));
+  GRV_TEST_ASSERT_EQUAL(grv_str_len(&r), (size_t)strlen(grv_str_cstr(&r)));
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&r), true);
 
   grv_str_t longstr = grv_str_new(lorem); 
@@ -86,7 +86,7 @@ GRV_TEST_BEGIN(grv_str_append)
   grv_str_t s2 = grv_str_new("World");
   grv_str_append(&s1, &s2);
   GRV_TEST_ASSERT_EQUAL_STR(grv_str_cstr(&s1), "HelloWorld");
-  GRV_TEST_ASSERT_EQUAL(grv_str_len(&s1), (int)strlen(grv_str_cstr(&s1)));
+  GRV_TEST_ASSERT_EQUAL(grv_str_len(&s1), (size_t)strlen(grv_str_cstr(&s1)));
   GRV_TEST_ASSERT_EQUAL(grv_str_is_short(&s1), true);
 
   char* r2_cstr = malloc(4096);
@@ -302,6 +302,9 @@ GRV_TEST_BEGIN(grv_str_split_tail_from_back)
   t = grv_str_split_tail_from_back(&s, " / ");
   GRV_TEST_ASSERT_EQUAL(grv_str_len(&s), 85);
   GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&t), "-27.00 dB");
+
+  t = grv_str_split_tail_from_back(&s, "xyz");
+  GRV_TEST_ASSERT_EQUAL_STR(grv_str_copy_cstr(&t), "");
 GRV_TEST_END()  
 
 GRV_TEST_BEGIN(grv_str_prepend_cstr)

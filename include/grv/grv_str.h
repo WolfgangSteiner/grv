@@ -42,6 +42,10 @@ typedef struct {
 // create a new string object
 grv_str_t grv_str_new(char*);
 
+
+// create a new string given a char* and a length
+grv_str_t grv_str_new_with_len(char*, size_t len);
+
 // create a new string object that fits a string of at least the given length
 // parameters:
 //  length: the minimum capacity of the string
@@ -53,6 +57,11 @@ grv_str_t grv_str_copy(grv_str_t*);
 // initialize a string object with a c string
 // this will copy the c string into the string object
 void grv_str_init_with_cstr(grv_str_t*, char*);
+
+// initialize a string object with a c string and a given length
+// this will copy the c string into the string object
+void grv_str_init_with_cstr_and_length(grv_str_t*, char*, size_t len);
+
 
 // create a new string reference object given a c string, a start and end index
 grv_str_t grv_str_ref(char*, u64, u64);

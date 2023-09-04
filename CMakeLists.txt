@@ -1,8 +1,15 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(grv VERSION 0.1.0)
 include_directories(include)
-set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} -lm") 
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DGRV_DEBUG_MEMORY")
+
+if (MSVC)
+
+else()
+    set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} -lm") 
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -Werror -Wno-unused-function")   
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DGRV_DEBUG_MEMORY")
+endif()
+
 
 add_library(libgrv src/grv.c)
 

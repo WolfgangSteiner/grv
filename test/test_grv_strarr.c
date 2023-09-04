@@ -11,7 +11,9 @@ GRV_TEST_BEGIN(grv_strarr_join)
 GRV_TEST_END()
 
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
+  (void)argc;
+  (void)argv;
   GRV_TEST_INIT(grv_strarr);
   GRV_TEST_RUN(grv_strarr_join);
 }

@@ -11,6 +11,9 @@ s32 max_s32(s32 a, s32 b);
 u32 min_u32(u32 a, u32 b);
 u32 max_u32(u32 a, u32 b);
 
+u64 min_u64(u64 a, u64 b);
+u64 max_u64(u64 a, u64 b);
+
 size_t min_size_t(size_t, size_t);
 size_t max_size_t(size_t, size_t);
 
