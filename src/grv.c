@@ -5,3 +5,5 @@
 #include "grv_strarr.c"
 #include "grv_util.c"
 #include "grv_strmap.c"
+#include "vec2i.c"
+#include "vec2f.c"
