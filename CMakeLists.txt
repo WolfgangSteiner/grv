@@ -20,7 +20,7 @@ function(add_test test_name)
 endfunction()
 
 # execute all tests
-file(GLOB TEST_FILES "${CMAKE_SOURCE_DIR}/test/test_grv*.c")
+file(GLOB TEST_FILES "${CMAKE_SOURCE_DIR}/test/test_*.c")
 foreach(FILE_PATH ${TEST_FILES})
     get_filename_component(test_name ${FILE_PATH} NAME_WE)
     add_test(${test_name})
