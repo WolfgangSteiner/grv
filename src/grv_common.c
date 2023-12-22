@@ -3,20 +3,6 @@
 
 s32 round_f32(f32 a) { return (s32)roundf(a); }
 
-s32 min_s32(s32 a, s32 b) { return a < b ? a : b; }
-s32 max_s32(s32 a, s32 b) { return a > b ? a : b; }
-
-u32 min_u32(u32 a, u32 b) { return a < b ? a : b; }
-u32 max_u32(u32 a, u32 b) { return a > b ? a : b; }
-
-u64 min_u64(u64 a, u64 b) { return a < b ? a : b; }
-u64 max_u64(u64 a, u64 b) { return a > b ? a : b; }
-
-size_t min_size_t(size_t a, size_t b) { return a < b ? a : b; }
-size_t max_size_t(size_t a, size_t b) { return a > b ? a : b; }
-
-f32 min_f32(f32 a, f32 b) { return a < b ? a : b; }
-f32 max_f32(f32 a, f32 b) { return a > b ? a : b; }
 
 u32 dup_u8_u32(u8 a) {
     u32 res = (u32)a;
