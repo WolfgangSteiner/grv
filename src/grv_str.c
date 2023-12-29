@@ -1,686 +1,611 @@
-#include "grv/grv_base.h"
 #include "grv/grv_str.h"
+#include "grv/grv_base.h"
+#include "grv/grv_common.h"
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h> 
+#include <assert.h>
 
-// set the length value of the string
-static inline void grv_str_set_len_impl(grv_str_t* s, size_t len) {
-  if (grv_str_is_short(s)) {
-    s->descriptor = len & GRV_STR_SSO_SIZE_MASK;
-  } else {
-    s->end = s->start + len;
-  }
+#define GRV_STR_MIN_CAPACITY_16
+#define GRV_STR_ALLOC_GRANULARITY 16
+
+typedef struct {
+    char* data;
+    grv_str_size_t capacity;
+} str_cstr_buffer_t;
+
+static grv_str_size_t _grv_str_capacity_for_size(grv_str_size_t size) {
+    if (size % GRV_STR_ALLOC_GRANULARITY == 0) return size;
+    return (size / GRV_STR_ALLOC_GRANULARITY + 1) * GRV_STR_ALLOC_GRANULARITY;
 }
 
-static inline u64 grv_str_compute_capacity(u64 length) {
-    size_t c = length + 1;
-    size_t s = GRV_STR_ALLOC_GRANULARITY;
-    return (c + (s - 1)) / s * s;
+static str_cstr_buffer_t str_cstr_buffer = { .data=0, .capacity=0 };
+
+char* _get_cstr_buffer(grv_str_size_t capacity) {
+    capacity = max_s64(capacity, 1024);
+    if (str_cstr_buffer.data == 0) {
+        str_cstr_buffer.capacity = capacity;
+        str_cstr_buffer.data = malloc(str_cstr_buffer.capacity);
+    } 
+    return str_cstr_buffer.data;
 }
 
-static inline void grv_str_impl_init_large_string(grv_str_t* s, size_t len) {
-  u64 capacity = grv_str_compute_capacity(len);
-  s->capacity = capacity << 8;
-  s->descriptor = GRV_STR_FLAG_IS_LARGE_STRING;
-  s->start = 0;
-  s->end = 0;
-  s->buffer = malloc(capacity);
-  s->buffer[0] = 0x0;
+grv_str_t grv_str_ref(char* cstr) {
+    return (grv_str_t){ 
+        .data=cstr,
+        .size=strlen(cstr),
+        .is_valid=true,
+        .owns_data=false}; 
 }
 
-void grv_str_init_with_cstr(grv_str_t* s, char* cstr) {
-  size_t len = strlen(cstr);
-  if (len <= GRV_STR_SSO_MAX_LENGTH) {
-    s->descriptor = len & GRV_STR_SSO_SIZE_MASK;
-    grv_strcpy(s->sso, GRV_STR_SSO_CAPACITY, cstr);
-  } else {
-    grv_str_impl_init_large_string(s, len);
-    memcpy(s->buffer, cstr, len);
-    s->end = len;
-    s->buffer[len] = 0x0;
-  }
+grv_str_t grv_str_copy(grv_str_t str) {
+    grv_str_t r = {
+        .data=malloc(str.size),
+        .size=str.size,
+        .is_valid=str.is_valid,
+        .owns_data=true};
+    memcpy(r.data, str.data, str.size);
+    return r;
 }
 
-void grv_str_init_with_cstr_and_length(grv_str_t* s, char* cstr, size_t len) {
-  size_t str_len = strlen(cstr);
-  assert(str_len >= len);
-
-  if (len <= GRV_STR_SSO_MAX_LENGTH) {
-    s->descriptor = len & GRV_STR_SSO_SIZE_MASK;
-    memcpy(s->sso, cstr, len);
-    s->sso[len] = '\0';
-  } else {
-    grv_str_impl_init_large_string(s, len);
-    s->end = len;
-    memcpy(s->buffer, cstr, len);
-    s->buffer[len] = 0x0;
-  }
+grv_str_t grv_str_repeat_char(char c, grv_str_size_t count) {
+    grv_str_t r = {
+        .data=malloc(count),
+        .size=count,
+        .is_valid=true,
+        .owns_data=true};
+    memset(r.data, c, count);
+    return r;
 }
+
+char* grv_str_cstr(grv_str_t str) {
+    if (str_cstr_buffer.data == 0) {
+        str_cstr_buffer.capacity = 1024;
+        str_cstr_buffer.data = calloc(str_cstr_buffer.capacity, 1);
+    } 
+    
+    if (str_cstr_buffer.capacity < str.size + 1) {
+        while (str_cstr_buffer.capacity < str.size + 1) str_cstr_buffer.capacity *= 2;
+        str_cstr_buffer.data = realloc(str_cstr_buffer.data, str_cstr_buffer.capacity);
+    }
+
+    memcpy(str_cstr_buffer.data, str.data, str.size);
+    str_cstr_buffer.data[str.size] = '\0';
+    return str_cstr_buffer.data;
+}
+
+char* grv_str_copy_to_cstr(grv_str_t str) {
+    char* cstr = malloc(str.size + 1);
+    memcpy(cstr, str.data, str.size);
+    cstr[str.size] = '\0';
+    return cstr;
+}   
+
+grv_str_t str_substr(grv_str_t str, grv_str_size_t start, grv_str_size_t length) {
+    grv_str_size_t size = length > 0 ? length : str.size - start + length + 1;
+    return (grv_str_t){ 
+        .data=str.data + start,
+        .size=size,
+        .is_valid=str.is_valid,
+        .owns_data=false};
+}
+
+grv_str_t grv_str_lstrip(grv_str_t str) {
+    grv_str_t res = str;
+    res.owns_data = false;
+    while (res.size && grv_is_white_space(res.data[0])) {
+        res.data++;
+        res.size--;
+    }
+    return res;
+}
+
+grv_str_t grv_str_lstrip_char(grv_str_t str, char c) {
+    grv_str_t res = str;
+    res.owns_data = false;
+    while (res.size && *res.data == c) {
+        res.data++;
+        res.size--;
+    }
+    return res;
+}
+
+grv_str_t grv_str_rstrip_char(grv_str_t str, char c) {
+    grv_str_t res = str;
+    res.owns_data = false;
+    while (res.size && res.data[res.size-1] == c) res.size--;
+    return res;
+}
+
+grv_str_t grv_str_strip_char(grv_str_t str, char c) {
+    grv_str_t res = grv_str_lstrip_char(str, c);
+    return grv_str_rstrip_char(res, c);
+}
+
+bool grv_str_iter_is_end(grv_str_iter_t* iter) {
+    return iter->pos >= iter->str->size;
+}
+
+bool grv_str_iter_is_rend(grv_str_iter_t* iter) {
+    return iter->pos < 0;
+}
+
+grv_str_iter_t grv_str_iter_begin(grv_str_t* str) {
+    return (grv_str_iter_t){ str, 0 };
+}
+
+grv_str_iter_t grv_str_iter_rbegin(grv_str_t* str) {
+    return (grv_str_iter_t){ str, str->size - 1};
+}
+
+void grv_str_print(grv_str_t str) {
+    for (grv_str_size_t i = 0; i < str.size; ++i) {
+        putchar(str.data[i]);
+    }
+    putchar('\n');
+}
+
+grv_str_t grv_get_line(grv_str_iter_t* iter) {
+    grv_str_t result = {0};
+    if (grv_str_iter_is_end(iter)) {
+        result.is_valid = false;
+        return result;
+    }
+    result.data = iter->str->data + iter->pos;
+    result.owns_data = false;
+    grv_str_size_t pos = iter->pos;
+    while (pos < iter->str->size) {
+        if (iter->str->data[pos] == '\n') {
+            result.size = pos - iter->pos;
+            iter->pos = pos + 1;
+            return result; 
+        }
+        pos++;
+    }
+    result.size = pos - iter->pos;
+    iter->pos = pos;
+    return result;
+}
+
+grv_str_t grv_read_file(grv_str_t file_name) {
+    grv_str_t result = {0};
+    FILE* fp = fopen(grv_str_cstr(file_name), "rb");
+    if (fp == 0) return result;
+    int fseek_result = fseek(fp, 0L, SEEK_END);
+    if (fseek_result) return result;
+    result.size = ftell(fp);
+    rewind(fp);
+    result.data = malloc(result.size);
+    fread(result.data, result.size, sizeof(char), fp);
+    fclose(fp);
+    result.is_valid = true;
+    result.owns_data = true;
+    return result;
+}
+
+bool grv_file_exists(grv_str_t file_name) {
+    FILE* file = fopen(grv_str_cstr(file_name), "rb");
+    if (file != NULL) {
+        fclose(file);
+        return true;
+    }
+    return false;
+}
+
+bool grv_str_contains(grv_str_t str, grv_str_t search_str) {
+    if (str.size < search_str.size) return false;
+    char* cptr = str.data;
+    for (grv_str_size_t i = 0; i <= str.size - search_str.size; ++i) {
+        if (0 == memcmp(cptr++, search_str.data, search_str.size)) return true;
+    }
+    return false;
+}
+
+bool grv_str_contains_char(grv_str_t str, char c) {
+    for (grv_str_size_t i = 0; i < str.size; ++i) {
+        if (str.data[i] == c) return true;
+    }
+    return false;
+}
+
+grv_str_t grv_str_reduce_char_spans(grv_str_t str, char c) {
+    grv_str_t res = grv_str_copy(str);
+    char* r = str.data;
+    char* w = res.data;
+    res.size = 0;
+    bool is_in_span = false;
+    for (grv_str_size_t i = 0; i < str.size; ++i) {
+        char ic = *r++;
+        if (ic == c) {
+            if (!is_in_span) {
+                is_in_span = true;
+                *w++ = ic;
+                res.size++;
+            }
+        } else {
+            is_in_span = false;
+            *w++ = ic;
+            res.size++;
+        }
+    }
+    return res;
+}
+
+bool grv_str_eq(grv_str_t a, grv_str_t b) {
+    if (a.size != b.size) return false;
+    return memcmp(a.data, b.data, a.size) == 0;
+}
+
+int grv_char_to_int(char c) {
+    return (int)(c - '0');
+}
+
+bool grv_is_digit(char c) {
+    return c >= '0' && c <= '9';
+}
+
+bool grv_is_white_space(char c) {
+    return c == ' ' || c == '\t';
+}
+
+bool grv_is_word_separator(char c) {
+    static grv_str_t separators = {.data=" \t,;.:\"'(){}*+~=#|            ", .size=32};
+    return grv_str_contains_char(separators, c);
+}
+
+bool grv_is_newline(char c) {
+    return c == '\n';
+}
+
+char grv_str_at(grv_str_t str, int idx) {
+    assert(idx < str.size);
+    return str.data[idx];
+}
+
+int grv_str_to_int(grv_str_t str) {
+    int res = 0;
+    for (grv_str_size_t i = 0; i < str.size; ++i) {
+        char c = grv_str_at(str, i);        
+        assert(grv_is_digit(c));
+        res = 10 * res + grv_char_to_int(c);
+    }   
+    return res;
+}
+
+s64 grv_str_to_s64(grv_str_t str)
+{
+    int res = 0;
+    for (grv_str_size_t i = 0; i < str.size; ++i) {
+        char c = grv_str_at(str, i);        
+        assert(grv_is_digit(c));
+        res = 10 * res + grv_char_to_int(c);
+    }   
+    return res;
+}
+
+char grv_str_get_char(grv_str_t str, grv_str_size_t pos) { return str.data[pos]; }
+char grv_str_iter_get_char(grv_str_iter_t* iter) { return iter->str->data[iter->pos]; }
+void grv_str_iter_set_char(grv_str_iter_t* iter, char c) {
+    assert(!grv_str_iter_is_end(iter));
+    iter->str->data[iter->pos] = c;
+}
+
+void grv_str_iter_inc(grv_str_iter_t* iter) { iter->pos++; }
+void grv_str_iter_dec(grv_str_iter_t* iter) { iter->pos--; }
+
+grv_str_iter_t grv_str_find_char(grv_str_t* str, char c) {
+    grv_str_iter_t iter = grv_str_iter_begin(str);
+    while (!grv_str_iter_is_end(&iter)) {
+        if (grv_str_iter_get_char(&iter) == c) return iter;
+        grv_str_iter_inc(&iter);
+    }
+    return iter;
+}
+
+grv_str_iter_t grv_str_find_char_from_back(grv_str_t* str, char c) {
+    grv_str_iter_t iter = grv_str_iter_rbegin(str);
+    while (!grv_str_iter_is_rend(&iter)) {
+        if (grv_str_iter_get_char(&iter) == c) return iter;
+        grv_str_iter_dec(&iter);
+    }
+    return iter;
+}
+
+grv_str_iter_t grv_str_find_any_char(grv_str_t str, grv_str_t chars) {
+    grv_str_iter_t iter = grv_str_iter_begin(&str);
+    while (!grv_str_iter_is_end(&iter)) {
+        char c = grv_str_iter_get_char(&iter);
+        if (grv_str_contains_char(chars, c)) return iter;
+        grv_str_iter_inc(&iter);
+    }
+    return iter;
+}
+
+grv_str_t grv_str_split_tail_at_char(grv_str_t str, char c) {
+    grv_str_iter_t iter = grv_str_find_char(&str, c);
+    // the char is not in the string
+    if (grv_str_iter_is_end(&iter)) return grv_str_ref("");
+    grv_str_iter_inc(&iter);
+    // the char is the last char in the string
+    if (grv_str_iter_is_end(&iter)) return grv_str_ref("");
+    grv_str_t result = {
+        .data=str.data + iter.pos,
+        .size=str.size - iter.pos,
+        .is_valid=true,
+        .owns_data=false
+    };
+    return result;
+}
+
+bool grv_str_iter_match(grv_str_iter_t* iter, grv_str_t match_str) {
+    if (iter->pos + match_str.size > iter->str->size) return false;
+    bool match = (memcmp(iter->str->data + iter->pos, match_str.data, match_str.size) == 0);
+    if (match) {
+        iter->pos += match_str.size;
+        return true;
+    } else {
+        return false;
+    } 
+}
+
+bool grv_str_iter_rmatch(grv_str_iter_t* iter, grv_str_t match_str) {
+    if (iter->pos < match_str.size) return false;
+    bool match = (memcmp(iter->str->data + iter->pos - match_str.size + 1, match_str.data, match_str.size) == 0);
+    if (match) {
+        iter->pos -= match_str.size;
+        return true;
+    } else {
+        return false;
+    } 
+}
+
+int grv_str_iter_match_int(grv_str_iter_t* iter) {
+    int res = 0;
+    if (grv_str_iter_is_white_space(iter)) {
+        grv_str_iter_match_white_space(iter);
+    }
+    while (!grv_str_iter_is_end(iter)) {
+        char c = grv_str_iter_get_char(iter);
+        if (grv_is_digit(c)) {
+            res = 10 * res + grv_char_to_int(c);
+            grv_str_iter_inc(iter);
+        } else {
+          break;
+        }
+    }    
+    return res;
+}
+
+s64 grv_str_iter_match_s64(grv_str_iter_t* iter) {
+    s64 res = 0;
+    s64 sign = 1;
+    if (grv_str_iter_is_white_space(iter)) {
+        grv_str_iter_match_white_space(iter);
+    }
+    char c = grv_str_iter_get_char(iter);
+    if (c == '-') {
+        sign = -1;
+        grv_str_iter_inc(iter);
+    } else if (c == '+') {
+        grv_str_iter_inc(iter);
+    }
+    while (!grv_str_iter_is_end(iter)) {
+        char c = grv_str_iter_get_char(iter);
+        if (grv_is_digit(c)) {
+            res = 10 * res + grv_char_to_int(c);
+            grv_str_iter_inc(iter);
+        } else {
+          break;
+        }
+    }    
+    return sign * res;
+}
+
+bool grv_str_iter_match_white_space(grv_str_iter_t* iter) {
+    bool matched = false;
+    while (!grv_str_iter_is_end(iter)) {
+        char c = grv_str_iter_get_char(iter);
+        if (grv_is_white_space(c)) {
+            grv_str_iter_inc(iter);
+            matched = true;
+        } else {
+            break;
+        }
+    }
+    return matched;
+}
+
+bool grv_str_iter_match_char(grv_str_iter_t* iter, char match) {
+    if (grv_str_iter_is_end(iter)) return false;
+    if (grv_str_iter_get_char(iter) == match) {
+        grv_str_iter_inc(iter);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool grv_str_iter_match_any_char(grv_str_iter_t* iter, grv_str_t chars) {
+    if (grv_str_iter_is_end(iter)) return false;
+    if (grv_str_contains_char(chars, grv_str_iter_get_char(iter))) {
+        grv_str_iter_inc(iter);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool grv_str_iter_match_newline(grv_str_iter_t* iter) {
+    return grv_str_iter_match_char(iter, '\n');
+}
+
+bool grv_str_iter_is_digit(grv_str_iter_t* iter) {
+    if (grv_str_iter_is_end(iter)) return false;
+    return grv_is_digit(grv_str_iter_get_char(iter));
+}
+
+bool grv_str_iter_is_white_space(grv_str_iter_t* iter) {
+    if (grv_str_iter_is_end(iter)) return false;
+    return grv_is_white_space(grv_str_iter_get_char(iter));
+}
+
+grv_str_t grv_str_iter_match_up_to_char(grv_str_iter_t* iter, char match) {
+    grv_str_t r = {
+        .data=iter->str->data + iter->pos,
+        .size=0,
+        .is_valid=true,
+        .owns_data=false
+    };
+
+    while (!grv_str_iter_is_end(iter)) {
+        char c = grv_str_iter_get_char(iter);
+        grv_str_iter_inc(iter);
+
+        if (c == match) {
+            return r;
+        } else {
+            r.size++;
+        }
+    }
+    return r;
+}
+
+grv_str_t grv_str_iter_match_word(grv_str_iter_t* iter) {
+    grv_str_t r = {
+        .data=iter->str->data + iter->pos,
+        .size=0,
+        .is_valid=true,
+        .owns_data=false
+    };
+
+    while (!grv_str_iter_is_end(iter)) {
+        char c = grv_str_iter_get_char(iter);
+        if (grv_is_word_separator(c)) {
+            return r;
+        } 
+        grv_str_iter_inc(iter);
+        r.size++;
+    }
+    return r;
+}
+
+#if 0
+int_arr_t str_iter_match_int_list(grv_str_iter_t* iter) {
+    int_arr_t r = int_arr_create();
+
+    while (!grv_str_iter_is_end(iter)) {
+        grv_str_iter_match_white_space(iter);
+        grv_str_iter_match_any_char(iter, grv_str_ref(","));
+        grv_str_iter_match_white_space(iter);
+        char c = grv_str_iter_get_char(iter);
+        if (!grv_is_digit(c) && c!='-' && c!='+') break; 
+        s64 v = grv_str_iter_match_s64(iter);
+        int_arr_push(&r, v);
+    }
+    return r;
+}
+
+#endif
 
 grv_str_t grv_str_new(char* cstr) {
-  grv_str_t res;
-  grv_str_init_with_cstr(&res, cstr);
-  return res;
-}
-
-grv_str_t grv_str_new_with_len(char* cstr, size_t len) {
-  grv_str_t res;
-  grv_str_init_with_cstr_and_length(&res, cstr, len);
-  return res;
-}
-
-grv_str_t grv_str_new_with_capacity(size_t length) {
-  grv_str_t res;
-  grv_str_init_with_capacity(&res, length);
-  return res;
-}
-
-void grv_str_add_null_terminator(grv_str_t* s) {
-  if (grv_str_is_short(s)) {
-    size_t len = grv_str_len(s);
-    s->sso[len] = 0x0;
-  } else {
-    s->buffer[s->end] = 0x0;
-  }
-}
-
-void grv_str_append(grv_str_t* s, grv_str_t* t) {
-  size_t len = grv_str_len(s);
-  size_t tlen = grv_str_len(t);
-  grv_str_resize(s, len + tlen);
-  char* dst = grv_str_cstr(s) + len;
-  char* src = grv_str_cstr(t);
-  memcpy(dst, src, tlen);
-  grv_str_cstr(s)[len + tlen] = 0x0;
-  grv_str_set_size(s, len + tlen);
-}
-
-void grv_str_prepend_cstr(grv_str_t* s, char* cstr) {
-  size_t len = grv_str_len(s);
-  size_t clen = strlen(cstr);
-  grv_str_resize(s, len + clen);
-  char* dst = grv_str_cstr(s) + clen;
-  char* src = grv_str_cstr(s);
-  memcpy(dst, src, len);
-  memcpy(grv_str_cstr(s), cstr, clen);
-  grv_str_cstr(s)[len + clen] = 0x0;
-  grv_str_set_size(s, len + clen);
-}
-
-
-void grv_str_remove_trailing_newline(grv_str_t* s) {
-  if (grv_str_is_short(s)) {
-    size_t len = grv_str_len(s);
-    if (s->sso[len - 1] == '\n') {
-      s->sso[len - 1] = 0x0;
-      grv_str_set_size(s, len - 1);
-    } 
-  } else {
-    size_t len = grv_str_len(s);
-    if (s->buffer[len - 1] == '\n') {
-      grv_str_set_size(s, len - 1);
-    }
-  }
-}
-
-grv_str_t grv_str_ref(char* cstr, u64 start, u64 end) {
-  grv_str_t res;
-  res.descriptor = GRV_STR_FLAG_IS_REFERENCE;
-  res.start = start;
-  res.end = end;
-  res.buffer = cstr;
-  return res;
-}
-
-grv_str_t grv_str_substr(grv_str_t* s, u64 start, u64 end) {
-  grv_str_t res = {0};
-  size_t len = end - start;
-  if (len < GRV_STR_SSO_MAX_LENGTH) {
-    res.descriptor = len & GRV_STR_SSO_SIZE_MASK;
-    memcpy(res.sso, grv_str_cstr(s) + start, len);
-    res.sso[len] = 0x0;
-  } else {
-    res.descriptor = GRV_STR_FLAG_IS_REFERENCE;
-    res.start = start;
-    res.end = end;
-    res.buffer = s->buffer;
-  }
-  return res;
-}
-
-grv_str_t grv_str_copy_substr(grv_str_t* s, u64 start, u64 end) {
-  grv_str_t res = {0};
-  size_t len = end - start;
-  grv_str_init_with_capacity(&res, len + 1);
-  memcpy(grv_str_cstr(&res), grv_str_cstr(s) + start, len);
-  grv_str_set_len_impl(&res, len);
-  grv_str_add_null_terminator(&res);
-  return res;
-}
-
-grv_str_t grv_str_split_head_from_front(grv_str_t* s, char* delim) {
-  grv_str_t res = {0};
-  char* buffer = grv_str_cstr(s);
-  size_t len = grv_str_len(s);
-  size_t delim_len = strlen(delim);
-  if (len <= delim_len) {
+    grv_str_t res = {0};
+    grv_str_size_t len = strlen(cstr);
+    grv_str_size_t capacity = _grv_str_capacity_for_size(len);
+    res.data = malloc(capacity);
+    assert(res.data);
+    res.size = len;
+    res.is_valid = true;
+    res.owns_data = true;
+    memcpy(res.data, cstr, len);
     return res;
-  }
-
-  size_t pos = 0;
-  while (pos < len - delim_len) {
-    if (memcmp(buffer + pos, delim, delim_len) == 0) {
-      res = grv_str_copy_substr(s, 0, pos);    
-      grv_str_lchop(s, pos + delim_len); 
-      break;
-    }
-    pos++;
-  }
-
-  return res;
 }
 
-grv_str_t grv_str_split_head_from_back(grv_str_t* s, char* delim) {
-  grv_str_t res = {0};
-  char* buffer = grv_str_cstr(s);
-  size_t len = grv_str_len(s);
-  size_t delim_len = strlen(delim);
-  if (len <= delim_len) {
-    return res;
-  }
-
-  size_t pos = len - delim_len;
-  char* cmp_ptr = buffer + pos;
-
-  while (cmp_ptr >= buffer) {
-    if (memcmp(cmp_ptr, delim, delim_len) == 0) {
-      size_t cp_len = cmp_ptr - buffer;
-      res = grv_str_new_with_len(buffer, cp_len);
-      break;
-    }
-    cmp_ptr--;
-  }
-
-  return res;
+grv_str_t grv_str_new_with_capacity(grv_str_size_t capacity) {
+    grv_str_t str = {0};
+    capacity = _grv_str_capacity_for_size(capacity);
+    str.data = calloc(capacity, 1);
+    str.is_valid = true; 
+    str.owns_data = true;
+    return str;
 }
 
-grv_str_t grv_str_split_tail_from_back(grv_str_t* s, char* delim) {
-  grv_str_t res = {0};
-  char* buffer = grv_str_cstr(s);
-  size_t len = grv_str_len(s);
-  size_t delim_len = strlen(delim);
-  if (len <= delim_len) {
-    return res;
-  }
-
-  size_t pos = len - delim_len;
-  char* cmp_ptr = buffer + pos;
-  size_t res_len = 0;
-
-  while (cmp_ptr >= buffer) {
-    if (memcmp(cmp_ptr, delim, delim_len) == 0) {
-      res = grv_str_new_with_len(cmp_ptr + delim_len, res_len);
-      break;
-    }
-    res_len++;
-    cmp_ptr--;
-  }
-
-  return res;
+void grv_str_free(grv_str_t* str) {
+    if (str->owns_data) free(str->data);
+    *str = (grv_str_t){0};
 }
 
-grv_str_t grv_str_copy(grv_str_t* s) {
-  grv_str_t res = {0};
-  size_t len = grv_str_len(s);
-  if (grv_str_is_short(s)) {
-    res.descriptor = s->descriptor;
-    memcpy(res.sso, s->sso, GRV_STR_SSO_CAPACITY);
-  } else {
-    grv_str_init_with_capacity(&res, len + 1);
-    char* dst = grv_str_cstr(&res);
-    memcpy(dst, grv_str_cstr(s), len);
-    dst[len] = 0x0;
-    if (grv_str_is_short(&res)) {
-      res.descriptor = len & GRV_STR_SSO_SIZE_MASK;
+grv_str_t grv_str_cat(grv_str_t a, grv_str_t b) {
+    grv_str_t str = grv_str_new_with_capacity(a.size + b.size);
+    str.size = a.size + b.size;
+    memcpy(str.data, a.data, a.size);
+    memcpy(str.data + a.size, b.data, b.size);
+    return str;
+}
+
+void str_grow(grv_str_t* str, grv_str_size_t new_size) {
+    if (str->owns_data) { 
+        assert(new_size > str->size);
+        grv_str_size_t old_capacity = _grv_str_capacity_for_size(str->size);
+        grv_str_size_t new_capacity = _grv_str_capacity_for_size(new_size);
+        if (new_capacity > old_capacity) str->data = realloc(str->data, new_capacity);
     } else {
-      res.end = len;
-    }
-  }
-  return res;
+        grv_str_size_t new_capacity = _grv_str_capacity_for_size(new_size);
+        char* new_data = calloc(new_capacity, 1);
+        memcpy(new_data, str->data, str->size);
+        str->data = new_data;
+        str->owns_data = true;
+    }   
 }
 
-void grv_str_slice(grv_str_t* s, u64 start, u64 end) {
-  size_t new_len = end - start;
-  if (grv_str_is_short(s)) {
-    s->descriptor = new_len & GRV_STR_SSO_SIZE_MASK;
-    if (start > 0) {
-      memcpy(s->sso, s->sso + start, new_len);
-    }
-  } else if (new_len < GRV_STR_SSO_MAX_LENGTH && ! grv_str_is_ref(s)) {
-    char* buffer = s->buffer;
-    s->descriptor = new_len & GRV_STR_SSO_SIZE_MASK;
-    memcpy(s->sso, buffer + start, new_len);
-    free(buffer);
-  } else {
-    s->start = start;
-    s->end = end;
-  }
-  grv_str_add_null_terminator(s);
+void grv_str_append(grv_str_t* str, grv_str_t append_str) {
+    grv_str_size_t new_size = str->size + append_str.size;
+    str_grow(str, new_size);
+    memcpy(str->data + str->size, append_str.data, append_str.size);
+    str->size = new_size;
 }
 
-void grv_str_rchop(grv_str_t* s, size_t n) {
-  n = min_size_t(n, grv_str_len(s));
-  if (grv_str_is_short(s)) {
-    s->descriptor -= (u8)n;
-    s->sso[s->descriptor & GRV_STR_SSO_SIZE_MASK] = 0x0;
-  } else {
-    s->end -= n;
-    s->buffer[s->end] = 0x0;
-  }
+void grv_str_append_space(grv_str_t* str) {
+    grv_str_append_char(str, ' ');
 }
 
-void grv_str_lchop(grv_str_t* s, size_t n) {
-  if (grv_str_is_short(s)) {
-    size_t new_len = grv_str_len(s) - n;
-    s->descriptor -= n;
-    memmove(s->sso, s->sso + n, new_len);
-    s->sso[new_len] = 0x0;
-  } else {
-    s->start += n;
-  }
+void grv_str_append_char(grv_str_t* str, char c) {
+    grv_str_size_t new_size = str->size + 1;
+    str_grow(str, new_size);
+    str->data[str->size] = c;
+    str->size = new_size;
 }
 
-grv_str_t grv_str_empty() {
-  grv_str_t res = {0};
-  return res;
+void grv_str_prepend(grv_str_t* str, grv_str_t prepend_str) {
+    grv_str_size_t new_size = str->size + prepend_str.size;
+    str_grow(str, new_size);
+    memmove(str->data + prepend_str.size, str->data, str->size);
+    memcpy(str->data, prepend_str.data, prepend_str.size);
+    str->size = new_size;
 }
 
-bool grv_str_eq_cstr(grv_str_t* s, char* cstr) {
-  size_t len = grv_str_len(s);
-  size_t cstr_len = strlen(cstr);
-  if (len != cstr_len) {
-    return false;
-  }
-  char* buffer = grv_str_cstr(s);
-  return memcmp(buffer, cstr, len) == 0;
-}
-
-bool grv_str_eq(grv_str_t* s1, grv_str_t* s2) {
-  size_t len1 = grv_str_len(s1);
-  size_t len2 = grv_str_len(s2);
-  if (len1 != len2) {
-    return false;
-  }
-  char* buffer1 = grv_str_cstr(s1);
-  char* buffer2 = grv_str_cstr(s2);
-  return memcmp(buffer1, buffer2, len1) == 0;
-}
-
-void grv_str_init_with_capacity(grv_str_t* s, u64 capacity) {  
-  if (capacity <= GRV_STR_SSO_CAPACITY) {
-    memset(s, 0, sizeof(grv_str_t));
-  } else {
-    capacity = grv_str_compute_capacity(capacity);
-    s->capacity = capacity << 8;
-    s->descriptor = GRV_STR_FLAG_IS_LARGE_STRING;
-    s->buffer = malloc(capacity);
-    s->start = 0;
-    s->end = 0;
-  }
-}
-
-void grv_str_free(grv_str_t* s) {
-  if (s->descriptor & GRV_STR_FLAG_IS_LARGE_STRING
-      && (~s->descriptor) & GRV_STR_FLAG_IS_REFERENCE
-      && s->buffer) {
-    free(s->buffer);
-    s->buffer=NULL;
-  }
-}
-
-void gvr_str_destroy(grv_str_t* s) {
-  grv_str_free(s);
-  free(s);
-}
-
-void grv_str_resize(grv_str_t* s, size_t size) {
-  size_t new_capacity = grv_str_compute_capacity(size);
-  if (grv_str_capacity(s) >= size + 1) {
-    return;  
-  } else if (grv_str_is_short(s)) {
-    char* new_buffer = malloc(new_capacity);
-    memcpy(new_buffer, s->sso, GRV_STR_SSO_CAPACITY);
-    size_t length = grv_str_len(s);
-    s->capacity = new_capacity << 8;
-    s->descriptor = GRV_STR_FLAG_IS_LARGE_STRING;
-    s->start = 0;
-    s->end = length;
-    s->buffer = new_buffer;
-  } else {
-    s->buffer = realloc(s->buffer, new_capacity);
-    u8 desc = s->descriptor;
-    s->capacity = new_capacity << 8;
-    s->descriptor = desc;
-  }
-}
-
-char* grv_str_cstr(grv_str_t* s) {
-  if (grv_str_is_short(s)) {
-    return s->sso;
-  } else {
-    return s->buffer + s->start;
-  }
-}
-
-char* grv_str_copy_cstr(grv_str_t* s) {
-  char* buffer = calloc(grv_str_len(s) + 1, 1);
-  memcpy(buffer, grv_str_cstr(s), grv_str_len(s));
-  return buffer;
-}
-
-void grv_str_copy_to_buffer(char* dst, grv_str_t* s) {
-  if (grv_str_is_short(s)) {
-    memcpy(dst, s->sso, grv_str_len(s));
-  } else {
-    memcpy(dst, s->buffer + s->start, grv_str_len(s));
-  }
-}
-
-grv_str_t grv_str_cat(grv_str_t* a, grv_str_t* b) {
-  u64 len = grv_str_len(a) + grv_str_len(b); 
-  grv_str_t r;
-  grv_str_init_with_capacity(&r, len + 1);
-  char* dst = grv_str_cstr(&r);
-  grv_str_copy_to_buffer(dst, a);
-  grv_str_copy_to_buffer(dst + grv_str_len(a), b);
-  dst[len] = '\0';
-  if (grv_str_is_short(&r)) {
-    r.descriptor = len;
-  } else {
-    r.start = 0;
-    r.end = len;
-  }
-  return r;
-}
-  
-grv_str_t grv_str_cat_cstr_cstr(char* a, char* b) {
-  u64 len = strlen(a) + strlen(b); 
-  grv_str_t r;
-  grv_str_init_with_capacity(&r, len + 1);
-  char* dst = grv_str_cstr(&r);
-  memcpy(dst, a, strlen(a));
-  memcpy(dst + strlen(a), b, strlen(b));
-  grv_str_set_len_impl(&r, len);
-  grv_str_add_null_terminator(&r);
-  return r;
-}
-
-  
-void grv_str_append_char(grv_str_t* s, char c) {
-  grv_str_resize(s, grv_str_len(s) + 1);
-  char* buffer = grv_str_cstr(s);
-  buffer[grv_str_len(s)] = c;
-  buffer[grv_str_len(s) + 1] = '\0';
-  grv_str_set_size(s, grv_str_len(s) + 1);
-}
-
-void grv_str_append_char_n(grv_str_t* s, char c, u64 n) {
-  grv_str_resize(s, grv_str_len(s) + n);
-  char* buffer = grv_str_cstr(s);
-  memset(buffer + grv_str_len(s), c, n);
-  buffer[grv_str_len(s)] = '\0';
-  grv_str_set_size(s, grv_str_len(s) + n);
-}
-
-void grv_str_rpad(grv_str_t* s, u64 width, char pad_char) {
-  if (grv_str_len(s) < width) {
-    grv_str_append_char_n(s, pad_char, width - grv_str_len(s));
-  }
-}
-
-void grv_str_lpad(grv_str_t* s, u64 width, char pad_char) {
-  if (grv_str_len(s) < width) {
-    grv_str_resize(s, width);
-    char* buffer = grv_str_cstr(s);
-    memmove(buffer + width - grv_str_len(s), buffer, grv_str_len(s));
-    memset(buffer, pad_char, width - grv_str_len(s));
-    buffer[width] = '\0';
-    grv_str_set_size(s, width);
-  }
-}
-
-void grv_str_center(grv_str_t* s, u64 width, char pad_char) {
-  if (grv_str_len(s) < width) {
-    grv_str_resize(s, width);
-    char* buffer = grv_str_cstr(s);
-    u64 left_pad = (width - grv_str_len(s)) / 2;
-    u64 right_pad = width - grv_str_len(s) - left_pad;
-    memmove(buffer + left_pad, buffer, grv_str_len(s));
-    memset(buffer, pad_char, left_pad);
-    memset(buffer + left_pad + grv_str_len(s), pad_char, right_pad);
-    buffer[width] = '\0';
-    grv_str_set_size(s, width);
-  }
-}
-
-// consruct a grv_str_t by giving a char and a number of times to repeat it
-grv_str_t grv_str_repeat_char(char c, s32 n) {
-  grv_str_t res = {0};
-  if (n <= 0) return res;
-  grv_str_init_with_capacity(&res, n + 1);
-  char* buffer = grv_str_cstr(&res);
-  memset(buffer, c, n);
-  buffer[n] = '\0';
-  grv_str_set_size(&res, n);
-  return res;
+void grv_str_prepend_char(grv_str_t* str, char c) {
+    grv_str_size_t new_size = str->size + 1;
+    str_grow(str, new_size);
+    memmove(str->data + 1, str->data, str->size);
+    str->data[0] = c;
+    str->size = new_size;
 }
 
 
-void grv_str_append_cstr(grv_str_t* s, char* cstr) {
-  size_t cstr_len = strlen(cstr);
-  grv_str_resize(s, grv_str_len(s) + cstr_len);
-  strcpy(grv_str_cstr(s) + grv_str_len(s), cstr);
-  grv_str_set_size(s, grv_str_len(s) + cstr_len);
+grv_str_t grv_str_from_int(grv_str_size_t i) {
+    char* buffer = _get_cstr_buffer(32);
+    sprintf(buffer, "%d", i);
+    return grv_str_new(buffer);
 }
 
-grv_str_t grv_str_join(grv_str_t* s1, grv_str_t* s2, char* join_str) {
-  grv_str_t res;
-  size_t len1 = grv_str_len(s1);
-  size_t len2 = grv_str_len(s2);
-  size_t join_len = strlen(join_str);
-  grv_str_init_with_capacity(&res, len1 + len2 + join_len);
-  char* dst = grv_str_cstr(&res);
-  char* src1 = grv_str_cstr(s1);
-  char* src2 = grv_str_cstr(s2);
-  memcpy(dst, src1, len1);
-  memcpy(dst + len1, join_str, join_len);
-  memcpy(dst + len1 + join_len, src2, len2);
-  dst[len1 + join_len + len2] = 0;
-  grv_str_set_size(&res, len1 + len2 + join_len);
-  return res;
+grv_str_t grv_str_from_s64(s64 i) {
+    char* buffer = _get_cstr_buffer(32);
+    sprintf(buffer, "%ld", i);
+    return grv_str_new(buffer);
 }
 
-bool grv_str_is_empty(grv_str_t* s) {
-  return grv_str_len(s) == 0;
-}
-
-bool grv_str_starts_with_cstr(grv_str_t* s, char* cstr) {
-  size_t len = strlen(cstr);
-  char* buffer = grv_str_cstr(s);
-  return memcmp(buffer, cstr, len) == 0;
-}
-
-bool grv_str_starts_with(grv_str_t* s, grv_str_t* prefix) {
-  size_t len = grv_str_len(prefix);
-  if (grv_str_len(s) < len) {
-    return false;
-  }
-  return memcmp(grv_str_cstr(s), grv_str_cstr(prefix), len) == 0;
-}
-
-bool grv_str_ends_with_cstr(grv_str_t* s, char* cstr) {
-  size_t len = strlen(cstr);
-  char* buffer = grv_str_cstr(s);
-  size_t start_pos = grv_str_len(s) - len;
-  return memcmp(buffer + start_pos, cstr, len) == 0;
-}
-
-bool grv_str_ends_with(grv_str_t* s, grv_str_t* suffix) {
-  size_t len = grv_str_len(suffix);
-  if (grv_str_len(s) < len) {
-    return false;
-  }
-  size_t start_pos = grv_str_len(s) - len;
-  return memcmp(grv_str_cstr(s) + start_pos, grv_str_cstr(suffix), len) == 0;
-}
-
-bool grv_str_contains_cstr(grv_str_t* s, char* cstr) {
-  size_t len = grv_str_len(s); 
-  size_t cstrlen = strlen(cstr);
-  if (len < cstrlen) return false;
-  char* buffer = grv_str_cstr(s);
-  for (size_t i = 0; i <= len - cstrlen; ++i) {
-    if (memcmp(buffer + i, cstr, cstrlen) == 0) {
-      return true;
-    }
-  }
-  return false;
-} 
-
-void grv_str_lstrip(grv_str_t* s) {
-  size_t start = 0;
-  size_t len = grv_str_len(s);
-  char* buffer = grv_str_cstr(s);
-  for (start = 0; start < len; ++start) {
-    char c = buffer[start];
-    if (!(c == ' ' || c == '\n' || c == '\t')) break;
-  }
-
-  if (start == 0) return;
-
-  if (grv_str_is_short(s)) {
-    size_t new_len = grv_str_len(s) - start;
-    memmove(s->sso, s->sso + start, new_len + 1);
-    s->descriptor = new_len & GRV_STR_SSO_SIZE_MASK;
-  } else {
-    s->start += start;
-  }
-}
-
-void grv_str_rstrip(grv_str_t* s) {
-  size_t end;
-  size_t len = grv_str_len(s);
-  if (len == 0) return;
-
-  char* buffer = grv_str_cstr(s);
-
-  end = len;
-
-  for (end = len; end > 0; end--) {
-    char c = buffer[end - 1];
-    if (!(c == ' ' || c == '\n' || c == '\t')) break;
-  }
-  
-  if (end == len) return;
-
-  if (grv_str_is_short(s)) {
-    s->sso[end] = 0;
-    s->descriptor = (end) & GRV_STR_SSO_SIZE_MASK;
-  }
-  else {
-    s->end = s->start + end;
-    s->buffer[s->end] = 0;
-  }
-}
-
-grv_strarr_t grv_str_split(grv_str_t* s, char* delim) {
-  grv_strarr_t r = grv_strarr_new();
-  size_t delim_len = strlen(delim);
-  size_t start = 0;
-  size_t end = 0;
-  size_t len = grv_str_len(s);
-  char* buffer = grv_str_cstr(s);
-  while (end < len) {
-    if (memcmp(buffer + end, delim, delim_len) == 0) {
-      grv_str_t substr = grv_str_substr(s, start, end);
-      grv_strarr_push(&r, &substr);
-      start = end + delim_len;
-      end = start;
-    } else {
-      end++;
-    }
-  }
-  grv_str_t substr = grv_str_substr(s, start, end);
-  grv_strarr_push(&r, &substr);
-  return r;
-}
-
-grv_str_t grv_str_from_s32(int32_t i) {
-  grv_str_t s = {0};
-  size_t len = snprintf(grv_str_cstr(&s), GRV_STR_SSO_CAPACITY, "%d", i);
-  grv_str_set_len_impl(&s, len);
-  return s;
-}
-
-f32 grv_str_to_f32(grv_str_t* s) {
-  return strtod(grv_str_cstr(s), NULL);
-}
-
-grv_str_t grv_str_from_u64(u64 n) {
-  grv_str_t res = {0};
-  res.descriptor = 16;
-  res.sso[16] = 0x0;
-  for (int i = 0; i < 16; ++i) {
-    u8 nibble = n & 0xf;
-    res.sso[15 - i] = nibble < 0xa ? '0' + nibble : 'a' + nibble - 0xa;
-    n = n >> 4;
-  }
-  return res;
-}
-
-bool grv_str_is_float(grv_str_t* s) {
-  char* endptr;
-  strtod(grv_str_cstr(s), &endptr);
-  return *endptr == 0;
-}
-
-int grv_strcpy(char* dst, size_t dst_size, const char* src) {
-  size_t len = strlen(src);
-  int res = 0;
-
-  if (dst == NULL || dst_size == 0) return EINVAL;
-  if (len >= dst_size) {
-    len = dst_size - 1;
-    res = ERANGE;
-  }
-  memcpy(dst, src, len);
-  dst[len] = '\0';
-  return res;
-}
-
-int grv_strcat(char* dst, size_t dstsz, const char* src) {
-  if (dst == NULL || dstsz == 0) return EINVAL;
-
-  size_t dst_len = grv_strlen(dst, dstsz - 1);
-  if (dst_len == dstsz - 1) return ERANGE;
-
-  size_t src_len = strlen(src);
-  int res = 0;
-
-  if (dst_len + src_len >= dstsz) {
-    src_len = dstsz - dst_len - 1;
-    res = ERANGE;
-  }
-  memcpy(dst + dst_len, src, src_len);
-  dst[dst_len + src_len] = '\0';
-  return res;
-}
-
-size_t grv_strlen(const char* s, size_t max_len) {
-  size_t len = 0;
-  while (len < max_len && s[len] != '\0') {
-    len++;
-  }
-  return len;
+grv_str_t str_from_f32(f32 f) {
+    char* buffer = _get_cstr_buffer(32);
+    sprintf(buffer, "%f", f);
+    return grv_str_new(buffer);
 }

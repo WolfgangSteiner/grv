@@ -5,12 +5,6 @@
 
 s32 round_f32(f32 a);
 
-s32 min_s32(s32 a, s32 b);
-s32 max_s32(s32 a, s32 b);
-
-u32 min_u32(u32 a, u32 b);
-u32 max_u32(u32 a, u32 b);
-
 GRV_INLINE s32 min_s32(s32 a, s32 b) { return a < b ? a : b; }
 GRV_INLINE s32 max_s32(s32 a, s32 b) { return a > b ? a : b; }
 

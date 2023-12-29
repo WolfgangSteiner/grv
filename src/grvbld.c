@@ -148,8 +148,8 @@ static bool starts_with(char* str, char* prefix) {
 
 static bool ends_with(char* str, char* suffix) {
     size_t suffix_len = strlen(suffix);
-    size_t str_len = strlen(str);
-    return strncmp(str + str_len - suffix_len, suffix, suffix_len) == 0;
+    size_t grv_str_len = strlen(str);
+    return strncmp(str + grv_str_len - suffix_len, suffix, suffix_len) == 0;
 }
 
 //==============================================================================
