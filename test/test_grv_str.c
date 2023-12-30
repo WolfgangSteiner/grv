@@ -45,6 +45,15 @@ GRV_TEST_BEGIN(grv_str_cat)
   GRV_TEST_EQUAL_STR(r2, r2_cstr);
   GRV_TEST_TRUE(r2.owns_data);
   GRV_TEST_TRUE(r2.is_valid);
+
+  grv_str_t c = grv_str_cat(a, b);
+  GRV_TEST_EQUAL_STR(c, "HelloWorld");
+  c = grv_str_cat(a, " World");
+  GRV_TEST_EQUAL_STR(c, "Hello World");
+  c = grv_str_cat("Hello ", b);
+  GRV_TEST_EQUAL_STR(c, "Hello World");
+  c = grv_str_cat("Hello ", "World");
+  GRV_TEST_EQUAL_STR(c, "Hello World");
 GRV_TEST_END()
 
 GRV_TEST_BEGIN(grv_str_append)
@@ -61,35 +70,31 @@ GRV_TEST_BEGIN(grv_str_append)
   grv_str_append(&longstr, s1);
   GRV_TEST_EQUAL_SIZE(grv_str_len(longstr), strlen(r2_cstr));
   GRV_TEST_EQUAL_STR(longstr, r2_cstr);
-GRV_TEST_END()
 
-GRV_TEST_BEGIN(grv_str_append_char)
   grv_str_t s = grv_str_new("");
-  grv_str_append_char(&s, 'H');
+  grv_str_append(&s, 'H');
   GRV_TEST_EQUAL_STR(s, "H");
-  grv_str_append_char(&s, 'e');
+  grv_str_append(&s, 'e');
   GRV_TEST_EQUAL_STR(s, "He");
-  grv_str_append_char(&s, 'l');
+  grv_str_append(&s, 'l');
   GRV_TEST_EQUAL_STR(s, "Hel");
-  grv_str_append_char(&s, 'l');
+  grv_str_append(&s, 'l');
   GRV_TEST_EQUAL_STR(s, "Hell");
 GRV_TEST_END()
 
 GRV_TEST_BEGIN(grv_str_prepend)
   grv_str_t s = grv_str_new("World");
-  grv_str_prepend(&s, str_ref("Hello "));
+  grv_str_prepend(&s, "Hello ");
   GRV_TEST_EQUAL_STR(s, "Hello World");
-  grv_str_prepend(&s, str_ref("Hello "));
+  grv_str_prepend(&s, "Hello ");
   GRV_TEST_EQUAL_STR(s, "Hello Hello World");
-  grv_str_prepend(&s, str_ref("Hello Hello Hello "));
+  grv_str_prepend(&s, "Hello Hello Hello ");
   GRV_TEST_EQUAL_STR(s, "Hello Hello Hello Hello Hello World");
   grv_str_free(&s);
-GRV_TEST_END()
-
-GRV_TEST_BEGIN(grv_str_prepend_char)
-  grv_str_t s = grv_str_new("World");
-  grv_str_prepend_char(&s, 'A');
-  GRV_TEST_EQUAL_STR(s, "AWorld");
+  s = grv_str_new("Hello");
+  grv_str_prepend(&s, 'A');
+  GRV_TEST_EQUAL_STR(s, "AHello");
+  grv_str_free(&s);
 GRV_TEST_END()
 
 GRV_TEST_BEGIN(grv_str_starts_with) 
@@ -132,6 +137,7 @@ GRV_TEST_BEGIN(grv_str_lstrip)
   GRV_TEST_EQUAL_STR(stripped, "");
 GRV_TEST_END()
 
+
 #if 0
 GRV_TEST_BEGIN(grv_str_rstrip)
   grv_str_t s = grv_str_new("Hello \t\n");
@@ -144,17 +150,7 @@ GRV_TEST_BEGIN(grv_str_rstrip)
   grv_str_rstrip(&s);
   GRV_TEST_EQUAL_STR(grv_str_copy_cstr(&s), "");
 GRV_TEST_END()
-#endif
 
-#if 0
-
-
-GRV_TEST_BEGIN(grv_str_join)
-  grv_str_t a = grv_str_new("Hello");
-  grv_str_t b = grv_str_new("World");
-  grv_str_t c = grv_str_join(&a, &b, " ");
-  GRV_TEST_EQUAL_STR(grv_str_cstr(&c), "Hello World");
-GRV_TEST_END()
 
 GRV_TEST_BEGIN(grv_str_copy_substr)
   grv_str_t s = grv_str_new("Hello World");
@@ -285,9 +281,7 @@ int main(void) {
   GRV_TEST_RUN(grv_str_free);
   GRV_TEST_RUN(grv_str_cat);
   GRV_TEST_RUN(grv_str_append)
-  GRV_TEST_RUN(grv_str_append_char);
   GRV_TEST_RUN(grv_str_prepend);
-  GRV_TEST_RUN(grv_str_prepend_char);
   GRV_TEST_RUN(grv_str_starts_with);
   GRV_TEST_RUN(grv_str_ends_with);
   GRV_TEST_RUN(grv_str_lstrip);
