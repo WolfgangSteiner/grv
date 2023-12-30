@@ -94,28 +94,29 @@ GRV_TEST_END()
 
 GRV_TEST_BEGIN(grv_str_starts_with) 
   grv_str_t s = grv_str_new("Hello World");
-  GRV_TEST_TRUE(grv_str_starts_with(s, grv_str_ref("Hello")));
-  GRV_TEST_FALSE(grv_str_starts_with(s, grv_str_ref("ello")));
-  GRV_TEST_TRUE(grv_str_starts_with_char(s, 'H'));
-  GRV_TEST_FALSE(grv_str_starts_with_char(s, 'A'));
+  GRV_TEST_TRUE(grv_str_starts_with(s, s));
+  GRV_TEST_TRUE(grv_str_starts_with(s, "Hello"));
+  GRV_TEST_FALSE(grv_str_starts_with(s, "ello"));
+  GRV_TEST_TRUE(grv_str_starts_with(s, 'H'));
+  GRV_TEST_FALSE(grv_str_starts_with(s, 'A'));
   s = grv_str_ref(lorem);
-  GRV_TEST_TRUE(grv_str_starts_with(s, grv_str_ref("Lorem")));
-  GRV_TEST_FALSE(grv_str_starts_with(s, grv_str_ref("orem")));
-  GRV_TEST_TRUE(grv_str_starts_with_char(s, 'L'));
-  GRV_TEST_FALSE(grv_str_starts_with_char(s, 'A'));
+  GRV_TEST_TRUE(grv_str_starts_with(s, "Lorem"));
+  GRV_TEST_FALSE(grv_str_starts_with(s, "orem"));
+  GRV_TEST_TRUE(grv_str_starts_with(s, 'L'));
+  GRV_TEST_FALSE(grv_str_starts_with(s, 'A'));
 GRV_TEST_END()
 
 GRV_TEST_BEGIN(grv_str_ends_with) 
   grv_str_t s = grv_str_new("Hello World");
-  GRV_TEST_TRUE(grv_str_ends_with(s, grv_str_ref("World")));
-  GRV_TEST_FALSE(grv_str_ends_with(s, grv_str_ref("Worl")));
-  GRV_TEST_TRUE(grv_str_ends_with_char(s, 'd'));
-  GRV_TEST_FALSE(grv_str_ends_with_char(s, 'A'));
+  GRV_TEST_TRUE(grv_str_ends_with(s, "World"));
+  GRV_TEST_FALSE(grv_str_ends_with(s, "Worl"));
+  GRV_TEST_TRUE(grv_str_ends_with(s, 'd'));
+  GRV_TEST_FALSE(grv_str_ends_with(s, 'A'));
   s = grv_str_ref(lorem);
-  GRV_TEST_TRUE(grv_str_ends_with(s, grv_str_ref("amet.")));
-  GRV_TEST_FALSE(grv_str_ends_with(s, grv_str_ref("amet")));
-  GRV_TEST_TRUE(grv_str_ends_with_char(s, '.'));
-  GRV_TEST_FALSE(grv_str_ends_with_char(s, 'A'));
+  GRV_TEST_TRUE(grv_str_ends_with(s, "amet."));
+  GRV_TEST_FALSE(grv_str_ends_with(s, "amet"));
+  GRV_TEST_TRUE(grv_str_ends_with(s, '.'));
+  GRV_TEST_FALSE(grv_str_ends_with(s, 'A'));
 GRV_TEST_END()
 
 GRV_TEST_BEGIN(grv_str_lstrip)

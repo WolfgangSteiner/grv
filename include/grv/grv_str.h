@@ -32,23 +32,52 @@ s64 grv_str_to_s64(grv_str_t str);
 char grv_str_at(grv_str_t str, grv_str_size_t idx);
 char grv_str_get_char(grv_str_t str, grv_str_size_t pos);
 
-bool grv_str_eq(grv_str_t a, grv_str_t b);
-bool grv_str_contains(grv_str_t, grv_str_t);
+bool grv_str_eq_str(grv_str_t a, grv_str_t b);
+static inline bool grv_str_eq_cstr(grv_str_t a, char* b) {return grv_str_eq_str(a, grv_str_ref(b));};
+#define grv_str_eq(a, b) _Generic((b), grv_str_t: grv_str_eq_str, char*: grv_str_eq_cstr)(a,b)
+
+bool grv_str_contains_str(grv_str_t, grv_str_t);
+static inline bool grv_str_contains_cstr(grv_str_t a, char* b) {return grv_str_contains_str(a, grv_str_ref(b));};
 bool grv_str_contains_char(grv_str_t, char);
+#define grv_str_contains(a, b) _Generic((b), grv_str_t: grv_str_contains_str, char*: grv_str_contains_cstr, int: grv_str_contains_char)(a,b)
+
+bool grv_str_starts_with_str(grv_str_t, grv_str_t);
 static inline bool grv_str_starts_with_char(grv_str_t s, char c) { return s.size && s.data[0] == c; }
+static inline bool grv_str_starts_with_cstr(grv_str_t a, char* b) {return grv_str_starts_with_str(a, grv_str_ref(b));};
+#define grv_str_starts_with(a, b) _Generic((b), grv_str_t: grv_str_starts_with_str, char*: grv_str_starts_with_cstr, int: grv_str_starts_with_char)(a,b)
+
+bool grv_str_ends_with_str(grv_str_t, grv_str_t);
 static inline bool grv_str_ends_with_char(grv_str_t s, char c) { return s.size && s.data[s.size-1] == c; }
-bool grv_str_starts_with(grv_str_t, grv_str_t);
-bool grv_str_ends_with(grv_str_t, grv_str_t);
-// create new str by referencing cstr
-// new str does not own memory
+static inline bool grv_str_ends_with_cstr(grv_str_t a, char* b) {return grv_str_ends_with_str(a, grv_str_ref(b));};
+#define grv_str_ends_with(a, b) _Generic((b), grv_str_t: grv_str_ends_with_str, char*: grv_str_ends_with_cstr, int: grv_str_ends_with_char)(a,b)
 
-grv_str_t grv_str_cat(grv_str_t a, grv_str_t b);
+grv_str_t grv_str_cat_str_str(grv_str_t a, grv_str_t b);
+static inline grv_str_t grv_str_cat_str_cstr(grv_str_t a, char* b) {return grv_str_cat_str_str(a, grv_str_ref(b));}
+static inline grv_str_t grv_str_cat_cstr_str(char* a, grv_str_t b) {return grv_str_cat_str_str(grv_str_ref(a), b);}
+static inline grv_str_t grv_str_cat_cstr_cstr(char* a, char* b) {return grv_str_cat_str_str(grv_str_ref(a), grv_str_ref(b));}
+#define grv_str_cat(a,b) _Generic((a), \
+    grv_str_t: _Generic((b), \
+        grv_str_t: grv_str_cat_str_str, \
+        char*: grv_str_cat_str_cstr \
+    ), \
+    char*: _Generic((b), \
+        grv_str_t: grv_str_cat_cstr_str, \
+        char*: grv_str_cat_cstr_cstr \
+    ) \
+)(a,b)
 
-void grv_str_append(grv_str_t* str, grv_str_t append_str);
-void grv_str_append_space(grv_str_t* str);
+void grv_str_append_str(grv_str_t* str, grv_str_t append_str);
 void grv_str_append_char(grv_str_t* str, char c);
-void grv_str_prepend(grv_str_t* str, grv_str_t prepend_str);
+static inline void grv_str_append_cstr(grv_str_t* str, char* append_str) { grv_str_append_str(str, grv_str_ref(append_str)); }
+#define grv_str_append(a,b) _Generic((b), grv_str_t: grv_str_append_str, char*: grv_str_append_cstr, int: grv_str_append_char)(a,b)
+
+void grv_str_prepend_str(grv_str_t* str, grv_str_t prepend_str);
 void grv_str_prepend_char(grv_str_t* str, char c);
+static inline void grv_str_prepend_cstr(grv_str_t* str, char* prepend_str) { grv_str_prepend_str(str, grv_str_ref(prepend_str)); }
+#define grv_str_prepend(a,b) _Generic((b), grv_str_t: grv_str_prepend_str, char*: grv_str_prepend_cstr, int: grv_str_prepend_char)(a,b)
+
+void grv_str_append_space(grv_str_t* str);
+
 char* grv_str_cstr(grv_str_t str);
 char* grv_str_copy_to_cstr(grv_str_t str);
 grv_str_t grv_str_copy(grv_str_t str);
@@ -70,7 +99,6 @@ grv_str_iter_t grv_str_find_char_from_back(grv_str_t* str, char c);
 grv_str_iter_t grv_str_find_any_char(grv_str_t str, grv_str_t chars);
 grv_str_t grv_str_split_tail_at_char(grv_str_t str, char c);
 grv_str_t grv_str_reduce_char_spans(grv_str_t, char);
-
 
 bool grv_str_iter_is_end(grv_str_iter_t* iter);
 bool grv_str_iter_is_rend(grv_str_iter_t* iter);
@@ -120,19 +148,44 @@ typedef grv_str_format_callback_t str_format_callback_t;
 #define str_to_s64 grv_str_to_s64
 #define str_at grv_str_at
 #define str_get_char grv_str_get_char
+
 #define str_eq grv_str_eq
+#define str_eq_str grv_str_eq_str
+#define str_eq_cstr grv_str_eq_cstr
+
 #define str_contains grv_str_contains
+#define str_contains_str grv_str_contains_str
+#define str_contains_cstr grv_str_contains_cstr
 #define str_contains_char grv_str_contains_char
-#define str_starts_with_char grv_str_starts_with_char
-#define str_ends_with_char grv_str_ends_with_char
+
 #define str_starts_with grv_str_starts_with
+#define str_starts_with_char grv_str_starts_with_char
+#define str_starts_with_str grv_str_starts_with_str
+#define str_starts_with_cstr grv_str_starts_with_cstr
+
 #define str_ends_with grv_str_ends_with
+#define str_ends_with_char grv_str_ends_with_char
+#define str_ends_with_str grv_str_ends_with_str
+#define str_ends_with_cstr grv_str_ends_with_cstr
+
 #define str_cat grv_str_cat
+#define str_cat_str_str grv_str_cat_str_str
+#define str_cat_str_cstr grv_str_cat_str_cstr
+#define str_cat_cstr_str grv_str_cat_cstr_str
+#define str_cat_cstr_cstr grv_str_cat_cstr_cstr
+
 #define str_append grv_str_append
-#define str_append_space grv_str_append_space
+#define str_append_str grv_str_append_str
+#define str_append_cstr grv_str_append_cstr
 #define str_append_char grv_str_append_char
+
 #define str_prepend grv_str_prepend
+#define str_prepend_str grv_str_prepend_str
+#define str_prepend_cstr grv_str_prepend_cstr
 #define str_prepend_char grv_str_prepend_char
+
+#define str_append_space grv_str_append_space
+
 #define str_cstr grv_str_cstr
 #define str_copy_to_cstr grv_str_copy_to_cstr
 #define str_copy grv_str_copy
@@ -181,6 +234,5 @@ typedef grv_str_format_callback_t str_format_callback_t;
 #define str_iter_match_up_to_char grv_str_iter_match_up_to_char
 #define str_iter_match_word grv_str_iter_match_word
 #endif
-
 
 #endif

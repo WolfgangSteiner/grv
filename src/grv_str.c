@@ -122,12 +122,12 @@ grv_str_t grv_str_strip_char(grv_str_t str, char c) {
     return grv_str_rstrip_char(res, c);
 }
 
-bool grv_str_starts_with(grv_str_t str, grv_str_t start) {
+bool grv_str_starts_with_str(grv_str_t str, grv_str_t start) {
     if (str.size < start.size) return false;
     return memcmp(str.data, start.data, start.size) == 0;
 }
 
-bool grv_str_ends_with(grv_str_t str, grv_str_t end) {
+bool grv_str_ends_with_str(grv_str_t str, grv_str_t end) {
     if (str.size < end.size) return false;
     return memcmp(str.data + str.size - end.size, end.data, end.size) == 0;
 }
@@ -202,7 +202,7 @@ bool grv_file_exists(grv_str_t file_name) {
     return false;
 }
 
-bool grv_str_contains(grv_str_t str, grv_str_t search_str) {
+bool grv_str_contains_str(grv_str_t str, grv_str_t search_str) {
     if (str.size < search_str.size) return false;
     char* cptr = str.data;
     for (grv_str_size_t i = 0; i <= str.size - search_str.size; ++i) {
@@ -241,7 +241,7 @@ grv_str_t grv_str_reduce_char_spans(grv_str_t str, char c) {
     return res;
 }
 
-bool grv_str_eq(grv_str_t a, grv_str_t b) {
+bool grv_str_eq_str(grv_str_t a, grv_str_t b) {
     if (a.size != b.size) return false;
     return memcmp(a.data, b.data, a.size) == 0;
 }
@@ -544,7 +544,7 @@ void grv_str_free(grv_str_t* str) {
     *str = (grv_str_t){0};
 }
 
-grv_str_t grv_str_cat(grv_str_t a, grv_str_t b) {
+grv_str_t grv_str_cat_str_str(grv_str_t a, grv_str_t b) {
     grv_str_t str = grv_str_new_with_capacity(a.size + b.size);
     str.size = a.size + b.size;
     memcpy(str.data, a.data, a.size);
@@ -567,7 +567,7 @@ void str_grow(grv_str_t* str, grv_str_size_t new_size) {
     }   
 }
 
-void grv_str_append(grv_str_t* str, grv_str_t append_str) {
+void grv_str_append_str(grv_str_t* str, grv_str_t append_str) {
     grv_str_size_t new_size = str->size + append_str.size;
     str_grow(str, new_size);
     memcpy(str->data + str->size, append_str.data, append_str.size);
@@ -585,7 +585,7 @@ void grv_str_append_char(grv_str_t* str, char c) {
     str->size = new_size;
 }
 
-void grv_str_prepend(grv_str_t* str, grv_str_t prepend_str) {
+void grv_str_prepend_str(grv_str_t* str, grv_str_t prepend_str) {
     grv_str_size_t new_size = str->size + prepend_str.size;
     str_grow(str, new_size);
     memmove(str->data + prepend_str.size, str->data, str->size);
