@@ -93,12 +93,21 @@ static inline bool _grv_test_end(_grv_test_t test) {
 #define GRV_TEST_TRUE(ACTUAL) _grv_test_true(&_test, #ACTUAL, ACTUAL, __FILE__, __LINE__) 
 #define GRV_TEST_FALSE(ACTUAL) _grv_test_false(&_test, #ACTUAL, ACTUAL, __FILE__, __LINE__) 
 #define GRV_TEST_CLOSE_F32(A, B, EPSILON) _grv_test_close_f32(&_test, #A, A, B, EPSILON, __FILE__, __LINE__) 
-#define GRV_TEST_EQUAL_STR(A, B) _grv_test_equal_str(&_test, #A, A, B, __FILE__, __LINE__)
-#define GRV_TEST_NOT_EQUAL_STR(A, B) _grv_test_not_equal_str(&_test, #A, A, B, __FILE__, __LINE__)
 #define GRV_TEST_FAIL() _grv_test_fail(&_test, __FILE__, __LINE__)
 #define GRV_TEST_EQUAL_INT(A, B) _grv_test_equal_int(&_test, #A, A, B, __FILE__, __LINE__)
 #define GRV_TEST_EQUAL_UINT(A, B) _grv_test_equal_uint(&_test, #A, A, B, __FILE__, __LINE__)
 #define GRV_TEST_EQUAL_SIZE(A, B) _grv_test_equal_int(&_test, #A, A, B, __FILE__, __LINE__)
+
+#define GRV_TEST_EQUAL_STR(A, B) _Generic((B) \
+  , grv_str_t: _grv_test_equal_str  \
+  , char*: _grv_test_equal_cstr \
+) (&_test, #A, A, B, __FILE__, __LINE__)
+
+#define GRV_TEST_NOT_EQUAL_STR(A, B) _Generic((B) \
+  , grv_str_t: _grv_test_not_equal_str  \
+  , char*: _grv_test_not_equal_cstr \
+) (&_test, #A, A, B, __FILE__, __LINE__)
+
 
 static inline void grv_test_print_error(char* msg, char* file, int line) {
   if (GRV_TEST_VERBOSITY) puts("");
@@ -157,6 +166,9 @@ static inline void _grv_test_equal_str(_grv_test_t* test, char* expression, grv_
     free(msg);
   }
 }
+static inline void _grv_test_equal_cstr(_grv_test_t* test, char* expression, grv_str_t actual, char* expected, char* file, int line) {
+  _grv_test_equal_str(test, expression, actual, grv_str_ref(expected), file, line);
+}
 
 static inline void _grv_test_not_equal_str(_grv_test_t* test, char* expression, grv_str_t actual, grv_str_t expected, char* file, int line) {
   test->total_count++;
@@ -168,6 +180,10 @@ static inline void _grv_test_not_equal_str(_grv_test_t* test, char* expression, 
     free(actual_cstr);
     free(msg);
   }
+}
+
+static inline void _grv_test_not_equal_cstr(_grv_test_t* test, char* expression, grv_str_t actual, char* expected, char* file, int line) {
+  _grv_test_not_equal_str(test, expression, actual, grv_str_ref(expected), file, line);
 }
 
 static inline void _grv_test_fail(_grv_test_t* test, char* file, int line) {

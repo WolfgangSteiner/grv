@@ -37,6 +37,8 @@ bool grv_str_contains(grv_str_t, grv_str_t);
 bool grv_str_contains_char(grv_str_t, char);
 static inline bool grv_str_starts_with_char(grv_str_t s, char c) { return s.size && s.data[0] == c; }
 static inline bool grv_str_ends_with_char(grv_str_t s, char c) { return s.size && s.data[s.size-1] == c; }
+bool grv_str_starts_with(grv_str_t, grv_str_t);
+bool grv_str_ends_with(grv_str_t, grv_str_t);
 // create new str by referencing cstr
 // new str does not own memory
 
@@ -123,6 +125,8 @@ typedef grv_str_format_callback_t str_format_callback_t;
 #define str_contains_char grv_str_contains_char
 #define str_starts_with_char grv_str_starts_with_char
 #define str_ends_with_char grv_str_ends_with_char
+#define str_starts_with grv_str_starts_with
+#define str_ends_with grv_str_ends_with
 #define str_cat grv_str_cat
 #define str_append grv_str_append
 #define str_append_space grv_str_append_space

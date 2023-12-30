@@ -122,6 +122,16 @@ grv_str_t grv_str_strip_char(grv_str_t str, char c) {
     return grv_str_rstrip_char(res, c);
 }
 
+bool grv_str_starts_with(grv_str_t str, grv_str_t start) {
+    if (str.size < start.size) return false;
+    return memcmp(str.data, start.data, start.size) == 0;
+}
+
+bool grv_str_ends_with(grv_str_t str, grv_str_t end) {
+    if (str.size < end.size) return false;
+    return memcmp(str.data + str.size - end.size, end.data, end.size) == 0;
+}
+
 bool grv_str_iter_is_end(grv_str_iter_t* iter) {
     return iter->pos >= iter->str->size;
 }
@@ -245,7 +255,7 @@ bool grv_is_digit(char c) {
 }
 
 bool grv_is_white_space(char c) {
-    return c == ' ' || c == '\t';
+    return c == ' ' || c == '\t' || c == '\n';
 }
 
 bool grv_is_word_separator(char c) {
