@@ -5,17 +5,56 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include "grv/grv_cstr.h"
-#include "grv/grv_fs.h"
+#include <string.h>
 
-static inline bool is_source_file_newer(char* exe_filename_cstr) {
-    char* src_filename = grv_cstr_cat(exe_filename_cstr, ".c");
-    grv_str_t exe_filename = grv_str_ref(exe_filename_cstr);
+#include <sys/stat.h>
 
-    bool result = grv_fs_is_file_newer_than(grv_str_ref(src_filename), exe_filename);
-    result = result || grv_fs_is_file_newer_than(grv_str_ref("src/grvbld.c"), exe_filename);
-    result = result || grv_fs_is_file_newer_than(grv_str_ref("src/grv_cstr.c"), exe_filename);
-    grv_cstr_free(src_filename);
+static inline char* grvbld_cstr_new(char* str) {
+    size_t len = strlen(str);
+    char* new_str = malloc(len + 1);
+    memcpy(new_str, str, len + 1);
+    return new_str;
+}
+
+static inline char* grvbld_cstr_append(char* str, char* append_str) {
+    size_t len = strlen(str);
+    size_t append_len = strlen(append_str);
+    str = realloc(str, len + append_len + 1);
+    memcpy(str + len, append_str, append_len + 1);
+    return str;
+}
+
+static inline char* grvbld_cstr_cat(char* a, char* b) {
+    char* res = grvbld_cstr_new(a);
+    res = grvbld_cstr_append(res, b);
+    return res;
+}
+
+static inline char* grvbld_cstr_cat3(char* a, char* b, char* c) {
+    char* res = grvbld_cstr_new(a);
+    res = grvbld_cstr_append(res, b);
+    res = grvbld_cstr_append(res, c);
+    return res;
+}   
+
+static inline int grvbld_modtime(char* filename) {
+    struct stat attr;
+    stat(filename, &attr);
+    return attr.st_mtime;
+}
+
+static inline bool grvbld_is_file_newer_than(char* filename, char* other_filename) {
+    int mod_time_a = grvbld_modtime(filename);
+    int mod_time_b = grvbld_modtime(other_filename);
+    return mod_time_a > mod_time_b;
+}
+
+static inline bool is_source_file_newer(char* exe_filename) {
+    char* src_filename = grvbld_cstr_cat(exe_filename, ".c");
+    bool result = grvbld_is_file_newer_than(src_filename, exe_filename);
+    result = result || grvbld_is_file_newer_than("src/grvbld.c", exe_filename);
+    result = result || grvbld_is_file_newer_than("include/grv/grvbld.h", exe_filename);
+    free(src_filename);
     return result;
 }
 
@@ -25,6 +64,7 @@ static inline void log_info(char* fmt, ...) {
     va_start(args, fmt);
     printf("[INFO] ");
     vprintf(fmt, args);
+    printf("\n");
 }
 
 __attribute__((format(__printf__, 1, 2)))
@@ -33,19 +73,20 @@ static inline void log_error(char* fmt, ...) {
     va_start(args, fmt);
     printf("[ERROR] ");
     vprintf(fmt, args);
+    printf("\n");
 }
 
 static inline int rebuild_file(char* filename) {
-    char* cmd = grv_cstr_cat("gcc -o ", filename);
-    cmd = grv_cstr_append(cmd, " -DGRV_BUILD_CONFIGURED -Iinclude ");
-    cmd = grv_cstr_append(cmd, "src/");
-    cmd = grv_cstr_append(cmd, filename);
-    cmd = grv_cstr_append(cmd, ".c");
-    cmd = grv_cstr_append(cmd, " src/grvbld.c src/grv_cstr.c src/grv_fs.c src/grv_str.c ");
-    cmd = grv_cstr_append(cmd, " src/grv_memory.c src/grv_util.c src/grv_strarr.c src/grv_arr.c");
-    log_info("Rebuilding %s\n", filename);
+    char* src = grvbld_cstr_cat3("src/", filename, ".c");
+    char* cmd = grvbld_cstr_cat("gcc -o ", filename);
+    cmd = grvbld_cstr_append(cmd, " -DGRV_BUILD_CONFIGURED -Iinclude ");
+    cmd = grvbld_cstr_append(cmd, src);
+    cmd = grvbld_cstr_append(cmd, " src/grvbld.c");
+    log_info("Rebuilding %s:", filename);
+    log_info("%s", cmd);
     int result = system(cmd);
-    grv_cstr_free(cmd);
+    free(src);
+    free(cmd);
     return result;
 }
 
@@ -54,11 +95,11 @@ static inline int rebuild_file(char* filename) {
     if (is_source_file_newer(_executable_name)) { \
         int result = rebuild_file(_executable_name); \
         if (result == 0) { \
-            log_info("Rebuilding of %s successful.\n", _executable_name); \
+            log_info("Rebuilding of %s successful.", _executable_name); \
             system(_executable_name); \
             return 1; \
         } else { \
-            log_error("Failed to rebuild %s\n", _executable_name); \
+            log_error("Failed to rebuild %s", _executable_name); \
             return result; \
         } \
     }

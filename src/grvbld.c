@@ -32,9 +32,7 @@ static void grvbld_strarr_push(grvbld_strarr_t* arr, char* str) {
         arr->capacity *= 2;
         arr->data = realloc(arr->data, arr->capacity * sizeof(char*));
     }
-    arr->data[arr->size] = malloc(strlen(str) + 1);
-    strcpy(arr->data[arr->size], str);
-    arr->size++;
+    arr->data[arr->size++] = grvbld_cstr_new(str);
 }
 
 static void grvbld_strarr_dup(grvbld_strarr_t* dst, grvbld_strarr_t* src) {
@@ -42,105 +40,91 @@ static void grvbld_strarr_dup(grvbld_strarr_t* dst, grvbld_strarr_t* src) {
     dst->capacity = src->capacity;
     dst->data = calloc(dst->capacity, sizeof(char*));
     for (size_t i = 0; i < src->size; ++i) {
-        dst->data[i] = malloc(strlen(src->data[i]) + 1);
-        strcpy(dst->data[i], src->data[i]);
+        dst->data[i] = grvbld_cstr_new(src->data[i]);
     }
 }
 
 //==============================================================================
 // grvbld_str 
 //==============================================================================
-typedef struct {
-    char* str;
-    size_t size;
-} grvbld_str_t;
 
-
-static size_t grvbld_str_len(grvbld_str_t* str) {
-    char* c = str->str;
-    size_t len = 0;
-    while (*c != '\0' && len < str->size) {
-        ++c;
-        ++len;
-    }
-
-    return len;
+static size_t grvbld_cstr_len(char* str) {
+    return strlen(str);
 }
 
-static void grvbld_str_init(grvbld_str_t* str, char* src) {
-    str->size = strlen(src) + 1;
-    str->str = malloc(str->size);
-    memcpy(str->str, src, strlen(src) + 1);
+static char* grvbld_cstr_append_char(char* dst, char c) {
+    size_t len = grvbld_cstr_len(dst);
+    dst = realloc(dst, len + 2);
+    dst[len] = c;
+    dst[len + 1] = '\0';
+    return dst;
 }
 
-static grvbld_str_t* grvbld_str_alloc(char* src) {
-    grvbld_str_t* str = calloc(1, sizeof(grvbld_str_t));
-    grvbld_str_init(str, src);
-    return str;
+static char* grvbld_cstr_append_path(char* dst, char* path) {
+    dst = grvbld_cstr_append_char(dst, GRVBLD_PATH_SEP);
+    dst = grvbld_cstr_append(dst, path);
+    return dst;
 }
 
-static grvbld_str_t* grvbld_str_copy(grvbld_str_t* src) {
-    grvbld_str_t* dst = grvbld_str_alloc(src->str);    
+static char* grvbld_cstr_append_arg(char* dst, char* arg) {
+    dst = grvbld_cstr_append(dst, " ");
+    dst = grvbld_cstr_append(dst, arg);
+    return dst;
 }
 
-static void grvbld_str_resize(grvbld_str_t* str, size_t size) {
-    if (str->size < size) {
-        str->size = size;
-        str->str = realloc(str->str, str->size);
-    }
-}
-
-static void grvbld_str_append(grvbld_str_t* dst, char* src) {
-    size_t src_len = strlen(src);
-    size_t dst_len = grvbld_str_len(dst);
-    grvbld_str_resize(dst, src_len + dst_len + 1);
-    memcpy(dst->str + dst_len, src, src_len);
-    dst->str[dst_len + src_len] = 0;
-}
-
-static void grvbld_str_append_char(grvbld_str_t* dst, char c) {
-    size_t dst_len = grvbld_str_len(dst);
-    grvbld_str_resize(dst, dst_len + 2);
-    dst->str[dst_len] = c;
-    dst->str[dst_len + 1] = 0;
-}
-
-static void grvbld_str_append_path(grvbld_str_t* dst, char* path) {
-    grvbld_str_append_char(dst, GRVBLD_PATH_SEP);
-    grvbld_str_append(dst, path);
-}
-
-static void grvbld_str_append_arg(grvbld_str_t* dst, char* arg) {
-    grvbld_str_append(dst, " ");
-    grvbld_str_append(dst, arg);
-}
-
-static grvbld_str_t* grvbld_str_filename(grvbld_str_t* str) {
-    char* last_sep = strrchr(str->str, GRVBLD_PATH_SEP);
+static char* grvbld_cstr_filename(char* str) {
+    char* last_sep = strrchr(str, GRVBLD_PATH_SEP);
     if (last_sep) {
-        return grvbld_str_alloc(last_sep + 1);
+        return grvbld_cstr_new(last_sep + 1);
     } else {
-        return grvbld_str_copy(str);
+        return grvbld_cstr_new(str);
     } 
 }
 
-static void grvbld_str_remove_ext(grvbld_str_t* str) {
-    char* dot = strrchr(str->str, '.');
+static void grvbld_cstr_remove_ext(char* str) {
+    char* dot = strrchr(str, '.');
     if (dot) {
         *dot = 0;
     }
 }
 
-static void grvbld_str_replace_ext(grvbld_str_t* str, char* ext) {
-    grvbld_str_remove_ext(str);
-    grvbld_str_append(str, ext);
-}
+static char* grvbld_cstr_replace_ext(char* str, char* ext) {
+    grvbld_cstr_remove_ext(str);
+    str = grvbld_cstr_append(str, ext);
+    return str;
+ }
 
-static grvbld_str_t* grvbld_str_prepend_path(grvbld_str_t* str, char* path) {
-    grvbld_str_t* result = grvbld_str_alloc(path);
-    grvbld_str_append_path(result, str->str);
+static char* grvbld_cstr_prepend_path(char* str, char* path) {
+    char* result = grvbld_cstr_new(path);
+    result = grvbld_cstr_append_path(result, str);
     return result;
 }
+
+static char* grvbld_cstr_new_with_format(char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    size_t len = vsnprintf(NULL, 0, fmt, args);
+    va_end(args);
+    char* result = calloc(len + 1, sizeof(char));
+    va_start(args, fmt);
+    vsnprintf(result, len + 1, fmt, args);
+    va_end(args);
+    return result;
+}
+
+static char* grvbld_cstr_append_arg_format(char* dst, char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    size_t len = vsnprintf(NULL, 0, fmt, args);
+    va_end(args);
+    char* formatted_str = calloc(len + 1, sizeof(char));
+    va_start(args, fmt);
+    vsnprintf(formatted_str, len + 1, fmt, args);
+    va_end(args);
+    dst = grvbld_cstr_append_arg(dst, formatted_str);
+    free(formatted_str);
+    return dst;
+} 
 
 static bool starts_with(char* str, char* prefix) {
     size_t prefix_len = strlen(prefix);
@@ -149,8 +133,8 @@ static bool starts_with(char* str, char* prefix) {
 
 static bool ends_with(char* str, char* suffix) {
     size_t suffix_len = strlen(suffix);
-    size_t grv_str_len = strlen(str);
-    return strncmp(str + grv_str_len - suffix_len, suffix, suffix_len) == 0;
+    size_t str_len = strlen(str);
+    return strncmp(str + str_len - suffix_len, suffix, suffix_len) == 0;
 }
 
 //==============================================================================
@@ -180,23 +164,17 @@ void grvbld_config_init(grvbld_config_t* config) {
 }
 
 
-char* grvbld_strcpy(char* src) {
-    char* dst = malloc(strlen(src) + 1);
-    strcpy(dst, src);
-    return dst;
-}
-
 grvbld_config_t* grvbld_config_dup(grvbld_config_t* src) {
     grvbld_config_t* dst = calloc(1, sizeof(grvbld_config_t));
     memcpy(dst, src, sizeof(grvbld_config_t));
-    dst->cc = grvbld_strcpy(src->cc);
-    dst->std = grvbld_strcpy(src->std);
+    dst->cc = grvbld_cstr_new(src->cc);
+    dst->std = grvbld_cstr_new(src->std);
     grvbld_strarr_dup(&dst->inc, &src->inc); 
     grvbld_strarr_dup(&dst->warnings, &src->warnings);
     grvbld_strarr_dup(&dst->libs, &src->libs);
     grvbld_strarr_dup(&dst->defines, &src->defines);
-    dst->build_dir = grvbld_strcpy(src->build_dir);
-    dst->test_dir = grvbld_strcpy(src->test_dir);
+    dst->build_dir = grvbld_cstr_new(src->build_dir);
+    dst->test_dir = grvbld_cstr_new(src->test_dir);
     return dst;
 }
 
@@ -228,8 +206,7 @@ static bool create_directory(char* path) {
 
 static bool make_path(char* path) {
     bool result = false;
-    char* p = malloc(strlen(path) + 1);
-    strcpy(p, path);
+    char* p = grvbld_cstr_new(path);
     char* s = p;
     char* e = strchr(s, GRVBLD_PATH_SEP);    
     while (e) {
@@ -295,19 +272,12 @@ static grvbld_strarr_t* get_files_in_dir(char* path) {
     return result;
 }
 
-static void remove_ext(char* str) {
-    char* dot = strrchr(str, '.');
-    if (dot) {
-        *dot = 0;
-    }
-}
-
 //==============================================================================
 // grvbld_target_t
 //==============================================================================
 grvbld_target_t* grvbld_target_create(char* name, grvbld_target_type_t type) {
     grvbld_target_t* target = calloc(1, sizeof(grvbld_target_t));
-    target->name = grvbld_strcpy(name);
+    target->name = grvbld_cstr_new(name);
     target->type = type;
     grvbld_strarr_init(&target->src_files);
     return target;
@@ -329,50 +299,43 @@ static void create_build_path(grvbld_config_t* config) {
     }
 }
 
-static grvbld_str_t* grvbld_build_cmd(grvbld_config_t* config) {
-    grvbld_str_t* cmd = grvbld_str_alloc("");
+static char* grvbld_build_cmd(grvbld_config_t* config) {
+    char* cmd = grvbld_cstr_new("");
     if (config->use_ccache) {
-        grvbld_str_append(cmd, "ccache ");
-        grvbld_str_append_arg(cmd, config->cc);
-    } else {
-        grvbld_str_append(cmd, config->cc);
+        cmd = grvbld_cstr_append(cmd, "ccache ");
     }
-    grvbld_str_append_arg(cmd, "-std=");
-    grvbld_str_append(cmd, config->std);
+    cmd = grvbld_cstr_append(cmd, config->cc);
+    cmd = grvbld_cstr_append_arg_format(cmd, "-std=%s", config->std);
     
     for (size_t i = 0; i < config->inc.size; ++i) {
-        grvbld_str_append_arg(cmd, "-I");
-        grvbld_str_append(cmd, config->inc.data[i]);
+        cmd = grvbld_cstr_append_arg_format(cmd, "-I%s", config->inc.data[i]);
     }
 
     for (size_t i = 0; i < config->warnings.size; ++i) {
-        grvbld_str_append_arg(cmd, config->warnings.data[i]);
+        cmd = grvbld_cstr_append_arg(cmd, config->warnings.data[i]);
     }
 
     if (config->debug) {
-        grvbld_str_append_arg(cmd, "-g");
+        cmd = grvbld_cstr_append_arg(cmd, "-g");
     }
 
     if (config->treat_warnings_as_errors) {
-        grvbld_str_append_arg(cmd, "-Werror");
+        cmd = grvbld_cstr_append_arg(cmd, "-Werror");
     }
 
     for (size_t i = 0; i < config->libs.size; ++i) {
-        grvbld_str_append_arg(cmd, config->libs.data[i]);
+        cmd = grvbld_cstr_append_arg(cmd, config->libs.data[i]);
     }
 
     for (size_t i = 0; i < config->defines.size; ++i) {
-        grvbld_str_append_arg(cmd, "-D");
-        grvbld_str_append(cmd, config->defines.data[i]);
+        cmd = grvbld_cstr_append_arg_format(cmd, "-D%s", config->defines.data[i]);
     }
 
 //    if (config->debug) {
-//        grvbld_str_append_arg(cmd, "-D");
-//        grvbld_str_append(cmd, "GRV_DEBUG_MEMORY");
+//        cmd = grvbld_cstr_append_arg(cmd, "-DGRV_DEBUG_MEMORY");
 //    }
 
-    grvbld_str_append_arg(cmd, "-L");
-    grvbld_str_append(cmd, config->build_dir);
+    cmd = grvbld_cstr_append_arg_format(cmd, "-L%s", config->build_dir);
 
     return cmd;
 }
@@ -382,49 +345,40 @@ int grvbld_test(grvbld_config_t* config, char* name) {
     config->debug = true;
     //grvbld_strarr_push(&config->defines, "GRV_DEBUG_MEMORY");
 
-    grvbld_str_t* dst_dir = grvbld_str_alloc(config->build_dir);
-    grvbld_str_append_path(dst_dir, "test");
-    bool make_path_ok = make_path(dst_dir->str);
+    char* dst_dir = grvbld_cstr_new_with_format("%s/test", config->build_dir);
+    bool make_path_ok = make_path(dst_dir);
     if (!make_path_ok) {
-        printf("[ERROR] failed to create path \"%s\"\n", dst_dir->str);
+        log_error("failed to create path \"%s\"", dst_dir);
         exit(1);
     }
 
-    grvbld_str_t* cmd = grvbld_build_cmd(config);
+    char* src_file = grvbld_cstr_new_with_format("%s/%s.c", config->test_dir, name);
+    char* dst_file = grvbld_cstr_new_with_format("%s/test/%s", config->build_dir, name);
+    char* cmd = grvbld_build_cmd(config);
     
-    grvbld_str_t* src_file = grvbld_str_alloc(config->test_dir);
-    grvbld_str_append_path(src_file, name);
-    grvbld_str_append(src_file, ".c"); 
+    cmd = grvbld_cstr_append_arg_format(cmd, "-o %s", dst_file);
+    cmd = grvbld_cstr_append_arg(cmd, src_file);
 
-    grvbld_str_t* dst_file = grvbld_str_alloc(config->build_dir);
-    grvbld_str_append_path(dst_file, "test");
-    grvbld_str_append_path(dst_file, name);
-
-    grvbld_str_append_arg(cmd, "-o");
-    grvbld_str_append_arg(cmd, dst_file->str);
-
-    grvbld_str_append_arg(cmd, src_file->str);
-
-    grvbld_str_append_arg(cmd, "-lgrv");
-    grvbld_str_append_arg(cmd, "-lm");
-    // grvbld_str_append_arg(cmd, "src/grv.c");
+    cmd = grvbld_cstr_append_arg(cmd, "-lgrv");
+    cmd = grvbld_cstr_append_arg(cmd, "-lm");
+    // cmd = grvbld_cstr_append_arg(cmd, "src/grv.c");
 
     if (config->verbosity > 0) {
-        printf("[INFO] %s\n", cmd->str);
+        log_info("%s", cmd);
     }
     
-    int result = system(cmd->str);
+    int result = system(cmd);
     if (result != 0) {
-        printf("[ERROR] failed to build test \"%s\"\n", name);
+        log_error("failed to build test \"%s\"", name);
         exit(1);
     }
 
-    system(dst_file->str);
+    system(dst_file);
     
     #if 0
     if (grv_cmd_available(grv_str_ref("valgrind"))) {
-        grvbld_str_t* valgrind_cmd = grvbld_str_alloc("valgrind --leak-check=full --show-leak-kinds=all ");
-        grvbld_str_append_arg(valgrind_cmd, dst_file->str);
+        grvbld_cstr_t* valgrind_cmd = grvbld_str_alloc("valgrind --leak-check=full --show-leak-kinds=all ");
+        grvbld_cstr_append_arg(valgrind_cmd, dst_file->str);
         printf("[INFO] %s\n", valgrind_cmd->str);
         system(valgrind_cmd->str);
     }
@@ -437,7 +391,7 @@ int grvbld_run_tests(grvbld_config_t* config) {
         char* test_file = test_files->data[i];
         if (starts_with(test_file, "test_")
             && ends_with(test_file, ".c")) {
-            remove_ext(test_file);
+            grvbld_cstr_remove_ext(test_file);
             grvbld_test(config, test_file);
         }
     }
@@ -445,55 +399,46 @@ int grvbld_run_tests(grvbld_config_t* config) {
 
 
 static int grvbld_build_static_library(grvbld_config_t* config, grvbld_target_t* target) {
-    grvbld_str_t* lib_file = grvbld_str_alloc(config->build_dir);
-    grvbld_str_append_path(lib_file, "lib");
-    grvbld_str_append(lib_file, target->name);
-    grvbld_str_append(lib_file, ".a");
+    char* lib_file = grvbld_cstr_new_with_format("%s/lib%s.a", config->build_dir, target->name);
+    char* ar_cmd = grvbld_cstr_new_with_format("ar rcs %s", lib_file);
 
-    grvbld_str_t* ar_cmd = grvbld_str_alloc("ar rcs");
-    grvbld_str_append_arg(ar_cmd, lib_file->str);
-
-    grvbld_str_t* cmd = grvbld_build_cmd(config);
-    grvbld_str_append_arg(cmd, "-c");
+    char* cmd = grvbld_build_cmd(config);
+    grvbld_cstr_append_arg(cmd, "-c");
 
     // compile all of the source files
     for (size_t i = 0; i < target->src_files.size; ++i) {
-        grvbld_str_t* src_file = grvbld_str_alloc(target->src_files.data[i]);
-        grvbld_str_t* obj_file = grvbld_str_filename(src_file);
-        obj_file = grvbld_str_prepend_path(obj_file, config->build_dir);
-        grvbld_str_replace_ext(obj_file, ".o");
-        grvbld_str_append_arg(cmd, src_file->str);
-        grvbld_str_append_arg(cmd, "-o");
-        grvbld_str_append_arg(cmd, obj_file->str);
-        grvbld_str_append_arg(cmd, "-c");
-        grvbld_str_append_arg(ar_cmd, obj_file->str);
+        char* src_file = grvbld_cstr_new(target->src_files.data[i]);
+        char* obj_file = grvbld_cstr_filename(src_file);
+        obj_file = grvbld_cstr_prepend_path(obj_file, config->build_dir);
+        obj_file = grvbld_cstr_replace_ext(obj_file, ".o");
+        cmd = grvbld_cstr_append_arg(cmd, src_file);
+        cmd = grvbld_cstr_append_arg_format(cmd, "-o %s", obj_file);
+        cmd = grvbld_cstr_append_arg(cmd, "-c");
+        ar_cmd = grvbld_cstr_append_arg(ar_cmd, obj_file);
 
-        printf("[INFO] %s\n", cmd->str);
-        system(cmd->str);
+        log_info("%s", cmd);
+        system(cmd);
     }
 
-    printf("[INFO] %s\n", ar_cmd->str);
-    system(ar_cmd->str);
+    log_info("%s", ar_cmd);
+    system(ar_cmd);
 }
 
 int grvbld_build_target(grvbld_config_t* config, grvbld_target_t* target) {
     create_build_path(config);
 
-    grvbld_str_t* cmd = grvbld_build_cmd(config);
+    char* cmd = grvbld_build_cmd(config);
     
     if (target->type == GRVBLD_STATIC_LIBRARY) {
         grvbld_build_static_library(config, target);
     } else if (target->type == GRVBLD_EXECUTABLE) {
-        grvbld_str_t* dst_file = grvbld_str_alloc(config->build_dir);
-        grvbld_str_append_path(dst_file, target->name);
-
-        grvbld_str_append_arg(cmd, "-o");
-        grvbld_str_append_arg(cmd, dst_file->str);
+        char* dst_file = grvbld_cstr_new_with_format("%s/%s", config->build_dir, target->name);
+        cmd = grvbld_cstr_append_arg_format(cmd, "-o %s", dst_file);
 
         for (size_t i = 0; i < target->src_files.size; ++i) {
-            grvbld_str_append_arg(cmd, target->src_files.data[i]);
+            cmd = grvbld_cstr_append_arg(cmd, target->src_files.data[i]);
         }
     
-        system(cmd->str);
+        system(cmd);
     }
 }

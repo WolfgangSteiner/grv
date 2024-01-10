@@ -3,10 +3,7 @@
 #include <stdio.h>
 
 int main(void) {
-    int result = system(
-        "gcc -g -o build -DGRV_BUILD_CONFIGURED -Iinclude -lm "
-        "src/build.c src/grvbld.c src/grv_cstr.c src/grv_fs.c src/grv_str.c src/grv_strarr.c src/grv_arr.c "
-        "src/grv_memory.c src/grv_util.c");
+    int result = system("gcc -g -o build -DGRV_BUILD_CONFIGURED -Iinclude src/build.c src/grvbld.c");
     if (result != 0) {
         printf("[ERROR] Failed to build build.c\n");
         return result;
