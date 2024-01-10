@@ -1,6 +1,7 @@
 #include "grv/grv_str.h"
 #include "grv/grv_base.h"
 #include "grv/grv_common.h"
+#include "grv/grv_memory.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -25,9 +26,14 @@ char* _get_cstr_buffer(grv_str_size_t capacity) {
     capacity = max_s64(capacity, 1024);
     if (str_cstr_buffer.data == 0) {
         str_cstr_buffer.capacity = capacity;
-        str_cstr_buffer.data = malloc(str_cstr_buffer.capacity);
+        str_cstr_buffer.data = grv_alloc(str_cstr_buffer.capacity);
     } 
     return str_cstr_buffer.data;
+}
+
+static bool _grv_str_iter_eq_str(grv_str_iter_t* iter, grv_str_t match_str) {
+    if (iter->pos + match_str.size > iter->str->size) return false;
+    return memcmp(iter->str->data + iter->pos, match_str.data, match_str.size) == 0;
 }
 
 grv_str_t grv_str_ref(char* cstr) {
@@ -61,12 +67,12 @@ grv_str_t grv_str_repeat_char(char c, grv_str_size_t count) {
 char* grv_str_cstr(grv_str_t str) {
     if (str_cstr_buffer.data == 0) {
         str_cstr_buffer.capacity = 1024;
-        str_cstr_buffer.data = calloc(str_cstr_buffer.capacity, 1);
+        str_cstr_buffer.data = grv_alloc(str_cstr_buffer.capacity);
     } 
     
     if (str_cstr_buffer.capacity < str.size + 1) {
         while (str_cstr_buffer.capacity < str.size + 1) str_cstr_buffer.capacity *= 2;
-        str_cstr_buffer.data = realloc(str_cstr_buffer.data, str_cstr_buffer.capacity);
+        str_cstr_buffer.data = grv_realloc(str_cstr_buffer.data, str_cstr_buffer.capacity);
     }
 
     memcpy(str_cstr_buffer.data, str.data, str.size);
@@ -75,13 +81,13 @@ char* grv_str_cstr(grv_str_t str) {
 }
 
 char* grv_str_copy_to_cstr(grv_str_t str) {
-    char* cstr = malloc(str.size + 1);
+    char* cstr = grv_alloc(str.size + 1);
     memcpy(cstr, str.data, str.size);
     cstr[str.size] = '\0';
     return cstr;
 }   
 
-grv_str_t str_substr(grv_str_t str, grv_str_size_t start, grv_str_size_t length) {
+grv_str_t grv_str_substr(grv_str_t str, grv_str_size_t start, grv_str_size_t length) {
     grv_str_size_t size = length > 0 ? length : str.size - start + length + 1;
     return (grv_str_t){ 
         .data=str.data + start,
@@ -185,7 +191,7 @@ grv_str_t grv_read_file(grv_str_t file_name) {
     if (fseek_result) return result;
     result.size = ftell(fp);
     rewind(fp);
-    result.data = malloc(result.size);
+    result.data = grv_alloc(result.size);
     fread(result.data, result.size, sizeof(char), fp);
     fclose(fp);
     result.is_valid = true;
@@ -240,6 +246,8 @@ grv_str_t grv_str_reduce_char_spans(grv_str_t str, char c) {
     }
     return res;
 }
+
+
 
 bool grv_str_eq_str(grv_str_t a, grv_str_t b) {
     if (a.size != b.size) return false;
@@ -303,6 +311,26 @@ void grv_str_iter_set_char(grv_str_iter_t* iter, char c) {
 void grv_str_iter_inc(grv_str_iter_t* iter) { iter->pos++; }
 void grv_str_iter_dec(grv_str_iter_t* iter) { iter->pos--; }
 
+grv_str_iter_t grv_str_find_str(grv_str_t* str, grv_str_t match_str) {
+    if (match_str.size == 0 || str->size < match_str.size) return grv_str_iter_end(str);
+    grv_str_iter_t iter = grv_str_iter_begin(str);
+    while (iter.pos <= str->size - match_str.size) {
+        if (_grv_str_iter_eq_str(&iter, match_str)) return iter;
+        grv_str_iter_inc(&iter);
+    }
+    return grv_str_iter_end(str);
+}
+
+grv_str_iter_t grv_str_rfind_str(grv_str_t* str, grv_str_t match_str) {
+    if (match_str.size == 0 || str->size < match_str.size) return grv_str_iter_rend(str);
+    grv_str_iter_t iter = {str, str->size - match_str.size};
+    while (!grv_str_iter_is_rend(&iter)) {
+        if (_grv_str_iter_eq_str(&iter, match_str)) return iter;
+        grv_str_iter_dec(&iter);
+    }
+    return grv_str_iter_rend(str);
+}
+
 grv_str_iter_t grv_str_find_char(grv_str_t* str, char c) {
     grv_str_iter_t iter = grv_str_iter_begin(str);
     while (!grv_str_iter_is_end(&iter)) {
@@ -312,7 +340,7 @@ grv_str_iter_t grv_str_find_char(grv_str_t* str, char c) {
     return iter;
 }
 
-grv_str_iter_t grv_str_find_char_from_back(grv_str_t* str, char c) {
+grv_str_iter_t grv_str_rfind_char(grv_str_t* str, char c) {
     grv_str_iter_t iter = grv_str_iter_rbegin(str);
     while (!grv_str_iter_is_rend(&iter)) {
         if (grv_str_iter_get_char(&iter) == c) return iter;
@@ -321,8 +349,8 @@ grv_str_iter_t grv_str_find_char_from_back(grv_str_t* str, char c) {
     return iter;
 }
 
-grv_str_iter_t grv_str_find_any_char(grv_str_t str, grv_str_t chars) {
-    grv_str_iter_t iter = grv_str_iter_begin(&str);
+grv_str_iter_t grv_str_find_any_char(grv_str_t* str, grv_str_t chars) {
+    grv_str_iter_t iter = grv_str_iter_begin(str);
     while (!grv_str_iter_is_end(&iter)) {
         char c = grv_str_iter_get_char(&iter);
         if (grv_str_contains_char(chars, c)) return iter;
@@ -348,8 +376,7 @@ grv_str_t grv_str_split_tail_at_char(grv_str_t str, char c) {
 }
 
 bool grv_str_iter_match(grv_str_iter_t* iter, grv_str_t match_str) {
-    if (iter->pos + match_str.size > iter->str->size) return false;
-    bool match = (memcmp(iter->str->data + iter->pos, match_str.data, match_str.size) == 0);
+    bool match = _grv_str_iter_eq_str(iter, match_str);
     if (match) {
         iter->pos += match_str.size;
         return true;
@@ -521,7 +548,7 @@ grv_str_t grv_str_new(char* cstr) {
     grv_str_t res = {0};
     grv_str_size_t len = strlen(cstr);
     grv_str_size_t capacity = _grv_str_capacity_for_size(len);
-    res.data = malloc(capacity);
+    res.data = grv_alloc(capacity);
     assert(res.data);
     res.size = len;
     res.is_valid = true;
@@ -531,16 +558,12 @@ grv_str_t grv_str_new(char* cstr) {
 }
 
 grv_str_t grv_str_new_with_capacity(grv_str_size_t capacity) {
-    grv_str_t str = {0};
     capacity = _grv_str_capacity_for_size(capacity);
-    str.data = calloc(capacity, 1);
-    str.is_valid = true; 
-    str.owns_data = true;
-    return str;
+    return (grv_str_t) {.data=grv_alloc(capacity), .size=0, .is_valid=true, .owns_data=true};
 }
 
 void grv_str_free(grv_str_t* str) {
-    if (str->owns_data) free(str->data);
+    if (str->owns_data && str->data) grv_free(str->data);
     *str = (grv_str_t){0};
 }
 
@@ -552,15 +575,14 @@ grv_str_t grv_str_cat_str_str(grv_str_t a, grv_str_t b) {
     return str;
 }
 
-void str_grow(grv_str_t* str, grv_str_size_t new_size) {
+void grv_str_grow(grv_str_t* str, grv_str_size_t new_size) {
+    grv_str_size_t new_capacity = _grv_str_capacity_for_size(new_size);
     if (str->owns_data) { 
         assert(new_size > str->size);
         grv_str_size_t old_capacity = _grv_str_capacity_for_size(str->size);
-        grv_str_size_t new_capacity = _grv_str_capacity_for_size(new_size);
-        if (new_capacity > old_capacity) str->data = realloc(str->data, new_capacity);
+        if (new_capacity > old_capacity) str->data = grv_realloc(str->data, new_capacity);
     } else {
-        grv_str_size_t new_capacity = _grv_str_capacity_for_size(new_size);
-        char* new_data = calloc(new_capacity, 1);
+        char* new_data = grv_alloc(new_capacity);
         memcpy(new_data, str->data, str->size);
         str->data = new_data;
         str->owns_data = true;
@@ -569,7 +591,7 @@ void str_grow(grv_str_t* str, grv_str_size_t new_size) {
 
 void grv_str_append_str(grv_str_t* str, grv_str_t append_str) {
     grv_str_size_t new_size = str->size + append_str.size;
-    str_grow(str, new_size);
+    grv_str_grow(str, new_size);
     memcpy(str->data + str->size, append_str.data, append_str.size);
     str->size = new_size;
 }
@@ -580,14 +602,14 @@ void grv_str_append_space(grv_str_t* str) {
 
 void grv_str_append_char(grv_str_t* str, char c) {
     grv_str_size_t new_size = str->size + 1;
-    str_grow(str, new_size);
+    grv_str_grow(str, new_size);
     str->data[str->size] = c;
     str->size = new_size;
 }
 
 void grv_str_prepend_str(grv_str_t* str, grv_str_t prepend_str) {
     grv_str_size_t new_size = str->size + prepend_str.size;
-    str_grow(str, new_size);
+    grv_str_grow(str, new_size);
     memmove(str->data + prepend_str.size, str->data, str->size);
     memcpy(str->data, prepend_str.data, prepend_str.size);
     str->size = new_size;
@@ -595,7 +617,7 @@ void grv_str_prepend_str(grv_str_t* str, grv_str_t prepend_str) {
 
 void grv_str_prepend_char(grv_str_t* str, char c) {
     grv_str_size_t new_size = str->size + 1;
-    str_grow(str, new_size);
+    grv_str_grow(str, new_size);
     memmove(str->data + 1, str->data, str->size);
     str->data[0] = c;
     str->size = new_size;

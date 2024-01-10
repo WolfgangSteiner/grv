@@ -8,6 +8,7 @@
 #include "grv_base.h"
 #include "grv_str.h"
 #include "grv_cstr.h"
+#include "grv_memory.h"
 
 typedef struct {
   grv_str_t name;
@@ -28,11 +29,8 @@ typedef struct {
   if (GRV_TEST_VERBOSITY) GRV_TEST_NEWLINE(); \
   printf(GRV_TEST_ERROR_MSG_PREFIX "%s:%d %s is " FMT " expected " FMT ".\n", __FILE__, __LINE__, EXPR, A, B);
 
-#define GRV_TEST_VERBOSE
-#ifdef GRV_TEST_VERBOSE
+#ifndef GRV_TEST_VERBOSITY
   #define GRV_TEST_VERBOSITY 1
-#else
-  #define GRV_TEST_VERBOSITY 0
 #endif
 
 static inline void _put_str(grv_str_t s) { 
@@ -90,11 +88,14 @@ static inline bool _grv_test_end(_grv_test_t test) {
   success = success && test_##NAME();
 
 #define GRV_TEST_EQUAL_PTR(ACTUAL, EXPECTED) _grv_test_equal_ptr(&_test, ACTUAL, EXPECTED, __FILE__, __LINE__)  
+#define GRV_TEST_NULLPTR(ACTUAL) _grv_test_nullptr(&_test, ACTUAL, __FILE__, __LINE__)
+#define GRV_TEST_NOT_NULLPTR(ACTUAL) _grv_test_not_nullptr(&_test, ACTUAL, __FILE__, __LINE__) 
 #define GRV_TEST_TRUE(ACTUAL) _grv_test_true(&_test, #ACTUAL, ACTUAL, __FILE__, __LINE__) 
 #define GRV_TEST_FALSE(ACTUAL) _grv_test_false(&_test, #ACTUAL, ACTUAL, __FILE__, __LINE__) 
 #define GRV_TEST_CLOSE_F32(A, B, EPSILON) _grv_test_close_f32(&_test, #A, A, B, EPSILON, __FILE__, __LINE__) 
 #define GRV_TEST_FAIL() _grv_test_fail(&_test, __FILE__, __LINE__)
 #define GRV_TEST_EQUAL_INT(A, B) _grv_test_equal_int(&_test, #A, A, B, __FILE__, __LINE__)
+#define GRV_TEST_NOT_EQUAL_INT(A, B) _grv_test_not_equal_int(&_test, #A, A, B, __FILE__, __LINE__)
 #define GRV_TEST_EQUAL_UINT(A, B) _grv_test_equal_uint(&_test, #A, A, B, __FILE__, __LINE__)
 #define GRV_TEST_EQUAL_SIZE(A, B) _grv_test_equal_int(&_test, #A, A, B, __FILE__, __LINE__)
 
@@ -123,13 +124,31 @@ static inline void _grv_test_equal_ptr(_grv_test_t* test, void* actual, void* ex
   }
 }
 
+static inline void _grv_test_nullptr(_grv_test_t* test, void* actual, char* file, int line) {
+  test->total_count++;
+  if (actual != NULL) {
+    test->failed_count++;
+    char* msg = grv_cstr_new_with_format("Pointer value is not NULL. Expected NULL, got %p.", actual);
+    grv_test_print_error(msg, file, line);
+  }
+}
+
+static inline void _grv_test_not_nullptr(_grv_test_t* test, void* actual, char* file, int line) {
+  test->total_count++;
+  if (actual == NULL) {
+    test->failed_count++;
+    char* msg = grv_cstr_new_with_format("Pointer value is NULL. Expected non-NULL value.");
+    grv_test_print_error(msg, file, line);
+  }
+}
+
 static inline void _grv_test_true(_grv_test_t* test, char* expression, bool a, char* file, int line) {
   test->total_count++;
   if (!a) {
     test->failed_count++;
     char* msg = grv_cstr_new_with_format("%s is false, expected true.", expression);
     grv_test_print_error(msg, file, line);
-    free(msg);
+    grv_free(msg);
   }
 }
 
@@ -139,7 +158,7 @@ static inline void _grv_test_false(_grv_test_t* test, char* expression, bool a, 
     test->failed_count++;
     char* msg = grv_cstr_new_with_format("%s is true, expected false.", expression);
     grv_test_print_error(msg, file, line);
-    free(msg);
+    grv_free(msg);
   }
 }
 
@@ -149,7 +168,7 @@ static inline void _grv_test_close_f32(_grv_test_t* test, char* expression, f32 
     test->failed_count++;
     char* msg = grv_cstr_new_with_format("%s is %f, expected %f.", expression, actual, expected);
     grv_test_print_error(msg, file, line);
-    free(msg);
+    grv_free(msg);
   }
 }
 
@@ -161,9 +180,9 @@ static inline void _grv_test_equal_str(_grv_test_t* test, char* expression, grv_
     char* expected_cstr = grv_str_copy_to_cstr(expected);
     char* msg = grv_cstr_new_with_format("%s is \"%s\", expected \"%s\".", expression, actual_cstr, expected_cstr);
     grv_test_print_error(msg, file, line);
-    free(actual_cstr);
-    free(expected_cstr);
-    free(msg);
+    grv_free(actual_cstr);
+    grv_free(expected_cstr);
+    grv_free(msg);
   }
 }
 static inline void _grv_test_equal_cstr(_grv_test_t* test, char* expression, grv_str_t actual, char* expected, char* file, int line) {
@@ -177,8 +196,8 @@ static inline void _grv_test_not_equal_str(_grv_test_t* test, char* expression, 
     char* actual_cstr = grv_str_copy_to_cstr(actual);
     char* msg = grv_cstr_new_with_format("%s is \"%s\", expected different value.", expression, actual_cstr);
     grv_test_print_error(msg, file, line);
-    free(actual_cstr);
-    free(msg);
+    grv_free(actual_cstr);
+    grv_free(msg);
   }
 }
 
@@ -198,7 +217,17 @@ static inline void _grv_test_equal_int(_grv_test_t* test, char* expression, s64 
     test->failed_count++;
     char* msg = grv_cstr_new_with_format("%s is %lld, expected %lld.", expression, actual, expected);
     grv_test_print_error(msg, file, line);
-    free(msg);
+    grv_free(msg);
+  }
+}
+
+static inline void _grv_test_not_equal_int(_grv_test_t* test, char* expression, s64 actual, s64 expected, char* file, int line) {
+  test->total_count++;
+  if (actual == expected) {
+    test->failed_count++;
+    char* msg = grv_cstr_new_with_format("%s is %lld, expected different value.", expression, actual);
+    grv_test_print_error(msg, file, line);
+    grv_free(msg);
   }
 }
 

@@ -1,5 +1,8 @@
+#include "grv_arr.c"
 #include "grv_common.c"
+#include "grv_cstr.c"
 #include "grv_math.c"
+#include "grv_memory.c"
 #include "grv_fs.c"
 #include "grv_str.c"
 #include "grv_strarr.c"

@@ -3,27 +3,19 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include "grv/cstr.h"
+#include "grv/grv_cstr.h"
+#include "grv/grv_fs.h"
 
-static inline int file_get_mod_time(char* filename) {
-    struct stat attr;
-    stat(filename, &attr);
-    return attr.st_mtime;
-}
+static inline bool is_source_file_newer(char* exe_filename_cstr) {
+    char* src_filename = grv_cstr_cat(exe_filename_cstr, ".c");
+    grv_str_t exe_filename = grv_str_ref(exe_filename_cstr);
 
-static inline bool is_file_newer_than(char* filename, char* other_filename) {
-    int mod_time_a = file_get_mod_time(filename);
-    int mod_time_b = file_get_mod_time(other_filename);
-    return mod_time_a > mod_time_b;
-}
-
-static inline bool is_source_file_newer(char* exe_filename) {
-    char* src_filename = grv_cstr_cat(exe_filename, ".c");
-    bool result = is_file_newer_than(src_filename, exe_filename);
-    free(src_filename);
+    bool result = grv_fs_is_file_newer_than(grv_str_ref(src_filename), exe_filename);
+    result = result || grv_fs_is_file_newer_than(grv_str_ref("src/grvbld.c"), exe_filename);
+    result = result || grv_fs_is_file_newer_than(grv_str_ref("src/grv_cstr.c"), exe_filename);
+    grv_cstr_free(src_filename);
     return result;
 }
 
@@ -46,12 +38,14 @@ static inline void log_error(char* fmt, ...) {
 static inline int rebuild_file(char* filename) {
     char* cmd = grv_cstr_cat("gcc -o ", filename);
     cmd = grv_cstr_append(cmd, " -DGRV_BUILD_CONFIGURED -Iinclude ");
+    cmd = grv_cstr_append(cmd, "src/");
     cmd = grv_cstr_append(cmd, filename);
-    cmd = grv_cstr_append(cmd, ".c")
-    cmd = grv_cstr_append(cmd, " src/grvbld.c src/cstr.c");
+    cmd = grv_cstr_append(cmd, ".c");
+    cmd = grv_cstr_append(cmd, " src/grvbld.c src/grv_cstr.c src/grv_fs.c src/grv_str.c ");
+    cmd = grv_cstr_append(cmd, " src/grv_memory.c src/grv_util.c src/grv_strarr.c src/grv_arr.c");
     log_info("Rebuilding %s\n", filename);
     int result = system(cmd);
-    free(cmd);
+    grv_cstr_free(cmd);
     return result;
 }
 
@@ -60,6 +54,7 @@ static inline int rebuild_file(char* filename) {
     if (is_source_file_newer(_executable_name)) { \
         int result = rebuild_file(_executable_name); \
         if (result == 0) { \
+            log_info("Rebuilding of %s successful.\n", _executable_name); \
             system(_executable_name); \
             return 1; \
         } else { \

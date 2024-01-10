@@ -137,6 +137,28 @@ GRV_TEST_BEGIN(grv_str_lstrip)
   GRV_TEST_EQUAL_STR(stripped, "");
 GRV_TEST_END()
 
+GRV_TEST_BEGIN(grv_str_find_str)
+  grv_str_t s = grv_str_ref("Hello World World");
+  grv_str_iter_t find_iter = grv_str_find_str(&s, grv_str_ref("World"));
+  GRV_TEST_FALSE(grv_str_iter_is_end(&find_iter));
+  GRV_TEST_EQUAL_INT(find_iter.pos, 6);
+  find_iter = grv_str_find_str(&s, grv_str_ref("Hello"));
+  GRV_TEST_FALSE(grv_str_iter_is_end(&find_iter));
+  GRV_TEST_EQUAL_INT(find_iter.pos, 0);
+  find_iter = grv_str_rfind_str(&s, grv_str_ref("World"));
+  GRV_TEST_FALSE(grv_str_iter_is_rend(&find_iter));
+  GRV_TEST_EQUAL_INT(find_iter.pos, 12);
+  find_iter = grv_str_rfind_str(&s, grv_str_ref("Hello"));
+  GRV_TEST_FALSE(grv_str_iter_is_rend(&find_iter));
+  GRV_TEST_EQUAL_INT(find_iter.pos, 0);
+  find_iter = grv_str_find_str(&s, grv_str_ref("Hello World"));
+  GRV_TEST_FALSE(grv_str_iter_is_end(&find_iter));
+  GRV_TEST_EQUAL_INT(find_iter.pos, 0);
+  find_iter = grv_str_find_str(&s, grv_str_ref("alpha"));
+  GRV_TEST_TRUE(grv_str_iter_is_end(&find_iter));
+  find_iter = grv_str_rfind_str(&s, grv_str_ref("alpha"));
+  GRV_TEST_TRUE(grv_str_iter_is_rend(&find_iter));
+GRV_TEST_END()
 
 #if 0
 GRV_TEST_BEGIN(grv_str_rstrip)
@@ -285,6 +307,7 @@ int main(void) {
   GRV_TEST_RUN(grv_str_starts_with);
   GRV_TEST_RUN(grv_str_ends_with);
   GRV_TEST_RUN(grv_str_lstrip);
+  GRV_TEST_RUN(grv_str_find_str);
   
   #if 0
   GRV_TEST_RUN(grv_str_rstrip);

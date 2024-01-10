@@ -1,4 +1,5 @@
 #include "grv/grvbld.h"
+#include "grv/grv_util.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -365,10 +366,10 @@ static grvbld_str_t* grvbld_build_cmd(grvbld_config_t* config) {
         grvbld_str_append(cmd, config->defines.data[i]);
     }
 
-    if (config->debug) {
-        grvbld_str_append_arg(cmd, "-D");
-        grvbld_str_append(cmd, "GRV_DEBUG_MEMORY");
-    }
+//    if (config->debug) {
+//        grvbld_str_append_arg(cmd, "-D");
+//        grvbld_str_append(cmd, "GRV_DEBUG_MEMORY");
+//    }
 
     grvbld_str_append_arg(cmd, "-L");
     grvbld_str_append(cmd, config->build_dir);
@@ -379,7 +380,7 @@ static grvbld_str_t* grvbld_build_cmd(grvbld_config_t* config) {
 int grvbld_test(grvbld_config_t* config, char* name) {
     config = grvbld_config_dup(config);    
     config->debug = true;
-    grvbld_strarr_push(&config->defines, "GRV_DEBUG_MEMORY");
+    //grvbld_strarr_push(&config->defines, "GRV_DEBUG_MEMORY");
 
     grvbld_str_t* dst_dir = grvbld_str_alloc(config->build_dir);
     grvbld_str_append_path(dst_dir, "test");
@@ -405,6 +406,7 @@ int grvbld_test(grvbld_config_t* config, char* name) {
     grvbld_str_append_arg(cmd, src_file->str);
 
     grvbld_str_append_arg(cmd, "-lgrv");
+    grvbld_str_append_arg(cmd, "-lm");
     // grvbld_str_append_arg(cmd, "src/grv.c");
 
     if (config->verbosity > 0) {
@@ -418,6 +420,15 @@ int grvbld_test(grvbld_config_t* config, char* name) {
     }
 
     system(dst_file->str);
+    
+    #if 0
+    if (grv_cmd_available(grv_str_ref("valgrind"))) {
+        grvbld_str_t* valgrind_cmd = grvbld_str_alloc("valgrind --leak-check=full --show-leak-kinds=all ");
+        grvbld_str_append_arg(valgrind_cmd, dst_file->str);
+        printf("[INFO] %s\n", valgrind_cmd->str);
+        system(valgrind_cmd->str);
+    }
+    #endif
 }
 
 int grvbld_run_tests(grvbld_config_t* config) {
@@ -454,6 +465,7 @@ static int grvbld_build_static_library(grvbld_config_t* config, grvbld_target_t*
         grvbld_str_append_arg(cmd, src_file->str);
         grvbld_str_append_arg(cmd, "-o");
         grvbld_str_append_arg(cmd, obj_file->str);
+        grvbld_str_append_arg(cmd, "-c");
         grvbld_str_append_arg(ar_cmd, obj_file->str);
 
         printf("[INFO] %s\n", cmd->str);

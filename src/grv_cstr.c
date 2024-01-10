@@ -1,4 +1,5 @@
 #include "grv/grv_cstr.h"
+#include "grv/grv_memory.h"
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -19,8 +20,9 @@ static grv_cstr_size_t _cstr_compute_capacity(grv_cstr_size_t len) {
 
 char* grv_cstr_alloc(grv_cstr_size_t len) {
   grv_cstr_size_t new_capacity = _cstr_compute_capacity(len);
-  char* new_data = calloc(new_capacity, 1);
+  char* new_data = grv_alloc(new_capacity);
   assert(new_data != NULL);
+  new_data[0] = '\0';
   return new_data;
 }
 
@@ -28,12 +30,16 @@ char* grv_cstr_new() {
   return grv_cstr_alloc(0);
 }
 
+void grv_cstr_free(char* str) {
+  grv_free(str);
+}
+
 char* cstr_grow(char* str, grv_cstr_size_t new_len) {
   grv_cstr_size_t current_len = strlen(str);
   grv_cstr_size_t current_capacity = _cstr_compute_capacity(current_len);
   grv_cstr_size_t new_capacity = _cstr_compute_capacity(new_len);
   if (new_capacity > current_capacity) {
-    char* new_data = realloc(str, new_capacity);
+    char* new_data = grv_realloc(str, new_capacity);
     assert(new_data != NULL);
     return new_data;
   } else {
@@ -89,5 +95,6 @@ char* grv_cstr_new_with_format(const char* fmt, ...) {
 char* grv_cstr_repeat_char(char c, grv_cstr_size_t count) {
   char* cstr = grv_cstr_alloc(count);
   memset(cstr, c, count);
+  cstr[count] = '\0';
   return cstr;
 }

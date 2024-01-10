@@ -23,9 +23,10 @@ grv_str_t grv_str_new(char* cstr);
 grv_str_t grv_str_new_with_capacity(grv_str_size_t capacity);
 void grv_str_free(grv_str_t*);
 
-grv_str_t str_substr(grv_str_t, grv_str_size_t start, grv_str_size_t length);
+grv_str_t grv_str_substr(grv_str_t, grv_str_size_t start, grv_str_size_t length);
 
-static inline grv_str_size_t grv_str_len(grv_str_t str) { return str.size; }
+GRV_INLINE grv_str_size_t grv_str_len(grv_str_t str) { return str.size; }
+GRV_INLINE bool grv_str_empty(grv_str_t str) { return str.size == 0; }
 
 int grv_str_to_int(grv_str_t str);
 s64 grv_str_to_s64(grv_str_t str);
@@ -88,6 +89,7 @@ grv_str_t grv_str_lstrip(grv_str_t);
 grv_str_t grv_str_lstrip_char(grv_str_t, char);
 grv_str_t grv_str_rstrip_char(grv_str_t, char);
 grv_str_t grv_str_strip_char(grv_str_t, char);
+GRV_INLINE grv_str_t grv_str_remove_trailing_newline(grv_str_t str) { return grv_str_rstrip_char(str, '\n'); };
 
 typedef grv_str_t(*grv_str_format_callback_t)(va_list*, grv_str_t pattern);
 grv_str_t grv_str_format(grv_str_t fmt, ...); 
@@ -95,15 +97,28 @@ void grv_str_print_format(grv_str_t fmt, ...);
 void grv_str_format_register_pattern(grv_str_t pattern, grv_str_format_callback_t callback);
 
 grv_str_iter_t grv_str_find_char(grv_str_t* str, char c);
-grv_str_iter_t grv_str_find_char_from_back(grv_str_t* str, char c);
-grv_str_iter_t grv_str_find_any_char(grv_str_t str, grv_str_t chars);
+grv_str_iter_t grv_str_rfind_char(grv_str_t* str, char c);
+grv_str_iter_t grv_str_find_any_char(grv_str_t* str, grv_str_t chars);
+
 grv_str_t grv_str_split_tail_at_char(grv_str_t str, char c);
 grv_str_t grv_str_reduce_char_spans(grv_str_t, char);
+
+grv_str_iter_t grv_str_find_str(grv_str_t* str, grv_str_t match_str);
+grv_str_iter_t grv_str_rfind_str(grv_str_t* str, grv_str_t match_str);
+
+
+
+grv_str_t grv_separate_head_front(grv_str_t* str, grv_str_t sep);
+grv_str_t grv_separate_head_back(grv_str_t* str, grv_str_t sep);
+grv_str_t grv_separate_tail_front(grv_str_t* str, grv_str_t sep);
+grv_str_t grv_separate_tail_back(grv_str_t* str, grv_str_t sep);
 
 bool grv_str_iter_is_end(grv_str_iter_t* iter);
 bool grv_str_iter_is_rend(grv_str_iter_t* iter);
 grv_str_iter_t grv_str_iter_begin(grv_str_t* str);
+GRV_INLINE grv_str_iter_t grv_str_iter_end(grv_str_t* str) { return (grv_str_iter_t){.str=str, .pos=str->size}; } 
 grv_str_iter_t grv_str_iter_rbegin(grv_str_t* str);
+GRV_INLINE grv_str_iter_t grv_str_iter_rend(grv_str_t* str) { return (grv_str_iter_t){.str=str, .pos=-1}; } 
 void grv_str_print(grv_str_t str);
 grv_str_t grv_get_line(grv_str_iter_t* iter);
 grv_str_t grv_read_file(grv_str_t file_name);
@@ -142,6 +157,7 @@ typedef grv_str_format_callback_t str_format_callback_t;
 #define str_ref grv_str_ref
 #define str_new grv_str_new
 #define str_new_with_capacity grv_str_new_with_capacity
+#define str_substr grv_str_substr
 #define str_free grv_str_free
 #define str_len grv_str_len
 #define str_to_int grv_str_to_int
@@ -198,7 +214,7 @@ typedef grv_str_format_callback_t str_format_callback_t;
 #define str_print_format grv_str_print_format
 #define str_format_register_pattern grv_str_format_register_pattern
 #define str_find_char grv_str_find_char
-#define str_find_char_from_back grv_str_find_char_from_back
+#define str_rfind_char grv_str_rfind_char
 #define str_find_any_char grv_str_find_any_char
 #define str_split_tail_at_char grv_str_split_tail_at_char
 #define str_reduce_char_spans grv_str_reduce_char_spans

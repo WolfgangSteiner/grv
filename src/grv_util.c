@@ -1,4 +1,5 @@
 #include "grv/grv_util.h"
+#include "grv/grv_memory.h"
 #include <stdio.h>
 #include <glob.h>
 
@@ -28,10 +29,10 @@ int grv_util_get_terminal_width() {
 }
 
 
-grv_strarr_t grv_system(grv_str_t* cmd) {
-  char* cmd_cstr = grv_str_copy_cstr(cmd);
+grv_strarr_t grv_system(grv_str_t cmd) {
+  char* cmd_cstr = grv_str_cstr(cmd);
   grv_strarr_t result = grv_system_cstr(cmd_cstr); 
-  free(cmd_cstr);
+  grv_free(cmd_cstr);
   return result;
 }
 
@@ -46,9 +47,9 @@ grv_strarr_t grv_system_cstr(char* cmd) {
   size_t len = 0;
   ssize_t read;
   while ((read = getline(&line, &len, fp)) != -1) {
-    grv_str_t line_str = grv_str_new(line);
-    grv_str_remove_trailing_newline(&line_str); 
-    grv_strarr_push(&result, &line_str);
+    grv_str_t line_str = grv_str_ref(line);
+    line_str = grv_str_remove_trailing_newline(line_str); 
+    grv_strarr_push(&result, grv_str_copy(line_str));
   }
 
   pclose(fp);
@@ -59,10 +60,10 @@ grv_strarr_t grv_system_cstr(char* cmd) {
   return result;
 }
 
-grv_strarr_t grv_util_glob(grv_str_t* pattern) {
+grv_strarr_t grv_util_glob(grv_str_t pattern) {
   // iterate over contents of directory
   grv_strarr_t result = grv_strarr_new();
-  char* pattern_cstr = grv_str_copy_cstr(pattern);
+  char* pattern_cstr = grv_str_copy_to_cstr(pattern);
   glob_t glob_result;
   glob(pattern_cstr, GLOB_TILDE, NULL, &glob_result);
   if (glob_result.gl_pathc == 0) {
@@ -72,9 +73,10 @@ grv_strarr_t grv_util_glob(grv_str_t* pattern) {
 
   for (size_t i = 0; i < glob_result.gl_pathc; ++i) {
     grv_str_t path = grv_str_new(glob_result.gl_pathv[i]);
-    grv_strarr_push(&result, &path);
+    grv_strarr_push(&result, path);
   }
   globfree(&glob_result);
+  grv_free(pattern_cstr);
   return result;
 }
 
@@ -102,80 +104,11 @@ void grv_util_random_bytes(void* buffer, size_t buffer_size) {
   getrandom(buffer, buffer_size, 0);
 }
 
-size_t grv_util_calc_alloc_size(size_t size) {
-  size_t mask = sizeof(void*) - 1;
-  size_t result = (size + mask) & ~mask;
-  #ifdef GRV_DEBUG_MEMORY
-    result += sizeof(void*);
-  #endif
-  return result;
-}
-
-#ifdef GRV_DEBUG_MEMORY
-  static size_t grv_impl_get_alloc_size(void* ptr) {
-    size_t* alloc_ptr = ptr;
-    alloc_ptr--;
-    return *alloc_ptr;
-  }
-
-  static size_t* grv_impl_get_alloc_ptr(void* ptr) {
-    size_t* alloc_ptr = ptr;
-    alloc_ptr--;
-    return alloc_ptr;
-  }
-#endif
-
-
-void* grv_alloc(u64 size) {
-  size_t alloc_size = grv_util_calc_alloc_size(size);
-  size_t* alloc_ptr = malloc(alloc_size);
-  void* result = alloc_ptr;
-  if (result == NULL) return result;
-  #ifdef GRV_ZERO_MEMORY
-    memset(alloc_ptr, 0, alloc_size);
-  #elif defined(GRV_DEBUG_MEMORY)
-    memset(alloc_ptr, 0xef, alloc_size);
-    *alloc_ptr = alloc_size;
-    result = alloc_ptr + 1;
-  #endif
-  return result;
-}
-
-void* grv_realloc(void* ptr, u64 size) {
-  assert(ptr != NULL);
-  assert(size != 0L);
-#ifdef GRV_DEBUG_MEMORY
-  // always realloc to a new pointer
-  void* new_ptr = grv_alloc(size);
-  if (new_ptr == NULL) return NULL;
-  size_t old_alloc_size = grv_impl_get_alloc_size(ptr);
-  size_t new_alloc_size = grv_impl_get_alloc_size(new_ptr);
-  size_t cpy_size = min_u64(old_alloc_size, new_alloc_size) - sizeof(size_t);
-  memcpy(new_ptr, ptr, cpy_size);
-  grv_free(ptr);
-  return new_ptr;
-#else
-  return realloc(ptr, size);
-#endif
-}
-
-void grv_free(void* ptr) {
-  assert(ptr != NULL);
-  #ifdef GRV_DEBUG_MEMORY
-    size_t alloc_size = grv_impl_get_alloc_size(ptr);
-    size_t* alloc_ptr = grv_impl_get_alloc_ptr(ptr);
-    memset(alloc_ptr, 0xcd, alloc_size); 
-    free(alloc_ptr);
-  #else
-    free(ptr); 
-  #endif
-}
-
-void grv_free_prepare(void* ptr) {
-  (void)ptr;
-  #ifdef GRV_DEBUG_MEMORY
-    size_t alloc_size = grv_impl_get_alloc_size(ptr);
-    size_t* alloc_ptr = grv_impl_get_alloc_ptr(ptr);
-    memset(alloc_ptr, 0xcd, alloc_size); 
-  #endif
+bool grv_cmd_available(grv_str_t cmd) {
+  grv_str_t check_cmd = grv_str_new("which ");
+  grv_str_append_str(&check_cmd, cmd);
+  grv_str_append_cstr(&check_cmd, " > /dev/null 2>&1");
+  int result = system(grv_str_cstr(check_cmd));
+  grv_str_free(&check_cmd);
+  return result == 0;
 }
