@@ -151,4 +151,6 @@ int grvbld_test(grvbld_config_t*, char* name);
 int grvbld_run_tests(grvbld_config_t*);
 int grvbld_build_target(grvbld_config_t*, grvbld_target_t*);
 
+bool grvbld_args_contain(int argc, char** argv, char* arg);
+
 #endif

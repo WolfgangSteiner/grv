@@ -137,6 +137,19 @@ static bool ends_with(char* str, char* suffix) {
     return strncmp(str + str_len - suffix_len, suffix, suffix_len) == 0;
 }
 
+static bool grvbld_cstr_eq(char* a, char* b) {
+    return strcmp(a, b) == 0;
+}
+
+bool grvbld_args_contain(int argc, char** argv, char* arg) {
+    for (int i = 0; i < argc; ++i) {
+        if (grvbld_cstr_eq(argv[i], arg)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 //==============================================================================
 // grvbld_config_t
 //==============================================================================
