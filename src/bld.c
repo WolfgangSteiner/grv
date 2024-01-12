@@ -4,15 +4,12 @@
 #include <string.h>
 
 char* concatenate_arguments(int argc, char** argv) {
-    int size = 0;
-    for (int i = 0; i < argc; ++i) {
-        size += strlen(argv[i]);
-    }
-    size += argc + 1;
-
+    int size = strlen(argv[0]) + 1;
     char* cmd_line = calloc(size, 1);
     strcat(cmd_line, argv[0]);  
     for (int i = 1; i < argc; ++i) {
+        size += strlen(argv[i]) + 1;
+        cmd_line = realloc(cmd_line, size);
         strcat(cmd_line, " ");
         strcat(cmd_line, argv[i]);
     }
