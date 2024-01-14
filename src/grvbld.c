@@ -161,7 +161,7 @@ void grvbld_config_init(grvbld_config_t* config) {
     grvbld_strarr_init(&config->libs);
     grvbld_strarr_init(&config->library_dirs);
     grvbld_strarr_init(&config->defines);
-    config->build_dir = "_build";
+    config->build_dir = "build";
     config->test_dir = "test";
     config->debug = true;
     config->treat_warnings_as_errors = false;
@@ -293,6 +293,8 @@ grvbld_target_t* grvbld_target_create(char* name, grvbld_target_type_t type) {
     target->name = grvbld_cstr_new(name);
     target->type = type;
     grvbld_strarr_init(&target->src_files);
+    grvbld_strarr_init(&target->libs);
+    target->linked_targets = (grvbld_target_arr_t){0};
     return target;
 }
 
@@ -300,6 +302,21 @@ void grvbld_target_add_src(grvbld_target_t* target, char* src) {
     grvbld_strarr_push(&target->src_files, src);
 }
 
+void grvbld_target_link_library(grvbld_target_t* target, char* lib) {
+    grvbld_strarr_push(&target->libs, lib);
+}
+
+void grvbld_target_link(grvbld_target_t* target, grvbld_target_t* linked_target) {
+    grvbld_target_arr_t* arr = &target->linked_targets;
+    if (arr->capacity == 0) {
+        arr->capacity = 16;
+        arr->arr = calloc(arr->capacity, sizeof(grvbld_target_t*));
+    } else if (arr->size >= arr->capacity) {
+        arr->capacity *= 2;
+        arr->arr = realloc(arr->arr, arr->capacity * sizeof(grvbld_target_t*));
+    }
+    arr->arr[arr->size++] = linked_target;
+}
 
 //==============================================================================
 // grvbld main functions
@@ -451,6 +468,22 @@ int grvbld_build_target(grvbld_config_t* config, grvbld_target_t* target) {
         for (size_t i = 0; i < target->src_files.size; ++i) {
             cmd = grvbld_cstr_append_arg(cmd, target->src_files.data[i]);
         }
+    
+        for (size_t i = 0; i < target->libs.size; ++i) {
+            cmd = grvbld_cstr_append_arg_format(cmd, "-l%s", target->libs.data[i]);
+        }
+
+        for (size_t i = 0; i < target->linked_targets.size; ++i) {
+            grvbld_target_t* linked_target = target->linked_targets.arr[i];
+            if (linked_target->type == GRVBLD_STATIC_LIBRARY) {
+                cmd = grvbld_cstr_append_arg_format(cmd, "-l%s", linked_target->name);
+                for (size_t j = 0; j < linked_target->libs.size; ++j) {
+                    cmd = grvbld_cstr_append_arg_format(cmd, "-l%s", linked_target->libs.data[j]);
+                }
+            }
+        }        
+
+        cmd = grvbld_cstr_append_arg(cmd, "-lm");
     
         system(cmd);
     }

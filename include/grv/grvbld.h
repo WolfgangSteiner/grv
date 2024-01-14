@@ -118,10 +118,20 @@ typedef enum {
 } grvbld_target_type_t;
 
 
+struct grvbld_target_t;
+
 typedef struct {
+    struct grvbld_target_t** arr;
+    size_t size;
+    size_t capacity;
+} grvbld_target_arr_t;
+
+typedef struct grvbld_target_t{
     char* name;
     grvbld_target_type_t type;
     grvbld_strarr_t src_files;
+    grvbld_strarr_t libs;
+    grvbld_target_arr_t linked_targets; 
 } grvbld_target_t;
 
 typedef struct {
@@ -145,6 +155,7 @@ void grvbld_config_add_include_dir(grvbld_config_t* config, char* dir);
 grvbld_target_t* grvbld_target_create(char* name, grvbld_target_type_t type);
 void grvbld_target_add_src(grvbld_target_t* target, char* src);
 void grvbld_target_link_library(grvbld_target_t* target, char* lib);
+void grvbld_target_link(grvbld_target_t* target, grvbld_target_t* other);
 
 int grvbld_build_test(grvbld_config_t* config, char* name);
 int grvbld_test(grvbld_config_t*, char* name);

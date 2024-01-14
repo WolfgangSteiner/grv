@@ -1,4 +1,4 @@
-#include "grv/grv_log.h
+#include "grv/grv_log.h"
 #include <stdio.h>
 #include <stdarg.h>
 

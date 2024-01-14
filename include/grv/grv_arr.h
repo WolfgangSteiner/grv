@@ -43,7 +43,7 @@ void _grv_arr_check_and_grow(grv_arr_t* arr, size_t element_size, size_t initial
     _grv_arr_check_and_grow((grv_arr_t*)ARR, sizeof(*(ARR)->arr), GRV_ARR_DEFAULT_CAPACITY, GRV_ARR_GROWTH_FACTOR)
 
 void _grv_arr_push(grv_arr_t* arr, size_t element_size, void* element);
-#define grv_arr_push(ARR, ELEMENT) _grv_arr_push((grv_arr_t*)ARR, sizeof(*ARR->arr), &ELEMENT);
+#define grv_arr_push(ARR, ELEMENT) _grv_arr_push((grv_arr_t*)(ARR), sizeof(*(ARR)->arr), &ELEMENT);
 
 void _grv_arr_push_front(grv_arr_t* arr, size_t element_size, void* element);
 #define grv_arr_push_front(ARR, ELEMENT) _grv_arr_push_front((grv_arr_t*)ARR, sizeof(*ARR->arr), &ELEMENT);
