@@ -484,7 +484,11 @@ int grvbld_build_target(grvbld_config_t* config, grvbld_target_t* target) {
         }        
 
         cmd = grvbld_cstr_append_arg(cmd, "-lm");
-    
-        system(cmd);
+        log_info("%s", cmd);
+        int result = system(cmd);
+        if (result == 0 && target->run_after_build) {
+            char* debug_cmd = grvbld_cstr_new_with_format("gdb -q -ex run -ex quit %s", dst_file);
+            system(debug_cmd);
+        }
     }
 }

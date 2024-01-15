@@ -54,6 +54,7 @@ int main(int argc, char** argv) {
     grvbld_target_add_src(test_window, "src/grv_gfx/test_window.c");
     grvbld_target_link(test_window, libgrv);
     grvbld_target_link(test_window, libgrvgfx);
+    test_window->run_after_build = true;
     grvbld_build_target(&config, test_window);
 
     return 0;

@@ -132,6 +132,7 @@ typedef struct grvbld_target_t{
     grvbld_strarr_t src_files;
     grvbld_strarr_t libs;
     grvbld_target_arr_t linked_targets; 
+    bool run_after_build;
 } grvbld_target_t;
 
 typedef struct {
