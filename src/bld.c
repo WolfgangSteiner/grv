@@ -43,9 +43,8 @@ int main(int argc, char** argv) {
     grvbld_build_target(&config, libgrv);
 
     grvbld_target_t* libgrvgfx = grvbld_target_create("grvgfx", GRVBLD_STATIC_LIBRARY);
-    grvbld_target_add_src(libgrvgfx, "src/grv_gfx/grv_window.c");
-    grvbld_target_link_library(libgrvgfx, "glfw");
-    grvbld_target_link_library(libgrvgfx, "GL");
+    grvbld_target_add_src(libgrvgfx, "src/grv_gfx/grv_gfx.c");
+    grvbld_target_link_library(libgrvgfx, "SDL2");
     grvbld_build_target(&config, libgrvgfx);
 
     grvbld_run_tests(&config);

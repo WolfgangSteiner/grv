@@ -3,10 +3,12 @@
 
 #include "grv/grv_base.h"
 #include "grv/grv_str.h"
+#include "grv_frame_buffer.h"
 
 typedef struct {
     s32 width, height;
     grv_str_t title;
+    grv_frame_buffer_t frame_buffer;
     bool should_close;
     void* handle;
 } grv_window_t;
@@ -23,5 +25,6 @@ typedef struct {
 extern grv_window_active_windows_arr_t grv_window_active_windows_arr;
 
 void grv_window_poll_events();
+void grv_window_present(grv_window_t* w);
 
 #endif

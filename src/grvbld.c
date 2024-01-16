@@ -170,8 +170,10 @@ void grvbld_config_init(grvbld_config_t* config) {
 
     grvbld_strarr_push(&config->inc, "include");
     grvbld_strarr_push(&config->warnings, "-Wall");
-//    grvbld_strarr_push(&config->warnings, "-Wextra");
-//    grvbld_strarr_push(&config->warnings, "-Wpedantic");
+    ///grvbld_strarr_push(&config->warnings, "-Wextra");
+    //grvbld_strarr_push(&config->warnings, "-Wpedantic");
+    grvbld_strarr_push(&config->warnings, "-Werror=implicit-function-declaration");
+
 
     grvbld_strarr_push(&config->libs, "-lm");
 }
@@ -430,7 +432,7 @@ int grvbld_run_tests(grvbld_config_t* config) {
 
 static int grvbld_build_static_library(grvbld_config_t* config, grvbld_target_t* target) {
     char* lib_file = grvbld_cstr_new_with_format("%s/lib%s.a", config->build_dir, target->name);
-    char* ar_cmd = grvbld_cstr_new_with_format("ar rcs %s", lib_file);
+    char* ar_cmd = grvbld_cstr_new_with_format("rm -f %s && ar rcs %s", lib_file, lib_file);
 
     char* cmd = grvbld_build_cmd(config);
     grvbld_cstr_append_arg(cmd, "-c");
@@ -447,11 +449,19 @@ static int grvbld_build_static_library(grvbld_config_t* config, grvbld_target_t*
         ar_cmd = grvbld_cstr_append_arg(ar_cmd, obj_file);
 
         log_info("%s", cmd);
-        system(cmd);
+        int result = system(cmd);
+        if (result != 0) {
+            log_error("failed to build %s", target->name);
+            exit(1);
+        }
     }
 
     log_info("%s", ar_cmd);
-    system(ar_cmd);
+    int result = system(ar_cmd);
+    if (result != 0) {
+        log_error("failed to build %s", target->name);
+        exit(1);
+    }
 }
 
 int grvbld_build_target(grvbld_config_t* config, grvbld_target_t* target) {

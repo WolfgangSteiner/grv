@@ -1,22 +1,18 @@
 #include "grv_gfx/grv_window.h"
 #include "grv/grv_log.h"
 #include "grv/grv_arr.h"
-#include <GLFW/glfw3.h>
-
+#include <SDL2/SDL.h>
 
 grv_window_active_windows_arr_t grv_window_active_windows_arr = {0};
 
-static void _grv_window_error_callback(int error, const char* description) {
-    grv_log_error("GLFW error %d: %s", error, description);
-}
+typedef struct {
+    grv_window_t* window;
+    SDL_Window* sdl_window;
+    SDL_Renderer* sdl_renderer;
+    SDL_Texture* sdl_texture;
+    SDL_Surface* sdl_surface;
+} grv_window_sdl_t;
 
-static void _grv_window_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    (void)scancode;
-    (void)mods;
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
-    }
-}
 
 grv_window_t* grv_window_new(s32 width, s32 height, grv_str_t title) {
     grv_window_t* w = grv_alloc_zeros(sizeof(grv_window_t));
@@ -24,42 +20,62 @@ grv_window_t* grv_window_new(s32 width, s32 height, grv_str_t title) {
     w->height = height;
     w->title = title;
     w->should_close = false;
+    grv_frame_buffer_init(&w->frame_buffer, FRAME_BUFFER_INDEXED, width, height);
+    w->handle = grv_alloc_zeros(sizeof(grv_window_sdl_t));
     return w;
 }
 
 bool grv_window_show(grv_window_t* w) {
-    glfwSetErrorCallback(_grv_window_error_callback);
-    if (!glfwInit()) {
-        grv_log_error("Failed to initialize GLFW");
-        exit(1);
+    if (!SDL_WasInit(SDL_INIT_VIDEO)) {
+        SDL_Init(SDL_INIT_VIDEO);
     }
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    GLFWwindow* window = glfwCreateWindow(w->width, w->height, grv_str_cstr(w->title), NULL, NULL);
-    if (!window) {
-        grv_log_error("Failed to create GLFW window");
-        glfwTerminate();
-        exit(1);
-    }
-    glfwMakeContextCurrent(window);
-    
-    // clear the window to black:
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glfwSwapBuffers(window);
 
-    glfwSetKeyCallback(window, _grv_window_key_callback);
+    SDL_Window* window = SDL_CreateWindow(
+        grv_str_cstr(w->title),
+        SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+        w->width, w->height, SDL_WINDOW_SHOWN);    
+    
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_Surface* surface = SDL_CreateRGBSurface(0, w->width, w->height, 32, 0, 0, 0, 0); 
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+    grv_window_sdl_t sdl_window = {
+        .window = w,
+        .sdl_window = window,
+        .sdl_renderer = renderer,
+        .sdl_texture = texture,
+        .sdl_surface = surface,
+    };
+
+    w->handle = grv_alloc_zeros(sizeof(grv_window_sdl_t));
+    memcpy(w->handle, &sdl_window, sizeof(grv_window_sdl_t));
     grv_arr_push(&grv_window_active_windows_arr, w);
-    w->handle = window;
+    grv_window_present(w);
     return true;
 }
 
+void grv_window_present(grv_window_t* w) {
+    grv_window_sdl_t* sdl_window = w->handle;
+    SDL_Renderer* renderer = sdl_window->sdl_renderer;
+    SDL_Texture* texture = sdl_window->sdl_texture;
+    SDL_Surface* surface = sdl_window->sdl_surface;
+    grv_frame_buffer_render(&w->frame_buffer, surface->pixels, surface->pitch);
+    SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
+    SDL_RenderCopy(renderer, texture, NULL, NULL);
+    SDL_RenderPresent(renderer);
+}
+
 void grv_window_poll_events() {
-    glfwPollEvents();
-    for (s32 i = 0; i < grv_window_active_windows_arr.size; i++) {
-        grv_window_t* w = grv_window_active_windows_arr.arr[i];
-        if (glfwWindowShouldClose(w->handle)) {
-            w->should_close = true;
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            for (s32 i = 0; i < grv_window_active_windows_arr.size; ++i) {
+                grv_window_t* w = grv_window_active_windows_arr.arr[i];
+                grv_window_sdl_t* sdl_window = w->handle;
+                if(sdl_window->sdl_window == SDL_GetWindowFromID(event.window.windowID)) {
+                    w->should_close = true;
+                }
+            }
         }
     }
 }
