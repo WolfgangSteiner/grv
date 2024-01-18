@@ -20,6 +20,7 @@ typedef struct {
 
 grv_str_t grv_str_ref(char* cstr);
 grv_str_t grv_str_new(char* cstr);
+grv_str_t grv_str_new_with_format(char* fmt, ...);
 grv_str_t grv_str_new_with_capacity(grv_str_size_t capacity);
 void grv_str_free(grv_str_t*);
 

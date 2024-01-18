@@ -15,5 +15,4 @@ grv_cstr_size_t grv_cstr_len(const char* s);
 char* grv_cstr_new_with_format(const char* fmt, ...);
 char* grv_cstr_repeat_char(char c, grv_cstr_size_t n);
 
-
 #endif

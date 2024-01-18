@@ -27,7 +27,10 @@ char* _get_cstr_buffer(grv_str_size_t capacity) {
     if (str_cstr_buffer.data == 0) {
         str_cstr_buffer.capacity = capacity;
         str_cstr_buffer.data = grv_alloc(str_cstr_buffer.capacity);
-    } 
+    } else if (str_cstr_buffer.capacity < capacity) {
+        while (str_cstr_buffer.capacity < capacity) str_cstr_buffer.capacity *= 2;
+        str_cstr_buffer.data = grv_realloc(str_cstr_buffer.data, str_cstr_buffer.capacity);
+    }
     return str_cstr_buffer.data;
 }
 
@@ -560,6 +563,19 @@ grv_str_t grv_str_new(char* cstr) {
 grv_str_t grv_str_new_with_capacity(grv_str_size_t capacity) {
     capacity = _grv_str_capacity_for_size(capacity);
     return (grv_str_t) {.data=grv_alloc(capacity), .size=0, .is_valid=true, .owns_data=true};
+}
+
+grv_str_t grv_str_new_with_format(char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    int len = vsnprintf(NULL, 0, fmt, args);
+    va_end(args);
+    char* str = _get_cstr_buffer(len+1);
+    va_start(args, fmt);
+    vsnprintf(str, len + 1, fmt, args);
+    va_end(args);
+    grv_str_t res = grv_str_new(str);
+    return res;
 }
 
 void grv_str_free(grv_str_t* str) {

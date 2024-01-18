@@ -2,6 +2,7 @@
 #include "grv/grv_memory.h"
 #include <stdio.h>
 #include <glob.h>
+#include <time.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -111,4 +112,15 @@ bool grv_cmd_available(grv_str_t cmd) {
   int result = system(grv_str_cstr(check_cmd));
   grv_str_free(&check_cmd);
   return result == 0;
+}
+
+struct tm grv_local_time() {
+  time_t t = time(NULL);
+  return *localtime(&t);
+}
+
+grv_str_t grv_local_time_str() {
+  struct tm tm = grv_local_time();
+  grv_str_t result = grv_str_new_with_format("%02d:%02d:%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
+  return result;
 }

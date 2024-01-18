@@ -20,13 +20,13 @@ static void grv_put_char_u8(grv_frame_buffer_t* fb, char c, vec2i pos, grv_bitma
     }
 }
 
-void grv_put_text_u8(grv_frame_buffer_t* fb, const char* text, vec2i pos, grv_bitmap_font_t* font, u8 color) {
+void grv_put_text_u8(grv_frame_buffer_t* fb, grv_str_t str, vec2i pos, grv_bitmap_font_t* font, u8 color) {
     vec2i line_pos = pos;
     vec2i glyph_pos = pos;
     if (font == NULL) font = &grv_basic_font_8x8;
 
-    char c;
-    while((c = *text++) != '\0') {
+    for (size_t i = 0; i < str.size; ++i) {
+        char c = str.data[i];
         if (c == '\n') {
             line_pos.y += font->vskip;
             glyph_pos = line_pos;
@@ -40,16 +40,15 @@ void grv_put_text_u8(grv_frame_buffer_t* fb, const char* text, vec2i pos, grv_bi
     }
 }
 
-vec2i grv_bitmap_font_calc_size(grv_bitmap_font_t* font, char* text) {
+vec2i grv_bitmap_font_calc_size(grv_bitmap_font_t* font, grv_str_t text) {
     if (font == NULL) font = &grv_basic_font_8x8;
     s32 x = 0;
     vec2i size = {0};
-    size_t len = strlen(text);
-    if (len == 0) return size;
+    if (text.size == 0) return size;
     size.y = font->glyph_height;
 
-    char c;
-    while((c = *text++) != '\0') {
+    for (size_t i = 0; i < text.size; ++i) {
+        char c = text.data[i];
         if (c == '\n') {
             size.y += font->vskip;
             x = 0;

@@ -49,5 +49,5 @@ recti_t grv_frame_buffer_get_clipping_rect(grv_frame_buffer_t* fb);
 u8* grv_frame_buffer_pixel_address_u8(grv_frame_buffer_t* fb, s32 x, s32 y);
 void grv_frame_buffer_clear_span_buffer(grv_frame_buffer_t* fb);
 void grv_frame_buffer_push_span(grv_frame_buffer_t* fb, s32 y, s32 x_start, s32 x_end);
-void grv_frame_buffer_render(grv_frame_buffer_t* fb, u32* rgba_data, s32 pitch);
+void grv_frame_buffer_render_argb(grv_frame_buffer_t* fb, u32* rgba_data, s32 pitch);
 #endif

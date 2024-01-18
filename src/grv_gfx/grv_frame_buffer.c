@@ -43,7 +43,7 @@ void grv_frame_buffer_init(grv_frame_buffer_t* fb, grv_frame_buffer_type_t type,
     } else {
         fb->palette.num_entries = 0;
         fb->palette.entries = NULL;
-        fb->rgba_data = grv_alloc_zeros(width * height * sizeof(color_rgba_t));
+        fb->rgba_data = grv_alloc_zeros(width * height * sizeof(u32));
     }
     fb->use_clipping = true;
     grv_clipping_stack_init(&fb->clipping_stack);
@@ -57,7 +57,7 @@ void grv_frame_buffer_clear(grv_frame_buffer_t* frame_buffer) {
     if (frame_buffer->type == FRAME_BUFFER_INDEXED) {
         memset(frame_buffer->indexed_data, 0x0, count * sizeof(u8));
     } else {
-        memset(frame_buffer->rgba_data, 0x0, count * sizeof(color_rgba_t));
+        memset(frame_buffer->rgba_data, 0x0, count * sizeof(u32));
     }
 }
 
@@ -92,18 +92,28 @@ void grv_frame_buffer_push_span(grv_frame_buffer_t* fb, s32 y, s32 x1, s32 x2) {
     }
 }
 
-void grv_frame_buffer_render(grv_frame_buffer_t* fb, u32* rgba_data, s32 pitch) {
+void grv_frame_buffer_render_argb(grv_frame_buffer_t* fb, u32* argb_data, s32 pitch) {
     if (fb->type == FRAME_BUFFER_INDEXED) {
+        u32* row_ptr = argb_data;
+        u8* src_ptr = fb->indexed_data;
         for (s32 y = 0; y < fb->height; ++y) {
+            u32* dst_ptr = row_ptr; 
             for (s32 x = 0; x < fb->width; ++x) {
-                u8 index = fb->indexed_data[y * fb->width + x];
-                color_rgba_t color = color_palette_map(&fb->palette, index);
-                char* dst_ptr = (char*)rgba_data + y * pitch + x * sizeof(u32);
-                (*(u32*)dst_ptr) = color.rgba;
+                u8 index = *src_ptr++;
+                u32 color_rgba = color_palette_map(&fb->palette, index);
+                *dst_ptr++ = grv_rgba_to_argb(color_rgba);
             }
+            row_ptr += pitch / sizeof(u32);
         }
     } else {
-        assert(pitch == fb->width * sizeof(u32));
-        memcpy(rgba_data, fb->rgba_data, fb->width * fb->height * sizeof(u32));
+        u32* src_ptr = fb->rgba_data;
+        u32* row_ptr = argb_data;
+        for (s32 y = 0; y < fb->height; ++y) {
+            u32* dst_ptr = row_ptr;
+            for (s32 x = 0; x < fb->width; ++x) {
+                *dst_ptr++ = grv_rgba_to_argb(*src_ptr++);
+            }
+            row_ptr += pitch / sizeof(u32);
+        }
     }        
 }
