@@ -124,3 +124,9 @@ grv_str_t grv_local_time_str() {
   grv_str_t result = grv_str_new_with_format("%02d:%02d:%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
   return result;
 }
+
+f32 grv_local_time_f32() {
+  struct tm tm = grv_local_time();
+  f32 result = (f32)tm.tm_hour + (f32)tm.tm_min / 60.0f + (f32)tm.tm_sec / 3600.0f;
+  return result;
+}

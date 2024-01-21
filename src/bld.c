@@ -49,11 +49,23 @@ int main(int argc, char** argv) {
 
     grvbld_run_tests(&config);
     
+    grvbld_target_t* grv_clock = grvbld_target_create("grv_clock", GRVBLD_EXECUTABLE);
+    grvbld_target_add_src(grv_clock, "apps/grv_clock.c");
+    grvbld_target_link(grv_clock, libgrv);
+    grvbld_target_link(grv_clock, libgrvgfx);
+    grvbld_build_target(&config, grv_clock);
+
+    grvbld_target_t* grv_color_palette = grvbld_target_create("grv_color_palette", GRVBLD_EXECUTABLE);
+    grvbld_target_add_src(grv_color_palette, "apps/grv_color_palette.c");
+    grvbld_target_link(grv_color_palette, libgrv);
+    grvbld_target_link(grv_color_palette, libgrvgfx);
+    grvbld_build_target(&config, grv_color_palette);
+    
     grvbld_target_t* test_window = grvbld_target_create("test_window", GRVBLD_EXECUTABLE);
     grvbld_target_add_src(test_window, "src/grv_gfx/test_window.c");
     grvbld_target_link(test_window, libgrv);
     grvbld_target_link(test_window, libgrvgfx);
-    test_window->run_after_build = true;
+    //test_window->run_a//fter_build = true;
     grvbld_build_target(&config, test_window);
 
     return 0;

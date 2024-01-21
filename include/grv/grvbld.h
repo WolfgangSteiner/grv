@@ -50,7 +50,7 @@ static inline bool grvbld_is_file_newer_than(char* filename, char* other_filenam
 }
 
 static inline bool is_source_file_newer(char* exe_filename) {
-    char* src_filename = grvbld_cstr_cat(exe_filename, ".c");
+    char* src_filename = grvbld_cstr_cat3("src/", exe_filename, ".c");
     bool result = grvbld_is_file_newer_than(src_filename, exe_filename);
     result = result || grvbld_is_file_newer_than("src/grvbld.c", exe_filename);
     result = result || grvbld_is_file_newer_than("include/grv/grvbld.h", exe_filename);

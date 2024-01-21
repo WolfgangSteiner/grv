@@ -4,7 +4,7 @@
 #include "grv/grv_math.h"
 
 
-vec2i vec2f_round(vec2f a) { return (vec2i){round_f32(a.x), round_f32(a.y)}; }
+vec2i vec2f_round(vec2f a) { return (vec2i){grv_round_f32(a.x), grv_round_f32(a.y)}; }
 
 vec2f vec2f_rot(vec2f a, f32 rot) {
     f32 sinv = unit_sin_f32(rot);

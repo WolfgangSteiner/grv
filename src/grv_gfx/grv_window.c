@@ -22,12 +22,15 @@ grv_window_t* grv_window_new(s32 width, s32 height, f32 scale, grv_str_t title) 
     w->title = title;
     w->should_close = false;
     w->borderless = false;
+    w->use_int_scaling = true;
     grv_frame_buffer_init(&w->frame_buffer, FRAME_BUFFER_INDEXED, width, height);
     w->handle = grv_alloc_zeros(sizeof(grv_window_impl_t));
     return w;
 }
 
 bool grv_window_show(grv_window_t* w) {
+    SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
+    SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
     if (!SDL_WasInit(SDL_INIT_VIDEO)) {
         SDL_Init(SDL_INIT_VIDEO);
     }
@@ -38,12 +41,16 @@ bool grv_window_show(grv_window_t* w) {
     int flags = SDL_WINDOW_SHOWN;
     if (w->borderless) {
         flags |= SDL_WINDOW_BORDERLESS;
+    } else {
+        flags |= SDL_WINDOW_RESIZABLE;
     }
 
     SDL_Window* window = SDL_CreateWindow(
         grv_str_cstr(w->title),
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-        window_width, window_height, flags);    
+        window_width, window_height, flags);
+
+    SDL_SetWindowData(window, "grv_window", w);
     
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     SDL_Surface* surface = SDL_CreateRGBSurface(0, w->width, w->height, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0x0ff000000);
@@ -52,7 +59,6 @@ bool grv_window_show(grv_window_t* w) {
     assert(texture);
     u32 format;
     SDL_QueryTexture(texture, &format, NULL, NULL, NULL);
-    printf("format: %s\n", SDL_GetPixelFormatName(format));
     grv_window_impl_t impl = {
         .window = w,
         .sdl_window = window,   
@@ -64,6 +70,9 @@ bool grv_window_show(grv_window_t* w) {
     w->handle = grv_alloc_zeros(sizeof(grv_window_impl_t));
     memcpy(w->handle, &impl, sizeof(grv_window_impl_t));
     grv_arr_push(&grv_window_active_windows_arr, w);
+
+    SDL_SetWindowMinimumSize(window, w->width, w->height);
+
     grv_window_present(w);
     return true;
 }
@@ -76,8 +85,28 @@ void grv_window_present(grv_window_t* w) {
     grv_frame_buffer_render_argb(&w->frame_buffer, surface->pixels, surface->pitch);
     SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
 
-    SDL_Rect src_rect = {0, 0, w->width, w->height};
-    SDL_Rect dst_rect = {0, 0, w->width * w->scale, w->height * w->scale};
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    SDL_Rect src_rect = {0, 0, surface->w, surface->h};
+    int window_width, window_height;
+    SDL_GetWindowSize(impl->sdl_window, &window_width, &window_height);
+    f32 scale_x = (f32)window_width / (f32)w->width; 
+    f32 scale_y = (f32)window_height / (f32)w->height;
+    f32 scalef = grv_min_f32(scale_x, scale_y);
+    
+    s32 dst_width, dst_height;
+    if (!w->use_int_scaling || scalef < 1.0f) {
+        dst_width = (s32)(w->width * scalef);
+        dst_height = (s32)(w->height * scalef);
+    } else {
+        s32 scale = grv_floor_f32(scalef);
+        dst_width = w->width * scale;
+        dst_height = w->height * scale;
+    }
+    s32 dst_x = (window_width - dst_width) / 2;
+    s32 dst_y = (window_height - dst_height) / 2;
+    SDL_Rect dst_rect = {dst_x, dst_y, dst_width, dst_height};
     SDL_RenderCopy(renderer, texture, &src_rect, &dst_rect);
     SDL_RenderPresent(renderer);
 }
@@ -93,6 +122,13 @@ void grv_window_poll_events() {
                     w->should_close = true;
                 }
             }
+        } else if (event.type == SDL_WINDOWEVENT) {
+            SDL_Window* sdl_window = SDL_GetWindowFromID(event.window.windowID);
+            grv_window_t* grv_window = SDL_GetWindowData(sdl_window, "grv_window");
+            grv_frame_buffer_t* fb = &grv_window->frame_buffer;
+            if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+                grv_window_present(grv_window);
+            } 
         }
     }
 }

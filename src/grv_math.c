@@ -74,3 +74,23 @@ sin_cos_t unit_sin_cos_lut_u16(u16 arg) {
     float* sin_cos_val = unit_sin_cos_lut_4096[arg];
     return (sin_cos_t){sin_sign * sin_cos_val[sin_idx], cos_sign * sin_cos_val[cos_idx]};
 }
+
+s32 grv_count_leading_zero_bits_u8(u8 x) {
+    s32 n = 0;
+    if (x == 0) return 8;
+    while (x > 0 && (x & 0x80) == 0) {
+        n++;
+        x <<= 1;
+    }
+    return n;
+}
+
+s32 grv_count_trailing_zero_bits_u8(u8 x) {
+    s32 n = 0;
+    if (x == 0) return 8;
+    while (x > 0 && (x & 0x1) == 0) {
+        n++;
+        x >>= 1;
+    }
+    return n;
+}

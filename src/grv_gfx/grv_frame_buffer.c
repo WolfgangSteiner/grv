@@ -36,6 +36,7 @@ void grv_frame_buffer_init(grv_frame_buffer_t* fb, grv_frame_buffer_type_t type,
     fb->type = type;
     fb->width = width;
     fb->height = height;
+    fb->clear_color_u8 = 0;
 
     if (type == FRAME_BUFFER_INDEXED) {
         color_palette_init_grayscale(&fb->palette, 16);
@@ -51,13 +52,13 @@ void grv_frame_buffer_init(grv_frame_buffer_t* fb, grv_frame_buffer_type_t type,
     fb->span_buffer.capacity = height;
 }
 
-void grv_frame_buffer_clear(grv_frame_buffer_t* frame_buffer) {
-    u32 count = frame_buffer->width * frame_buffer->height;
+void grv_frame_buffer_clear(grv_frame_buffer_t* fb) {
+    u32 count = fb->width * fb->height;
 
-    if (frame_buffer->type == FRAME_BUFFER_INDEXED) {
-        memset(frame_buffer->indexed_data, 0x0, count * sizeof(u8));
+    if (fb->type == FRAME_BUFFER_INDEXED) {
+        memset(fb->indexed_data, fb->clear_color_u8, count * sizeof(u8));
     } else {
-        memset(frame_buffer->rgba_data, 0x0, count * sizeof(u32));
+        memset(fb->rgba_data, 0x0, count * sizeof(u32));
     }
 }
 
@@ -88,19 +89,26 @@ void grv_frame_buffer_push_span(grv_frame_buffer_t* fb, s32 y, s32 x1, s32 x2) {
     if (fb->span_buffer.count >= fb->span_buffer.capacity) {
         assert(false);
     } else {
-        fb->span_buffer.spans[fb->span_buffer.count++] = (grv_span_t){min_s32(x1, x2), max_s32(x1, x2)};
+        fb->span_buffer.spans[fb->span_buffer.count++] = (grv_span_t){grv_min_s32(x1, x2), grv_max_s32(x1, x2)};
     }
 }
 
 void grv_frame_buffer_render_argb(grv_frame_buffer_t* fb, u32* argb_data, s32 pitch) {
     if (fb->type == FRAME_BUFFER_INDEXED) {
+        s32 num_colors = fb->palette.num_entries;
         u32* row_ptr = argb_data;
         u8* src_ptr = fb->indexed_data;
         for (s32 y = 0; y < fb->height; ++y) {
             u32* dst_ptr = row_ptr; 
             for (s32 x = 0; x < fb->width; ++x) {
                 u8 index = *src_ptr++;
-                u32 color_rgba = color_palette_map(&fb->palette, index);
+                u32 color_rgba = 0;
+                if (num_colors <= 128 && index & 0x80) {
+                    color_rgba = color_palette_map(&fb->palette, index & 0x7f);
+                    color_rgba = grv_rgba_invert(color_rgba);
+                } else {
+                    color_rgba = color_palette_map(&fb->palette, index);
+                }
                 *dst_ptr++ = grv_rgba_to_argb(color_rgba);
             }
             row_ptr += pitch / sizeof(u32);
@@ -116,4 +124,32 @@ void grv_frame_buffer_render_argb(grv_frame_buffer_t* fb, u32* argb_data, s32 pi
             row_ptr += pitch / sizeof(u32);
         }
     }        
+}
+
+void grv_frame_buffer_set_pixel_u8(grv_frame_buffer_t* fb, vec2i pos, u8 color) {
+    if (fb->use_clipping) {
+        recti_t clipping_rect = grv_frame_buffer_get_clipping_rect(fb);
+        if (!grv_recti_contains_point(clipping_rect, pos)) return;
+    }
+    u8* pixel = grv_frame_buffer_pixel_address_u8(fb, pos.x, pos.y);
+    *pixel = color;
+}
+
+void grv_frame_buffer_set_pixel_scaled_u8(grv_frame_buffer_t* fb, vec2i pos, u32 scale, u8 color) {
+    recti_t rect = {pos.x, pos.y, scale, scale};    
+    grv_frame_buffer_fill_rect_u8(fb, rect, color);
+}
+
+
+void grv_frame_buffer_fill_rect_u8(grv_frame_buffer_t* fb, recti_t rect, u8 color) {
+    if (fb->use_clipping) {
+        recti_t clipping_rect = grv_frame_buffer_get_clipping_rect(fb);
+        rect = grv_recti_intersect_rect(rect, clipping_rect);
+    }
+    if (rect.w <= 0 || rect.h <= 0) return;
+
+    for (s32 y = recti_ymin(rect); y <= recti_ymax(rect); ++y) {
+        u8* pixel = grv_frame_buffer_pixel_address_u8(fb, rect.x, y);
+        memset(pixel, color, rect.w);
+    }
 }

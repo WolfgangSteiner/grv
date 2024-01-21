@@ -10,4 +10,9 @@ GRV_INLINE u32 grv_rgba_to_argb(u32 rgba) {
     return (rgba >> 8) | (rgba << 24);
 }
 
+GRV_INLINE u32 grv_rgba_invert(u32 rgba) {
+    u32 alpha = rgba & 0xFF;
+    u32 result = 0xffffffff - rgba;
+    return (result & 0xffffff00) | alpha;
+}
 #endif

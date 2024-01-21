@@ -23,7 +23,7 @@ static grv_str_size_t _grv_str_capacity_for_size(grv_str_size_t size) {
 static str_cstr_buffer_t str_cstr_buffer = { .data=0, .capacity=0 };
 
 char* _get_cstr_buffer(grv_str_size_t capacity) {
-    capacity = max_s64(capacity, 1024);
+    capacity = grv_max_s64(capacity, 1024);
     if (str_cstr_buffer.data == 0) {
         str_cstr_buffer.capacity = capacity;
         str_cstr_buffer.data = grv_alloc(str_cstr_buffer.capacity);

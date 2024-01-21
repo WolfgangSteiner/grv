@@ -30,6 +30,7 @@ bool grv_cmd_available(grv_str_t cmd);
 
 struct tm grv_local_time();
 grv_str_t grv_local_time_str();
+f32 grv_local_time_f32();
 
 
 #endif
