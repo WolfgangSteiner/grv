@@ -85,3 +85,13 @@ vec2i grv_bitmap_font_calc_size(grv_bitmap_font_t* font, grv_str_t text) {
     }
     return size;
 }
+
+grv_bitmap_font_t* grv_get_cozette_font() {
+    static grv_bitmap_font_t* cozette_font = NULL;
+    if (cozette_font == NULL) {
+        u32 size = (u32)&_binary_src_grv_gfx_cozette_psf_end - (u32)&_binary_src_grv_gfx_cozette_psf_start;
+        cozette_font = grv_load_psf_font(&_binary_src_grv_gfx_cozette_psf_start, size);
+    }
+}
+
+grv_bitmap
