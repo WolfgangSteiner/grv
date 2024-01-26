@@ -212,7 +212,8 @@ bool grv_file_exists(grv_str_t file_name) {
 }
 
 bool grv_path_exists(grv_str_t path) {
-    
+    assert(false);
+    return false;
 }
 
 bool grv_str_contains_str(grv_str_t str, grv_str_t search_str) {
@@ -289,12 +290,28 @@ char grv_str_at(grv_str_t str, int idx) {
 
 int grv_str_to_int(grv_str_t str) {
     int res = 0;
+    bool is_negative = false;
+    bool is_first_char = true;
+    bool found_digit = false;
     for (grv_str_size_t i = 0; i < str.size; ++i) {
         char c = grv_str_at(str, i);        
-        assert(grv_is_digit(c));
-        res = 10 * res + grv_char_to_int(c);
-    }   
-    return res;
+        if (c == '+') {
+            assert(is_first_char);
+            is_first_char = false;
+        } else if (c == '-') {
+            assert(is_first_char);
+            is_negative = true;
+            is_first_char = false;
+        } else if (grv_is_digit(c)) {
+            found_digit = true;
+            is_first_char = false;
+            res = 10 * res + grv_char_to_int(c);
+        } else {
+            assert(found_digit);
+            break;
+        }
+    }
+    return is_negative ? -res : res;
 }
 
 s64 grv_str_to_s64(grv_str_t str)

@@ -93,5 +93,3 @@ grv_bitmap_font_t* grv_get_cozette_font() {
         cozette_font = grv_load_psf_font(&_binary_src_grv_gfx_cozette_psf_start, size);
     }
 }
-
-grv_bitmap
