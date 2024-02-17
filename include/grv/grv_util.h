@@ -32,5 +32,7 @@ struct tm grv_local_time();
 grv_str_t grv_local_time_str();
 f32 grv_local_time_f32();
 
+grv_strarr_t grv_readlines(grv_str_t path);
+
 
 #endif

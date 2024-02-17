@@ -130,3 +130,18 @@ f32 grv_local_time_f32() {
   f32 result = (f32)tm.tm_hour + (f32)tm.tm_min / 60.0f + (f32)tm.tm_sec / 3600.0f;
   return result;
 }
+
+grv_strarr_t grv_readlines(grv_str_t filename) {
+    grv_strarr_t result = grv_strarr_new();
+    grv_str_t content = grv_read_file(filename);
+    grv_str_iter_t iter = grv_str_iter_begin(&content);
+    
+    while (!grv_str_iter_is_end(&iter)) {
+        grv_str_t line = grv_str_iter_match_up_to_char(&iter, '\n');
+        grv_strarr_push_copy(&result, line);
+    }
+  
+    grv_str_free(&content);
+    return result;
+}
+
