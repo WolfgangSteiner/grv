@@ -190,15 +190,14 @@ grv_str_t grv_read_file(grv_str_t file_name) {
     grv_str_t result = {0};
     FILE* fp = fopen(grv_str_cstr(file_name), "rb");
     if (fp == 0) return result;
-    int fseek_result = fseek(fp, 0L, SEEK_END);
-    if (fseek_result) return result;
-    result.size = ftell(fp);
-    rewind(fp);
-    result.data = grv_alloc(result.size);
-    fread(result.data, result.size, sizeof(char), fp);
-    fclose(fp);
-    result.is_valid = true;
-    result.owns_data = true;
+    size_t buffer_size = 1024;
+    char* buffer = grv_alloc(buffer_size);
+    size_t bytes_read;
+    while ((bytes_read = fread(buffer, sizeof(char), buffer_size, fp)) > 0) {
+        grv_str_t new_str = {.data=buffer, .size=bytes_read};
+        grv_str_append_str(&result, new_str);
+    }
+    grv_free(buffer);
     return result;
 }
 
