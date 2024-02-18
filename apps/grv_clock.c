@@ -23,7 +23,9 @@ void draw_seconds(grv_frame_buffer_t* fb) {
     grv_frame_buffer_fill_rect_u8(fb, rect, 1);
 }
 
-int main(int, char**) {
+int main(int argc, char** argv) {
+    GRV_UNUSED(argc);
+    GRV_UNUSED(argv);
     int window_width = 60;
     int window_height = 11;
     grv_window_t* w = grv_window_new(window_width, window_height, 16.0, grv_str_ref("Hello World"));
