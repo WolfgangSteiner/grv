@@ -7,7 +7,7 @@
 #include <assert.h>
 
 #define GRV_INLINE static inline
-
+#define GRV_UNUSED(X) (void)(X)
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
