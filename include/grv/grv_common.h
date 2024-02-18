@@ -25,6 +25,12 @@ GRV_INLINE size_t grv_max_size_t(size_t a, size_t b) { return a > b ? a : b; }
 GRV_INLINE f32 grv_min_f32(f32 a, f32 b) { return a < b ? a : b; }
 GRV_INLINE f32 grv_max_f32(f32 a, f32 b) { return a > b ? a : b; }
 
+GRV_INLINE s32 grv_clamp_s32(s32 x, s32 a, s32 b) { return x < a ? a : x > b ? b : x; }
+GRV_INLINE f32 grv_clamp_f32(f32 x, f32 a, f32 b) { return x < a ? a : x > b ? b : x; }
+
+GRV_INLINE bool grv_is_in_range_f32(f32 x, f32 a, f32 b) { return x >= a && x < b; }
+GRV_INLINE bool grv_is_in_range_inc_f32(f32 x, f32 a, f32 b) { return x >= a && x <= b; }
+
 u32 grv_dup_u8_u32(u8 a);
 u64 grv_dup_u8_u64(u8 a);
 
