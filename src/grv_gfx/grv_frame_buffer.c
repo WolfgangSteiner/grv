@@ -32,7 +32,7 @@ recti_t* grv_clipping_stack_top(grv_clipping_stack_t* stack) {
     return stack->size ? stack->stack + stack->size - 1 : NULL;
 }
 
-void grv_frame_buffer_init(grv_frame_buffer_t* fb, grv_frame_buffer_type_t type, u32 width, u32 height) {
+void grv_frame_buffer_init(grv_frame_buffer_t* fb, grv_frame_buffer_type_t type, s32 width, s32 height) {
     fb->type = type;
     fb->width = width;
     fb->height = height;
@@ -72,8 +72,8 @@ recti_t grv_frame_buffer_get_clipping_rect(grv_frame_buffer_t* fb) {
 }
 
 u8* grv_frame_buffer_pixel_address_u8(grv_frame_buffer_t* fb, s32 x, s32 y) {
-    assert(x >= 0 && (u32)x < fb->width);
-    assert(y >= 0 && (u32)y < fb->height);
+    assert(x >= 0 && x < fb->width);
+    assert(y >= 0 && y < fb->height);
     return fb->indexed_data + y * fb->width + x;
 }
 

@@ -10,8 +10,12 @@ typedef struct {
     u32 glyph_count;
     u8 glyph_width;
     u8 glyph_height;
-    s32 hskip;
-    s32 vskip;
+    u8 glyph_byte_count;
+    u8 hskip;
+    u8 vskip;
+    u8 em;
+    u8 topskip;
+    bool mirrored_definition;
 } grv_bitmap_font_t;
 
 void grv_put_text_u8(grv_frame_buffer_t* fb, grv_str_t str, vec2i pos, grv_bitmap_font_t* font, u8 color);
@@ -22,5 +26,5 @@ extern grv_bitmap_font_t grv_basic_font_8x8;
 extern char _binary_src_grv_gfx_cozette_psf_start[];
 extern char _binary_src_grv_gfx_cozette_psf_end[];
 grv_bitmap_font_t* grv_get_cozette_font();
-grv_bitmap_font_t* grv_load_psf_font(char* data, u32 size);
+grv_bitmap_font_t* grv_load_psf_font(char* data, size_t size);
 #endif

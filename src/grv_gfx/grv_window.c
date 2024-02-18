@@ -70,7 +70,7 @@ bool grv_window_show(grv_window_t* w) {
     w->handle = grv_alloc_zeros(sizeof(grv_window_impl_t));
     memcpy(w->handle, &impl, sizeof(grv_window_impl_t));
     grv_arr_push(&grv_window_active_windows_arr, w);
-
+    
     SDL_SetWindowMinimumSize(window, w->width, w->height);
 
     grv_window_present(w);
@@ -125,7 +125,6 @@ void grv_window_poll_events() {
         } else if (event.type == SDL_WINDOWEVENT) {
             SDL_Window* sdl_window = SDL_GetWindowFromID(event.window.windowID);
             grv_window_t* grv_window = SDL_GetWindowData(sdl_window, "grv_window");
-            grv_frame_buffer_t* fb = &grv_window->frame_buffer;
             if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
                 grv_window_present(grv_window);
             } 

@@ -20,6 +20,7 @@ typedef struct {
 } grv_arr_iter_t;
 
 #define GRV_ARR_TYPE(TYPE) struct {TYPE* arr; size_t size; size_t capacity;} 
+#define GRV_ARR_TYPEDEF(TYPE) typedef GRV_ARR_TYPE(TYPE)
 
 GRV_INLINE grv_arr_iter_t _grv_arr_iter_begin(grv_arr_t* arr, size_t element_size) {
     return (grv_arr_iter_t){arr->arr, (u8*)arr->arr + arr->size * element_size, element_size};

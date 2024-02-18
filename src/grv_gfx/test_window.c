@@ -5,7 +5,9 @@
 #include "grv/grv_util.h"
 #include <time.h>
 
-int main(int, char**) {
+int main(int argc, char** argv) {
+    GRV_UNUSED(argc);
+    GRV_UNUSED(argv);
     grv_window_t* w = grv_window_new(480, 270, 2.0, grv_str_ref("Hello World"));
     grv_color_palette_init_with_type(&w->frame_buffer.palette, GRV_COLOR_PALETTE_PICO8);
     //w->borderless = true;
