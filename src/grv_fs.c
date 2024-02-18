@@ -1,5 +1,6 @@
 #include "grv/grv_fs.h"
 #include "grv/grv_memory.h"
+#include "grv/grv_str.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -33,6 +34,7 @@ grv_str_t grv_fs_stem(grv_str_t path) {
 }
 
 grv_strarr_t grv_fs_split_path(grv_str_t path) {
+  GRV_UNUSED(path);
   grv_strarr_t result = {0}; // = grv_str_split(path, "/");
   return result;
 }
@@ -47,7 +49,7 @@ grv_str_t grv_fs_read_file(grv_str_t path) {
   FILE *file = fopen(grv_str_cstr(path), "r");
   if (file) {
     size_t file_size = grv_fs_file_size(file);
-    grv_assert(file_size < GRV_MAX_VALUE(result.size));
+    grv_assert(file_size < (size_t)GRV_MAX_VALUE(result.size));
     result = grv_str_new_with_capacity(file_size);
     fread(result.data, 1, file_size, file);
     fclose(file);
@@ -74,6 +76,18 @@ bool grv_fs_is_file_newer_than(grv_str_t filename, grv_str_t other_filename) {
     int mod_time_a = grv_fs_file_mod_time(filename);
     int mod_time_b = grv_fs_file_mod_time(other_filename);
     return mod_time_a > mod_time_b;
+}
+
+grv_str_t grv_expand_tilde(grv_str_t path) {
+    if (grv_str_starts_with_char(path, '~')) {
+        char* home_path = getenv("HOME");
+        if (home_path == NULL) {
+            grv_log_error("HOME environmental variable not found.");
+            assert(false);
+        }
+        return grv_str_cat(grv_str_ref(home_path), grv_str_substr(path, 1, -1));
+    }
+    return grv_str_copy(path);
 }
 
 #ifdef _WIN32
