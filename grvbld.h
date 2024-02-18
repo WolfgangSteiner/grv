@@ -40,21 +40,6 @@ GRVBLD_INLINE char* concatenate_arguments(int argc, char** argv) {
 }
 
 //==============================================================================
-// default main function
-//==============================================================================
-#ifndef GRV_BUILD_CONFIGURED
-int main(int argc, char** argv) {
-    int result = system("gcc -g -o bld -DGRV_BUILD_CONFIGURED bld.c");
-    if (result != 0) {
-        printf("[ERROR] Failed to build bld.c\n");
-            return result;
-    }
-    system(concatenate_arguments(argc, argv));
-}
-#endif
-
-
-//==============================================================================
 // grvbld_cstr
 //==============================================================================
 GRVBLD_INLINE char* grvbld_cstr_new(char* str) {
