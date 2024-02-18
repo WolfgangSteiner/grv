@@ -4,7 +4,9 @@
 #include <time.h>
 
 
-int main(int, char**) {
+int main(int argc, char** argv) {
+    GRV_UNUSED(argc);
+    GRV_UNUSED(argv);
     int window_width = 128;
     int window_height = 128;
     grv_window_t* w = grv_window_new(window_width, window_height, 4, grv_str_ref("grv_color_palette"));
