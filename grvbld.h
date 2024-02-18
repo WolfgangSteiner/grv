@@ -178,6 +178,7 @@ typedef struct grvbld_target_t{
     grvbld_target_type_t type;
     grvbld_strarr_t src_files;
     grvbld_strarr_t libs;
+    grvbld_strarr_t data_files;
     grvbld_target_arr_t linked_targets; 
     bool run_after_build;
 } grvbld_target_t;
@@ -507,6 +508,10 @@ GRVBLD_INLINE void grvbld_target_link_library(grvbld_target_t* target, char* lib
     grvbld_strarr_push(&target->libs, lib);
 }
 
+GRVBLD_INLINE void grvbld_target_add_data_file(grvbld_target_t* target, char* data_file) {
+    grvbld_strarr_push(&target->data_files, data_file);
+}
+
 GRVBLD_INLINE void grvbld_target_link(grvbld_target_t* target, grvbld_target_t* linked_target) {
     grvbld_target_arr_t* arr = &target->linked_targets;
     if (arr->capacity == 0) {
@@ -654,6 +659,19 @@ GRVBLD_INLINE int grvbld_build_static_library(grvbld_config_t* config, grvbld_ta
             log_error("failed to build %s", target->name);
             exit(1);
         }
+    }
+
+    for (size_t i = 0; i < target->data_files.size; ++i) {
+        char* data_src = target->data_files.data[i];
+        char* data_dst = grvbld_cstr_filename(data_src);
+        char* data_obj_dir = grvbld_cstr_cat(config->build_dir, "/data");
+        make_path(data_obj_dir);
+        data_dst = grvbld_cstr_prepend_path(data_dst, data_obj_dir);
+        data_dst = grvbld_cstr_append(data_dst, ".o");
+        char* ld_cmd = grvbld_cstr_new_with_format("ld -r -b binary -o %s %s", data_dst, data_src);
+        log_info("%s", ld_cmd);
+        system(ld_cmd);
+        ar_cmd = grvbld_cstr_append_arg(ar_cmd, data_dst);
     }
 
     log_info("%s", ar_cmd);
