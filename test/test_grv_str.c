@@ -1,5 +1,6 @@
 #include "grv/grv_str.h"
 #include "grv/grv_test.h"
+#include "grv/grv_strarr.h"
 #include "grv/grv_cstr.h"
 #include <stdlib.h>
 
@@ -160,6 +161,50 @@ GRV_TEST_BEGIN(grv_str_find_str)
   GRV_TEST_TRUE(grv_str_iter_is_rend(&find_iter));
 GRV_TEST_END()
 
+GRV_TEST_BEGIN(grv_str_is_int)
+  GRV_TEST_TRUE(grv_str_is_int(grv_str_ref("1234")));
+  GRV_TEST_TRUE(grv_str_is_int(grv_str_ref("-1234")));
+  GRV_TEST_TRUE(grv_str_is_int(grv_str_ref("+1234")));
+  GRV_TEST_FALSE(grv_str_is_int(grv_str_ref("+")));
+  GRV_TEST_FALSE(grv_str_is_int(grv_str_ref("123+4")));
+  GRV_TEST_FALSE(grv_str_is_int(grv_str_ref("")));
+GRV_TEST_END()
+
+GRV_TEST_BEGIN(grv_str_iter_match_up_to_str)
+  grv_str_t s = grv_str_ref("Hello, World!");
+  grv_str_iter_t iter = grv_str_iter_begin(&s);
+  grv_str_iter_match_up_to_str(&iter, grv_str_ref(", "));
+  GRV_TEST_FALSE(grv_str_iter_is_end(&iter));
+  GRV_TEST_EQUAL_INT(iter.pos, 5);
+  iter = grv_str_iter_begin(&s);
+  grv_str_iter_match_up_to_str(&iter, grv_str_ref("Hello"));
+  GRV_TEST_FALSE(grv_str_iter_is_end(&iter));
+  GRV_TEST_EQUAL_INT(iter.pos, 0);
+  iter = grv_str_iter_begin(&s);
+  grv_str_iter_match_up_to_str(&iter, grv_str_ref("Hello"));
+  GRV_TEST_FALSE(grv_str_iter_is_end(&iter));
+  GRV_TEST_EQUAL_INT(iter.pos, 0);
+  iter = grv_str_iter_begin(&s);
+  grv_str_iter_match_up_to_str(&iter, grv_str_ref("alpha"));
+  GRV_TEST_TRUE(grv_str_iter_is_end(&iter));
+  iter = grv_str_iter_begin(&s);
+  grv_str_iter_match_up_to_str(&iter, grv_str_ref("!"));
+  GRV_TEST_FALSE(grv_str_iter_is_end(&iter));
+  GRV_TEST_EQUAL_INT(iter.pos, 12);
+GRV_TEST_END()
+
+GRV_TEST_BEGIN(grv_str_split)
+  grv_str_t s = grv_str_ref("Hello, World!");
+  grv_strarr_t arr = grv_str_split(s, grv_str_ref(", "));
+  GRV_TEST_EQUAL_INT(grv_strarr_size(arr), 2);
+  GRV_TEST_EQUAL_STR(*grv_strarr_at(arr, 0), "Hello");
+  GRV_TEST_EQUAL_STR(*grv_strarr_at(arr, 1), "World!");
+  arr = grv_str_split(s, grv_str_ref("!"));
+  GRV_TEST_EQUAL_INT(grv_strarr_size(arr), 2);
+  GRV_TEST_EQUAL_STR(*grv_strarr_at(arr, 0), "Hello, World");
+  GRV_TEST_EQUAL_STR(*grv_strarr_at(arr, 1), "");
+GRV_TEST_END()
+
 #if 0
 GRV_TEST_BEGIN(grv_str_rstrip)
   grv_str_t s = grv_str_new("Hello \t\n");
@@ -302,13 +347,15 @@ int main(void) {
   GRV_TEST_RUN(grv_str_new);
   GRV_TEST_RUN(grv_str_free);
   GRV_TEST_RUN(grv_str_cat);
-  GRV_TEST_RUN(grv_str_append)
+  GRV_TEST_RUN(grv_str_append);
   GRV_TEST_RUN(grv_str_prepend);
   GRV_TEST_RUN(grv_str_starts_with);
   GRV_TEST_RUN(grv_str_ends_with);
   GRV_TEST_RUN(grv_str_lstrip);
   GRV_TEST_RUN(grv_str_find_str);
-  
+  GRV_TEST_RUN(grv_str_is_int); 
+  GRV_TEST_RUN(grv_str_iter_match_up_to_str);
+  GRV_TEST_RUN(grv_str_split);
   #if 0
   GRV_TEST_RUN(grv_str_rstrip);
   GRV_TEST_RUN(grv_str_join);

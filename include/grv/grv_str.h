@@ -6,6 +6,8 @@
 
 typedef s32 grv_str_size_t;
 
+struct grv_strarr_t;
+
 typedef struct {
     char* data;
     grv_str_size_t size;
@@ -18,39 +20,46 @@ typedef struct {
     grv_str_size_t pos;
 } grv_str_iter_t;
 
+// create grv_str, no ownership
 grv_str_t grv_str_ref(char* cstr);
+
+// create grv_str by copying cstr
 grv_str_t grv_str_new(char* cstr);
+
 grv_str_t grv_str_new_with_format(char* fmt, ...);
 grv_str_t grv_str_new_with_capacity(grv_str_size_t capacity);
 void grv_str_free(grv_str_t*);
 
 grv_str_t grv_str_substr(grv_str_t, grv_str_size_t start, grv_str_size_t length);
 
+grv_str_t grv_str_substr_with_iters(grv_str_iter_t start_iter, grv_str_iter_t end_iter);
+
 GRV_INLINE grv_str_size_t grv_str_len(grv_str_t str) { return str.size; }
 GRV_INLINE bool grv_str_empty(grv_str_t str) { return str.size == 0; }
 
+bool grv_str_is_int(grv_str_t str);
 int grv_str_to_int(grv_str_t str);
 s64 grv_str_to_s64(grv_str_t str);
 char grv_str_at(grv_str_t str, grv_str_size_t idx);
 char grv_str_get_char(grv_str_t str, grv_str_size_t pos);
 
 bool grv_str_eq_str(grv_str_t a, grv_str_t b);
-static inline bool grv_str_eq_cstr(grv_str_t a, char* b) {return grv_str_eq_str(a, grv_str_ref(b));};
+static inline bool grv_str_eq_cstr(grv_str_t a, char* b) {return grv_str_eq_str(a, grv_str_ref(b));}
 #define grv_str_eq(a, b) _Generic((b), grv_str_t: grv_str_eq_str, char*: grv_str_eq_cstr)(a,b)
 
 bool grv_str_contains_str(grv_str_t, grv_str_t);
-static inline bool grv_str_contains_cstr(grv_str_t a, char* b) {return grv_str_contains_str(a, grv_str_ref(b));};
+static inline bool grv_str_contains_cstr(grv_str_t a, char* b) {return grv_str_contains_str(a, grv_str_ref(b));}
 bool grv_str_contains_char(grv_str_t, char);
 #define grv_str_contains(a, b) _Generic((b), grv_str_t: grv_str_contains_str, char*: grv_str_contains_cstr, int: grv_str_contains_char)(a,b)
 
 bool grv_str_starts_with_str(grv_str_t, grv_str_t);
 static inline bool grv_str_starts_with_char(grv_str_t s, char c) { return s.size && s.data[0] == c; }
-static inline bool grv_str_starts_with_cstr(grv_str_t a, char* b) {return grv_str_starts_with_str(a, grv_str_ref(b));};
+static inline bool grv_str_starts_with_cstr(grv_str_t a, char* b) {return grv_str_starts_with_str(a, grv_str_ref(b));}
 #define grv_str_starts_with(a, b) _Generic((b), grv_str_t: grv_str_starts_with_str, char*: grv_str_starts_with_cstr, int: grv_str_starts_with_char)(a,b)
 
 bool grv_str_ends_with_str(grv_str_t, grv_str_t);
 static inline bool grv_str_ends_with_char(grv_str_t s, char c) { return s.size && s.data[s.size-1] == c; }
-static inline bool grv_str_ends_with_cstr(grv_str_t a, char* b) {return grv_str_ends_with_str(a, grv_str_ref(b));};
+static inline bool grv_str_ends_with_cstr(grv_str_t a, char* b) {return grv_str_ends_with_str(a, grv_str_ref(b));}
 #define grv_str_ends_with(a, b) _Generic((b), grv_str_t: grv_str_ends_with_str, char*: grv_str_ends_with_cstr, int: grv_str_ends_with_char)(a,b)
 
 grv_str_t grv_str_cat_str_str(grv_str_t a, grv_str_t b);
@@ -90,7 +99,7 @@ grv_str_t grv_str_lstrip(grv_str_t);
 grv_str_t grv_str_lstrip_char(grv_str_t, char);
 grv_str_t grv_str_rstrip_char(grv_str_t, char);
 grv_str_t grv_str_strip_char(grv_str_t, char);
-GRV_INLINE grv_str_t grv_str_remove_trailing_newline(grv_str_t str) { return grv_str_rstrip_char(str, '\n'); };
+GRV_INLINE grv_str_t grv_str_remove_trailing_newline(grv_str_t str) { return grv_str_rstrip_char(str, '\n'); }
 
 typedef grv_str_t(*grv_str_format_callback_t)(va_list*, grv_str_t pattern);
 grv_str_t grv_str_format(grv_str_t fmt, ...); 
@@ -103,11 +112,10 @@ grv_str_iter_t grv_str_find_any_char(grv_str_t* str, grv_str_t chars);
 
 grv_str_t grv_str_split_tail_at_char(grv_str_t str, char c);
 grv_str_t grv_str_reduce_char_spans(grv_str_t, char);
+struct grv_strarr_t grv_str_split(grv_str_t str, grv_str_t sep);
 
 grv_str_iter_t grv_str_find_str(grv_str_t* str, grv_str_t match_str);
 grv_str_iter_t grv_str_rfind_str(grv_str_t* str, grv_str_t match_str);
-
-
 
 grv_str_t grv_separate_head_front(grv_str_t* str, grv_str_t sep);
 grv_str_t grv_separate_head_back(grv_str_t* str, grv_str_t sep);
@@ -148,8 +156,11 @@ bool grv_str_iter_match_white_space(grv_str_iter_t* iter);
 bool grv_str_iter_match_char(grv_str_iter_t* iter, char match);
 bool grv_str_iter_match_any_char(grv_str_iter_t* iter, grv_str_t chars);
 bool grv_str_iter_match_newline(grv_str_iter_t* iter);
+bool grv_str_iter_match_str(grv_str_iter_t* iter, grv_str_t match_str);
 grv_str_t grv_str_iter_match_up_to_char(grv_str_iter_t* iter, char match);
+grv_str_t grv_str_iter_match_up_to_str(grv_str_iter_t* iter, grv_str_t match_str);
 grv_str_t grv_str_iter_match_word(grv_str_iter_t* iter);
+bool grv_str_iter_eq_str(grv_str_iter_t* iter, grv_str_t match_str);
 
 #ifndef GRV_NO_SHORT_NAMES
 typedef grv_str_t str_t;

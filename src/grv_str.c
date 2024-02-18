@@ -1,4 +1,5 @@
 #include "grv/grv_str.h"
+#include "grv/grv_strarr.h"
 #include "grv/grv_base.h"
 #include "grv/grv_common.h"
 #include "grv/grv_memory.h"
@@ -97,6 +98,18 @@ grv_str_t grv_str_substr(grv_str_t str, grv_str_size_t start, grv_str_size_t len
         .size=size,
         .is_valid=str.is_valid,
         .owns_data=false};
+}
+
+grv_str_t grv_str_substr_with_iters(grv_str_iter_t start_iter, grv_str_iter_t end_iter) {
+    grv_assert(start_iter.str == end_iter.str);
+    grv_assert(start_iter.pos <= end_iter.pos);
+    grv_str_t res = {
+        .data=start_iter.str->data + start_iter.pos,
+        .size=end_iter.pos - start_iter.pos,
+        .is_valid=start_iter.str->is_valid,
+        .owns_data=false
+    };
+    return res;
 }
 
 grv_str_t grv_str_lstrip(grv_str_t str) {
@@ -211,6 +224,7 @@ bool grv_file_exists(grv_str_t file_name) {
 }
 
 bool grv_path_exists(grv_str_t path) {
+    GRV_UNUSED(path);
     assert(false);
     return false;
 }
@@ -285,6 +299,19 @@ bool grv_is_newline(char c) {
 char grv_str_at(grv_str_t str, int idx) {
     assert(idx < str.size);
     return str.data[idx];
+}
+
+bool grv_str_is_int(grv_str_t str) {
+    if (str.size == 0) return false;
+    if (str.size == 1) return grv_is_digit(str.data[0]);
+    bool first_char = true;
+    for (s32 i = 0; i < str.size; ++i) {
+        char c = grv_str_at(str, i);
+        bool valid_char = grv_is_digit(c) || (first_char && (c == '+' || c == '-'));
+        if (!valid_char) return false;
+        first_char = false;
+    }
+    return true;
 }
 
 int grv_str_to_int(grv_str_t str) {
@@ -398,6 +425,21 @@ grv_str_t grv_str_split_tail_at_char(grv_str_t str, char c) {
     return result;
 }
 
+struct grv_strarr_t grv_str_split(grv_str_t str, grv_str_t sep) {
+    grv_strarr_t arr = grv_strarr_new();
+    grv_str_iter_t start_iter = grv_str_iter_begin(&str);
+    grv_str_iter_t end_iter = start_iter;
+    while (!grv_str_iter_is_end(&end_iter)) {
+        grv_str_iter_match_up_to_str(&end_iter, sep);
+        grv_strarr_push(&arr, grv_str_substr_with_iters(start_iter, end_iter));
+        if (grv_str_iter_is_end(&end_iter)) break;
+        end_iter.pos += sep.size;
+        if (grv_str_iter_is_end(&end_iter)) grv_strarr_push(&arr, grv_str_ref(""));
+        start_iter = end_iter; 
+    }
+    return arr;
+}
+
 bool grv_str_iter_match(grv_str_iter_t* iter, grv_str_t match_str) {
     bool match = _grv_str_iter_eq_str(iter, match_str);
     if (match) {
@@ -462,17 +504,16 @@ s64 grv_str_iter_match_s64(grv_str_iter_t* iter) {
 }
 
 bool grv_str_iter_match_white_space(grv_str_iter_t* iter) {
-    bool matched = false;
-    while (!grv_str_iter_is_end(iter)) {
-        char c = grv_str_iter_get_char(iter);
-        if (grv_is_white_space(c)) {
-            grv_str_iter_inc(iter);
-            matched = true;
-        } else {
-            break;
-        }
+    if (grv_str_iter_is_end(iter)) return false;
+    char c = grv_str_iter_get_char(iter);
+    if (!grv_is_white_space(c)) return false;
+    grv_str_iter_inc(iter);
+    while(!grv_str_iter_is_end(iter)) {
+        c = grv_str_iter_get_char(iter);
+        if (!grv_is_white_space(c)) break;
+        grv_str_iter_inc(iter);
     }
-    return matched;
+    return true;
 }
 
 bool grv_str_iter_match_char(grv_str_iter_t* iter, char match) {
@@ -489,6 +530,16 @@ bool grv_str_iter_match_any_char(grv_str_iter_t* iter, grv_str_t chars) {
     if (grv_str_iter_is_end(iter)) return false;
     if (grv_str_contains_char(chars, grv_str_iter_get_char(iter))) {
         grv_str_iter_inc(iter);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool grv_str_iter_match_str(grv_str_iter_t* iter, grv_str_t match_str) {
+    if (grv_str_iter_is_end(iter) || iter->pos + match_str.size > iter->str->size) return false;
+    if (memcmp(iter->str->data + iter->pos, match_str.data, match_str.size) == 0) {
+        iter->pos += match_str.size;
         return true;
     } else {
         return false;
@@ -530,6 +581,25 @@ grv_str_t grv_str_iter_match_up_to_char(grv_str_iter_t* iter, char match) {
     return r;
 }
 
+grv_str_t grv_str_iter_match_up_to_str(grv_str_iter_t* iter, grv_str_t match) {
+    grv_str_t r = {
+        .data=iter->str->data + iter->pos,
+        .size=0,
+        .is_valid=true,
+        .owns_data=false
+    };
+
+    while (!grv_str_iter_is_end(iter)) {
+        if (grv_str_iter_eq_str(iter, match)) {
+            return r;
+        } 
+        grv_str_iter_inc(iter);
+        r.size++;
+    }
+
+    return r;
+}
+
 grv_str_t grv_str_iter_match_word(grv_str_iter_t* iter) {
     grv_str_t r = {
         .data=iter->str->data + iter->pos,
@@ -547,6 +617,11 @@ grv_str_t grv_str_iter_match_word(grv_str_iter_t* iter) {
         r.size++;
     }
     return r;
+}
+
+bool grv_str_iter_eq_str(grv_str_iter_t* iter, grv_str_t match_str) {
+    if (grv_str_iter_is_end(iter) || iter->pos + match_str.size > iter->str->size) return false;
+    return memcmp(iter->str->data + iter->pos, match_str.data, match_str.size) == 0;
 }
 
 #if 0
