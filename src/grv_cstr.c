@@ -98,3 +98,13 @@ char* grv_cstr_repeat_char(char c, grv_cstr_size_t count) {
   cstr[count] = '\0';
   return cstr;
 }
+
+bool grv_cstr_eq(char* a, char* b) {
+    while (*a != 0 && *b != 0 && *a++ == *b++);
+    return *a == 0 && *b == 0;
+}
+
+bool grv_cstr_contains(char* str, char* substr) {
+    char* p = strstr(str, substr);
+    return p != NULL;
+}
