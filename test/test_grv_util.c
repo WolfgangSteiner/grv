@@ -23,6 +23,7 @@ size_t get_alloc_size(void* ptr) {
   #ifdef GRV_DEBUG_MEMORY
     return *((size_t*)ptr - 1);
   #else
+    GRV_UNUSED(ptr);
     return 0;
   #endif
 }

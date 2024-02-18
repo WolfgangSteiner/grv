@@ -23,7 +23,7 @@ typedef struct {
 #define GRV_TEST_RED(TEXT) "\x1B[31m" #TEXT "\x1B[0m"
 #define GRV_TEST_GREEN(TEXT) "\x1B[32m" #TEXT "\x1B[0m"
 
-#define GRV_TEST_ERROR_MSG_PREFIX "      " GRV_TEST_RED([ERROR]) " " 
+#define GRV_TEST_ERROR_MSG_PREFIX "          " GRV_TEST_RED([ERROR]) " " 
 #define GRV_TEST_NEWLINE() puts("")
 #define GRV_TEST_ERROR(EXPR, FMT, A, B) \
   if (GRV_TEST_VERBOSITY) GRV_TEST_NEWLINE(); \
@@ -110,8 +110,8 @@ static inline bool _grv_test_end(_grv_test_t test) {
 ) (&_test, #A, A, B, __FILE__, __LINE__)
 
 
-static inline void grv_test_print_error(char* msg, char* file, int line) {
-  if (GRV_TEST_VERBOSITY) puts("");
+static inline void grv_test_print_error(_grv_test_t* test, char* msg, char* file, int line) {
+  if (GRV_TEST_VERBOSITY && test->failed_count == 1) puts("");
   printf(GRV_TEST_ERROR_MSG_PREFIX "%s:%d %s\n", file, line, msg);
 }
 
@@ -120,7 +120,7 @@ static inline void _grv_test_equal_ptr(_grv_test_t* test, void* actual, void* ex
   if (actual != expected) {
     test->failed_count++;
     char* msg = grv_cstr_new_with_format("Pointer values are not equal. Expected %p, got %p.", expected, actual);
-    grv_test_print_error(msg, file, line);
+    grv_test_print_error(test, msg, file, line);
   }
 }
 
@@ -129,7 +129,7 @@ static inline void _grv_test_nullptr(_grv_test_t* test, void* actual, char* file
   if (actual != NULL) {
     test->failed_count++;
     char* msg = grv_cstr_new_with_format("Pointer value is not NULL. Expected NULL, got %p.", actual);
-    grv_test_print_error(msg, file, line);
+    grv_test_print_error(test, msg, file, line);
   }
 }
 
@@ -138,7 +138,7 @@ static inline void _grv_test_not_nullptr(_grv_test_t* test, void* actual, char* 
   if (actual == NULL) {
     test->failed_count++;
     char* msg = grv_cstr_new_with_format("Pointer value is NULL. Expected non-NULL value.");
-    grv_test_print_error(msg, file, line);
+    grv_test_print_error(test, msg, file, line);
   }
 }
 
@@ -147,7 +147,7 @@ static inline void _grv_test_true(_grv_test_t* test, char* expression, bool a, c
   if (!a) {
     test->failed_count++;
     char* msg = grv_cstr_new_with_format("%s is false, expected true.", expression);
-    grv_test_print_error(msg, file, line);
+    grv_test_print_error(test, msg, file, line);
     grv_free(msg);
   }
 }
@@ -157,7 +157,7 @@ static inline void _grv_test_false(_grv_test_t* test, char* expression, bool a, 
   if (a) {
     test->failed_count++;
     char* msg = grv_cstr_new_with_format("%s is true, expected false.", expression);
-    grv_test_print_error(msg, file, line);
+    grv_test_print_error(test, msg, file, line);
     grv_free(msg);
   }
 }
@@ -167,7 +167,7 @@ static inline void _grv_test_close_f32(_grv_test_t* test, char* expression, f32 
   if (fabs(actual - expected) > epsilon) {
     test->failed_count++;
     char* msg = grv_cstr_new_with_format("%s is %f, expected %f.", expression, actual, expected);
-    grv_test_print_error(msg, file, line);
+    grv_test_print_error(test, msg, file, line);
     grv_free(msg);
   }
 }
@@ -179,7 +179,7 @@ static inline void _grv_test_equal_str(_grv_test_t* test, char* expression, grv_
     char* actual_cstr = grv_str_copy_to_cstr(actual);
     char* expected_cstr = grv_str_copy_to_cstr(expected);
     char* msg = grv_cstr_new_with_format("%s is \"%s\", expected \"%s\".", expression, actual_cstr, expected_cstr);
-    grv_test_print_error(msg, file, line);
+    grv_test_print_error(test, msg, file, line);
     grv_free(actual_cstr);
     grv_free(expected_cstr);
     grv_free(msg);
@@ -195,7 +195,7 @@ static inline void _grv_test_not_equal_str(_grv_test_t* test, char* expression, 
     test->failed_count++;
     char* actual_cstr = grv_str_copy_to_cstr(actual);
     char* msg = grv_cstr_new_with_format("%s is \"%s\", expected different value.", expression, actual_cstr);
-    grv_test_print_error(msg, file, line);
+    grv_test_print_error(test, msg, file, line);
     grv_free(actual_cstr);
     grv_free(msg);
   }
@@ -208,7 +208,7 @@ static inline void _grv_test_not_equal_cstr(_grv_test_t* test, char* expression,
 static inline void _grv_test_fail(_grv_test_t* test, char* file, int line) {
   test->total_count++;
   test->failed_count++;
-  grv_test_print_error("Test failed.", file, line);
+  grv_test_print_error(test, "Test failed.", file, line);
 }
 
 static inline void _grv_test_equal_int(_grv_test_t* test, char* expression, s64 actual, s64 expected, char* file, int line) {
@@ -216,7 +216,7 @@ static inline void _grv_test_equal_int(_grv_test_t* test, char* expression, s64 
   if (actual != expected) {
     test->failed_count++;
     char* msg = grv_cstr_new_with_format("%s is %lld, expected %lld.", expression, actual, expected);
-    grv_test_print_error(msg, file, line);
+    grv_test_print_error(test, msg, file, line);
     grv_free(msg);
   }
 }
@@ -226,7 +226,7 @@ static inline void _grv_test_not_equal_int(_grv_test_t* test, char* expression, 
   if (actual == expected) {
     test->failed_count++;
     char* msg = grv_cstr_new_with_format("%s is %lld, expected different value.", expression, actual);
-    grv_test_print_error(msg, file, line);
+    grv_test_print_error(test, msg, file, line);
     grv_free(msg);
   }
 }
@@ -236,7 +236,7 @@ static inline void _grv_test_equal_uint(_grv_test_t* test, char* expression, u64
   if (actual != expected) {
     test->failed_count++;
     char* msg = grv_cstr_new_with_format("%s is %llx, expected %llx.", expression, actual, expected);
-    grv_test_print_error(msg, file, line);
+    grv_test_print_error(test, msg, file, line);
     free(msg);
   }
 }
