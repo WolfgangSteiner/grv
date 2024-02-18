@@ -14,7 +14,7 @@ void grv_log_debug_impl(char* filename, int line, char* format, ...) {
 }
 
 void grv_log(int log_level, char* log_tag, char* format, ...) {
-    if (log_level < grv_log_level) return;
+    if (log_level < (int)grv_log_level) return;
     va_list args;
     va_start(args, format);
     printf("[%s] ", log_tag);
