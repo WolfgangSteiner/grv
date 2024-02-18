@@ -13,7 +13,7 @@ typedef struct grv_strarr_t {
 } grv_strarr_t;
 
 grv_strarr_t grv_strarr_new();
-grv_strarr_t grv_strarr_new_from_cstr_arr(char** cstr_arr, grv_str_size_t size);
+grv_strarr_t grv_strarr_new_from_cstrarr(char** cstr_arr, grv_str_size_t size);
 void grv_strarr_free(grv_strarr_t* strarr);
 static inline grv_str_size_t grv_strarr_size(grv_strarr_t strarr) { return strarr.size; }
 
@@ -24,10 +24,19 @@ static inline grv_str_size_t grv_strarr_size(grv_strarr_t strarr) { return strar
 grv_str_t* grv_strarr_push(grv_strarr_t* strarr, grv_str_t str);
 grv_str_t* grv_strarr_push_front(grv_strarr_t* strarr, grv_str_t str);
 
+// push a copy of a string to the array
+grv_str_t* grv_strarr_push_copy(grv_strarr_t* strarr, grv_str_t str);
+
 void grv_strarr_append(grv_strarr_t* strarr, grv_strarr_t other);
 
 static inline grv_str_t* grv_strarr_at(grv_strarr_t strarr, grv_str_size_t index) {
+    assert(index >= 0 && index < strarr.size);
     return &strarr.arr[index];
+}
+
+GRV_INLINE grv_str_t grv_strarr_get(grv_strarr_t strarr, grv_str_size_t index) { 
+    assert(index >= 0 && index < strarr.size);
+    return strarr.arr[index];
 }
 
 static inline grv_str_t* grv_strarr_front(grv_strarr_t strarr) {
@@ -53,5 +62,7 @@ GRV_INLINE bool grv_strarr_contains_cstr(grv_strarr_t strarr, char* cstr) {
 )(STRARR, STR)  
 
 grv_str_t grv_strarr_join(grv_strarr_t strarr, grv_str_t separator);
+
+grv_strarr_t grv_strarr_filter(grv_strarr_t arr, bool (*predicate)(grv_str_t));
 
 #endif
