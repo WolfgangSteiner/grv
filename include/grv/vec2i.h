@@ -8,8 +8,9 @@ typedef struct vec2i_s {
 } vec2i;
 
 
-vec2i vec2i_add(vec2i a, vec2i b);
-vec2i vec2i_sub(vec2i a, vec2i b);
-void vec2i_swp(vec2i* a, vec2i* b);
+GRV_INLINE vec2i vec2i_add(vec2i a, vec2i b) { return (vec2i){.x=a.x+b.x, .y=a.y+b.y}; }
+GRV_INLINE vec2i vec2i_sub(vec2i a, vec2i b) { return (vec2i){.x=a.x-b.x, .y=a.y-b.y}; }
+GRV_INLINE void vec2i_swp(vec2i* a, vec2i* b) { vec2i t = *a; *a = *b; *b = t; }
 
 #endif
+
