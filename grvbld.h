@@ -374,7 +374,7 @@ GRVBLD_INLINE grvbld_config_t* grvbld_config_new(int argc, char** argv) {
 
     if (grvbld_args_contain(argc, argv, "--debug")) config->debug = true;
     if (grvbld_args_contain(argc, argv, "--use-ccache")) config->use_ccache = true;
-
+    if (grvbld_args_contain(argc, argv, "--no-use-ccache")) config->use_ccache = false;
     return config;
 }
 
@@ -490,6 +490,14 @@ GRVBLD_INLINE grvbld_strarr_t* get_files_in_dir(char* path) {
     return result;
 }
 
+bool grvbld_cmd_available(char* cmd) {
+    char* which_cmd = grvbld_cstr_new_with_format("which %s > /dev/null", cmd);
+    bool result = false;
+    result = (system(which_cmd) == 0);
+    free(which_cmd);
+    return result;
+}
+
 //==============================================================================
 // grvbld_target_t
 //==============================================================================
@@ -536,7 +544,8 @@ GRVBLD_INLINE void create_build_path(grvbld_config_t* config) {
 
 GRVBLD_INLINE char* grvbld_build_cmd(grvbld_config_t* config) {
     char* cmd = grvbld_cstr_new("");
-    if (config->use_ccache) {
+    bool ccache_available = grvbld_cmd_available("ccache");
+    if (ccache_available && config->use_ccache) {
         cmd = grvbld_cstr_append(cmd, "ccache ");
     }
     cmd = grvbld_cstr_append(cmd, config->cc);
