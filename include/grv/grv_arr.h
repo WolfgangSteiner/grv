@@ -22,7 +22,7 @@ typedef struct {
 #define GRV_ARR_TYPE(TYPE) struct {TYPE* arr; size_t size; size_t capacity;} 
 
 GRV_INLINE grv_arr_iter_t _grv_arr_iter_begin(grv_arr_t* arr, size_t element_size) {
-    return (grv_arr_iter_t){arr->arr, (byte*)arr->arr + arr->size * element_size, element_size};
+    return (grv_arr_iter_t){arr->arr, (u8*)arr->arr + arr->size * element_size, element_size};
 }
 #define grv_arr_iter_begin(ARR) _grv_arr_iter_begin((grv_arr_t*)ARR, sizeof(*(ARR)->arr))
 
@@ -33,7 +33,7 @@ GRV_INLINE bool grv_arr_iter_is_end(grv_arr_iter_t* iter) {
 GRV_INLINE void* grv_arr_iter_next(grv_arr_iter_t* iter) {
     if (iter->ptr == iter->end) return NULL;
     void* ptr = iter->ptr;
-    iter->ptr = (byte*)iter->ptr + iter->element_size;
+    iter->ptr = (u8*)iter->ptr + iter->element_size;
     return ptr;
 }
 
@@ -83,11 +83,11 @@ GRV_INLINE void* grv_arr_iter_next(grv_arr_iter_t* iter) {
     }
     static inline void* _grv_arr_back(void* arr, size_t size, size_t element_size) {
         grv_assert(size > 0);
-        return (byte*)arr + (size - 1) * element_size;
+        return (u8*)arr + (size - 1) * element_size;
     }
     static inline void* _grv_arr_at(void* arr, size_t size, size_t index, size_t element_size) {
         grv_assert(index < size);
-        return (byte*)arr + index * element_size;
+        return (u8*)arr + index * element_size;
     }
     #define grv_arr_front(ARR) (*((typeof((ARR)->arr)) _grv_arr_front((ARR)->arr, (ARR)->size)))
     #define grv_arr_back(ARR) (*((typeof((ARR)->arr)) _grv_arr_back(((ARR)->arr, (ARR)->size, grv_arr_element_size(ARR)))))
