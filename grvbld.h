@@ -640,7 +640,10 @@ GRVBLD_INLINE int grvbld_build_static_library(grvbld_config_t* config, grvbld_ta
     char* ar_cmd = grvbld_cstr_new_with_format("rm -f %s && ar rcs %s", lib_file, lib_file);
 
     char* cmd = grvbld_build_cmd(config);
-    grvbld_cstr_append_arg(cmd, "-c");
+    cmd = grvbld_cstr_append_arg(cmd, "-c");
+
+    log_newline();
+    log_info("BUILDING STATIC LIBRARY %s", target->name);
 
     // compile all of the source files
     for (size_t i = 0; i < target->src_files.size; ++i) {
@@ -690,6 +693,8 @@ GRVBLD_INLINE int grvbld_build_target(grvbld_config_t* config, grvbld_target_t* 
     if (target->type == GRVBLD_STATIC_LIBRARY) {
         grvbld_build_static_library(config, target);
     } else if (target->type == GRVBLD_EXECUTABLE) {
+        log_newline();
+        log_info("BUILDING EXECUTABLE %s", target->name);
         char* dst_file = grvbld_cstr_new_with_format("%s/%s", config->build_dir, target->name);
         cmd = grvbld_cstr_append_arg_format(cmd, "-o %s", dst_file);
 
