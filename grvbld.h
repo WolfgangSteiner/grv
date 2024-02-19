@@ -196,6 +196,7 @@ typedef struct {
     bool debug;
     bool treat_warnings_as_errors;
     bool use_ccache;
+    bool tests_only;
     int verbosity;
 } grvbld_config_t;
 
@@ -364,6 +365,7 @@ GRVBLD_INLINE grvbld_config_t* grvbld_config_new(int argc, char** argv) {
     if (grvbld_args_contain(argc, argv, "--debug")) config->debug = true;
     if (grvbld_args_contain(argc, argv, "--use-ccache")) config->use_ccache = true;
     if (grvbld_args_contain(argc, argv, "--no-use-ccache")) config->use_ccache = false;
+    if (grvbld_args_contain(argc, argv, "--tests")) config->tests_only = true;
     return config;
 }
 

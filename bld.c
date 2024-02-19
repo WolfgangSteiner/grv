@@ -11,13 +11,16 @@ int main(int argc, char** argv) {
     grvbld_target_add_src(libgrv, "src/grv.c");
     grvbld_build_target(config, libgrv);
 
+    int result = grvbld_run_tests(config);
+
+    if (config->tests_only) return result; 
+
     grvbld_target_t* libgrvgfx = grvbld_target_create("grvgfx", GRVBLD_STATIC_LIBRARY);
     grvbld_target_add_src(libgrvgfx, "src/grv_gfx/grv_gfx.c");
     grvbld_target_link_library(libgrvgfx, "SDL2");
     grvbld_target_add_data_file(libgrvgfx, "src/grv_gfx/cozette.psf");
     grvbld_build_target(config, libgrvgfx);
 
-    grvbld_run_tests(config);
 
     grvbld_target_t* grvcc = grvbld_target_create_executable("grvcc");
     grvbld_target_add_src(grvcc, "tools/grvcc.c");
