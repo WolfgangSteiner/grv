@@ -48,6 +48,14 @@ static inline void _grv_test_begin(_grv_test_t test) {
     fflush(stdout); 
   }
 }
+static inline void _grv_test_begin_new(_grv_test_t test) {
+  if (GRV_TEST_VERBOSITY) {
+    _put(GRV_TEST_GREEN([TEST]));
+    _put(" ");
+    _put_str(test.name); 
+    fflush(stdout); 
+  }
+}
 
 // print the name of the .est group
 #define GRV_TEST_INIT(NAME) \
@@ -67,7 +75,6 @@ static inline void _grv_test_begin(_grv_test_t test) {
     _grv_test_t _test = { .name = grv_str_ref(#NAME) }; \
     _grv_test_begin(_test); \
 
-
 static inline bool _grv_test_end(_grv_test_t test) {
   bool success = test.failed_count == 0;
   if (success) {
@@ -83,6 +90,22 @@ static inline bool _grv_test_end(_grv_test_t test) {
 }
 
 #define GRV_TEST_END() return _grv_test_end(_test); } 
+
+#define GRV_TEST_BEGIN_NEW(NAME) \
+  bool test_##NAME(); \
+  static bool execute_test() { \
+    return test_##NAME(); \
+  } \
+  bool test_##NAME() { \
+    _grv_test_t _test = { .name = grv_str_ref(#NAME) }; \
+    _grv_test_begin_new(_test); \
+
+#define GRV_TEST_END_NEW() \
+  return _grv_test_end(_test); }\
+  int main(void) { \
+    bool success = execute_test(); \
+    return success ? 0 : 1; \
+  }
 
 #define GRV_TEST_RUN(NAME) \
   success = success && test_##NAME();

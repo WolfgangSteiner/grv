@@ -627,8 +627,7 @@ GRVBLD_INLINE int grvbld_run_tests(grvbld_config_t* config) {
     bool success = true;
     for (size_t i = 0; i < test_files->size; ++i) {
         char* test_file = test_files->data[i];
-        if (starts_with(test_file, "test_")
-            && ends_with(test_file, ".c")) {
+        if (ends_with(test_file, ".c")) {
             grvbld_cstr_remove_ext(test_file);
             int test_result = grvbld_test(config, test_file);
             if (test_result > 0) success = false;
