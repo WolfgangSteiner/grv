@@ -40,6 +40,8 @@ GRV_INLINE bool grv_str_empty(grv_str_t str) { return str.size == 0; }
 bool grv_str_is_int(grv_str_t str);
 int grv_str_to_int(grv_str_t str);
 s64 grv_str_to_s64(grv_str_t str);
+bool grv_str_is_float(grv_str_t str);
+f32 grv_str_to_f32(grv_str_t str);
 char grv_str_at(grv_str_t str, grv_str_size_t idx);
 char grv_str_get_char(grv_str_t str, grv_str_size_t pos);
 

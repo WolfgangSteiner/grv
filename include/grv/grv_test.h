@@ -116,6 +116,7 @@ static inline bool _grv_test_end(_grv_test_t test) {
 #define GRV_TEST_TRUE(ACTUAL) _grv_test_true(&_test, #ACTUAL, ACTUAL, __FILE__, __LINE__) 
 #define GRV_TEST_FALSE(ACTUAL) _grv_test_false(&_test, #ACTUAL, ACTUAL, __FILE__, __LINE__) 
 #define GRV_TEST_CLOSE_F32(A, B, EPSILON) _grv_test_close_f32(&_test, #A, A, B, EPSILON, __FILE__, __LINE__) 
+#define GRV_TEST_EQUAL_F32(A, B) _grv_test_equal_f32(&_test, #A, A, B, __FILE__, __LINE__)
 #define GRV_TEST_FAIL() _grv_test_fail(&_test, __FILE__, __LINE__)
 #define GRV_TEST_EQUAL_INT(A, B) _grv_test_equal_int(&_test, #A, A, B, __FILE__, __LINE__)
 #define GRV_TEST_NOT_EQUAL_INT(A, B) _grv_test_not_equal_int(&_test, #A, A, B, __FILE__, __LINE__)
@@ -180,6 +181,16 @@ static inline void _grv_test_false(_grv_test_t* test, char* expression, bool a, 
   if (a) {
     test->failed_count++;
     char* msg = grv_cstr_new_with_format("%s is true, expected false.", expression);
+    grv_test_print_error(test, msg, file, line);
+    grv_free(msg);
+  }
+}
+
+static inline void _grv_test_equal_f32(_grv_test_t* test, char* expression, f32 actual, f32 expected, char* file, int line) {
+  test->total_count++;
+  if (actual != expected) {
+    test->failed_count++;
+    char* msg = grv_cstr_new_with_format("%s is %f, expected %f.", expression, actual, expected);
     grv_test_print_error(test, msg, file, line);
     grv_free(msg);
   }

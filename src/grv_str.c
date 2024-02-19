@@ -340,8 +340,7 @@ int grv_str_to_int(grv_str_t str) {
     return is_negative ? -res : res;
 }
 
-s64 grv_str_to_s64(grv_str_t str)
-{
+s64 grv_str_to_s64(grv_str_t str) {
     int res = 0;
     for (grv_str_size_t i = 0; i < str.size; ++i) {
         char c = grv_str_at(str, i);        
@@ -349,6 +348,116 @@ s64 grv_str_to_s64(grv_str_t str)
         res = 10 * res + grv_char_to_int(c);
     }   
     return res;
+}
+
+bool grv_str_is_float(grv_str_t str) {
+    enum {
+        state_integer_part = 0,
+        state_fractional_part = 1,
+        state_exponent = 2
+    } current_state = state_integer_part;   
+
+    f32 integer_part = 0.0f;
+    f32 fractional_part = 0.0f;
+    s32 fractional_position = 0;
+    f32 exponent = 0.0f;
+    bool exponent_sign_encountered = false;
+
+    if (str.size == 0) return false;
+    s32 idx = 0;
+    if (str.data[0] == '-') {
+        idx++;
+    } else if (str.data[0] == '+') {
+        idx++;
+    } 
+
+    while (idx < str.size) {
+        char c = str.data[idx];
+        if (c == '.') {
+            if (current_state != state_integer_part) return false;
+            current_state = state_fractional_part;
+        } else if (c=='e' || c=='E') {
+            if (current_state == state_exponent) return false;
+            current_state = state_exponent;
+        } else if (c=='-' || c=='+') {
+            if (current_state != state_exponent || exponent_sign_encountered) return false;
+            exponent_sign_encountered = true;
+        } else if (grv_is_digit(c)) {
+            f32 digit = (f32)grv_char_to_int(c);
+            if (current_state == state_integer_part) {
+                integer_part = 10.0f * integer_part + digit;
+            } else if (current_state == state_fractional_part) {
+                fractional_position++;
+                fractional_part += digit * powf(10.0f, -fractional_position);
+            } else if (current_state == state_exponent) {
+                exponent = 10.0f * exponent + digit;
+            }
+        } else {
+            return false;
+        }
+        idx++;
+    }
+
+    return true;
+}
+
+f32 grv_str_to_f32(grv_str_t str) {
+    enum {
+        state_integer_part = 0,
+        state_fractional_part = 1,
+        state_exponent = 2
+    } current_state = state_integer_part;   
+
+    f32 sign_mantissa = 1.0f;
+    f32 sign_exponent = 1.0f;
+    f32 result = 0.0f;
+    f32 integer_part = 0.0f;
+    f32 fractional_part = 0.0f;
+    s32 fractional_position = 0;
+    f32 exponent = 0.0f;
+    bool exponent_sign_encountered = false;
+
+    if (str.size == 0) return result;
+    s32 idx = 0;
+    if (str.data[0] == '-') {
+        sign_mantissa = -1.0f;
+        idx++;
+    } else if (str.data[0] == '+') {
+        idx++;
+    } 
+
+    while (idx < str.size) {
+        char c = str.data[idx];
+        if (c == '.') {
+            if (current_state != state_integer_part) break;
+            current_state = state_fractional_part;
+        } else if (c=='e' || c=='E') {
+            if (current_state == state_exponent) break;
+            current_state = state_exponent;
+        } else if (c=='-') {
+            if (current_state != state_exponent || exponent_sign_encountered) break; 
+            exponent_sign_encountered = true;
+            sign_exponent = -1.0f;
+        } else if (c=='+') {
+            if (current_state != state_exponent || exponent_sign_encountered) break; 
+            exponent_sign_encountered = true;
+        } else if (grv_is_digit(c)) {
+            f32 digit = (f32)grv_char_to_int(c);
+            if (current_state == state_integer_part) {
+                integer_part = 10.0f * integer_part + digit;
+            } else if (current_state == state_fractional_part) {
+                fractional_position++;
+                fractional_part += digit * powf(10.0f, -fractional_position);
+            } else if (current_state == state_exponent) {
+                exponent = 10.0f * exponent + digit;
+            }
+        } else {
+            break;        
+        }
+        idx++;
+    }
+
+    return sign_mantissa * (integer_part + fractional_part) * powf(10.0f, sign_exponent * exponent);
 }
 
 char grv_str_get_char(grv_str_t str, grv_str_size_t pos) { return str.data[pos]; }
