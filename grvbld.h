@@ -500,6 +500,14 @@ GRVBLD_INLINE grvbld_target_t* grvbld_target_create(char* name, grvbld_target_ty
     return target;
 }
 
+GRVBLD_INLINE grvbld_target_t* grvbld_target_create_executable(char* name) {
+    return grvbld_target_create(name, GRVBLD_EXECUTABLE);
+}
+
+GRVBLD_INLINE grvbld_target_t* grvbld_target_create_static_library(char* name) {
+    return grvbld_target_create(name, GRVBLD_STATIC_LIBRARY);
+}
+
 GRVBLD_INLINE void grvbld_target_add_src(grvbld_target_t* target, char* src) {
     grvbld_strarr_push(&target->src_files, src);
 }

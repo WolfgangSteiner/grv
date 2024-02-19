@@ -18,6 +18,11 @@ int main(int argc, char** argv) {
     grvbld_build_target(config, libgrvgfx);
 
     grvbld_run_tests(config);
+
+    grvbld_target_t* grvcc = grvbld_target_create_executable("grvcc");
+    grvbld_target_add_src(grvcc, "tools/grvcc.c");
+    grvbld_target_link_library(grvcc, "grv");
+    grvbld_build_target(config, grvcc);
     
     grvbld_target_t* grv_clock = grvbld_target_create("grv_clock", GRVBLD_EXECUTABLE);
     grvbld_target_add_src(grv_clock, "apps/grv_clock.c");

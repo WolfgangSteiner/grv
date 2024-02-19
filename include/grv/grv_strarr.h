@@ -22,6 +22,10 @@ static inline grv_str_size_t grv_strarr_size(grv_strarr_t strarr) { return strar
 // in case of a reference, the string caller is responsible to keep the underlying string alive
 // if you want the string to be independent of the caller, use grv_str_copy before pushing it
 grv_str_t* grv_strarr_push(grv_strarr_t* strarr, grv_str_t str);
+
+GRV_INLINE grv_str_t* grv_strarr_push_str_ref(grv_strarr_t* strarr, char* cstr) {
+    return grv_strarr_push(strarr, grv_str_ref(cstr));
+}
 grv_str_t* grv_strarr_push_front(grv_strarr_t* strarr, grv_str_t str);
 
 // push a copy of a string to the array
@@ -61,8 +65,12 @@ GRV_INLINE bool grv_strarr_contains_cstr(grv_strarr_t strarr, char* cstr) {
     char*: grv_strarr_contains_cstr \
 )(STRARR, STR)  
 
+s32 grv_strarr_index_of_str(grv_strarr_t strarr, grv_str_t str);
+
 grv_str_t grv_strarr_join(grv_strarr_t strarr, grv_str_t separator);
 
 grv_strarr_t grv_strarr_filter(grv_strarr_t arr, bool (*predicate)(grv_str_t));
+
+void grv_strarr_remove_str(grv_strarr_t* arr, grv_str_t str); 
 
 #endif

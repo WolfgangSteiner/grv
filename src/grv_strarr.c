@@ -126,3 +126,23 @@ grv_strarr_t grv_strarr_filter(grv_strarr_t arr, bool (*predicate)(grv_str_t)) {
     }
     return result;
 }
+
+
+s32 grv_strarr_index_of_str(grv_strarr_t arr, grv_str_t str) {
+    for (s32 idx = 0; idx < arr.size; ++idx) {
+         if (grv_str_eq_str(arr.arr[idx], str)) return idx;
+    }
+
+    return -1;
+}
+
+void grv_strarr_remove_str(grv_strarr_t* arr, grv_str_t str) {
+    grv_assert(grv_strarr_contains(*arr, str));
+    s32 idx = grv_strarr_index_of_str(*arr, str);
+    grv_str_t remove_str = arr->arr[idx];
+    grv_str_free(&remove_str);
+    if (idx != arr->size - 1) {
+        memmove(&arr->arr[idx], &arr->arr[idx + 1], (arr->size - idx - 1) * sizeof(grv_str_t));
+    }
+    arr->size--;
+}
