@@ -115,6 +115,7 @@ grv_str_iter_t grv_str_find_any_char(grv_str_t* str, grv_str_t chars);
 grv_str_t grv_str_split_tail_at_char(grv_str_t str, char c);
 grv_str_t grv_str_reduce_char_spans(grv_str_t, char);
 struct grv_strarr_t grv_str_split(grv_str_t str, grv_str_t sep);
+struct grv_strarr_t grv_str_split_whitespace(grv_str_t str);
 
 grv_str_iter_t grv_str_find_str(grv_str_t* str, grv_str_t match_str);
 grv_str_iter_t grv_str_rfind_str(grv_str_t* str, grv_str_t match_str);
@@ -137,7 +138,7 @@ bool grv_file_exists(grv_str_t file_name);
 
 int grv_char_to_int(char c);
 bool grv_is_digit(char c);
-bool grv_is_white_space(char c);
+bool grv_is_whitespace(char c);
 bool grv_is_word_separator(char c);
 bool grv_is_newline(char c);
 
@@ -153,13 +154,15 @@ bool grv_str_iter_rmatch(grv_str_iter_t* iter, grv_str_t match_str);
 int grv_str_iter_match_int(grv_str_iter_t* iter);
 s64 grv_str_iter_match_s64(grv_str_iter_t* iter);
 bool grv_str_iter_is_digit(grv_str_iter_t* iter);
-bool grv_str_iter_is_white_space(grv_str_iter_t* iter);
+bool grv_str_iter_is_whitespace(grv_str_iter_t* iter);
 bool grv_str_iter_match_white_space(grv_str_iter_t* iter);
 bool grv_str_iter_match_char(grv_str_iter_t* iter, char match);
 bool grv_str_iter_match_any_char(grv_str_iter_t* iter, grv_str_t chars);
 bool grv_str_iter_match_newline(grv_str_iter_t* iter);
 bool grv_str_iter_match_str(grv_str_iter_t* iter, grv_str_t match_str);
 grv_str_t grv_str_iter_match_up_to_char(grv_str_iter_t* iter, char match);
+grv_str_t grv_str_iter_match_up_to_whitespace(grv_str_iter_t* iter);
+grv_str_t grv_str_iter_match_up_to_non_whitespace(grv_str_iter_t* iter);
 grv_str_t grv_str_iter_match_up_to_str(grv_str_iter_t* iter, grv_str_t match_str);
 grv_str_t grv_str_iter_match_word(grv_str_iter_t* iter);
 bool grv_str_iter_eq_str(grv_str_iter_t* iter, grv_str_t match_str);
@@ -242,7 +245,7 @@ typedef grv_str_format_callback_t str_format_callback_t;
 #define file_exists grv_file_exists
 #define char_to_int grv_char_to_int
 #define is_digit grv_is_digit
-#define is_white_space grv_is_white_space
+#define is_whitespace grv_is_whitespace
 #define is_word_separator grv_is_word_separator
 #define is_newline grv_is_newline
 #define str_from_int grv_str_from_int
@@ -256,7 +259,7 @@ typedef grv_str_format_callback_t str_format_callback_t;
 #define str_iter_match_int grv_str_iter_match_int
 #define str_iter_match_s64 grv_str_iter_match_s64
 #define str_iter_is_digit grv_str_iter_is_digit
-#define str_iter_is_white_space grv_str_iter_is_white_space
+#define str_iter_is_whitespace grv_str_iter_is_whitespace
 #define str_iter_match_white_space grv_str_iter_match_white_space
 #define str_iter_match_char grv_str_iter_match_char
 #define str_iter_match_any_char grv_str_iter_match_any_char

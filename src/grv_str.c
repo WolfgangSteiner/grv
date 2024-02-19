@@ -115,7 +115,7 @@ grv_str_t grv_str_substr_with_iters(grv_str_iter_t start_iter, grv_str_iter_t en
 grv_str_t grv_str_lstrip(grv_str_t str) {
     grv_str_t res = str;
     res.owns_data = false;
-    while (res.size && grv_is_white_space(res.data[0])) {
+    while (res.size && grv_is_whitespace(res.data[0])) {
         res.data++;
         res.size--;
     }
@@ -283,7 +283,7 @@ bool grv_is_digit(char c) {
     return c >= '0' && c <= '9';
 }
 
-bool grv_is_white_space(char c) {
+bool grv_is_whitespace(char c) {
     return c == ' ' || c == '\t' || c == '\n';
 }
 
@@ -549,6 +549,24 @@ struct grv_strarr_t grv_str_split(grv_str_t str, grv_str_t sep) {
     return arr;
 }
 
+struct grv_strarr_t grv_str_split_whitespace(grv_str_t str) {
+    grv_strarr_t arr = grv_strarr_new();
+    bool is_in_whitespace = false;
+    grv_str_iter_t start_iter = grv_str_iter_begin(&str);
+    grv_str_iter_t end_iter = start_iter;
+    while (!grv_str_iter_is_end(&end_iter)) {
+        grv_str_t substr = grv_str_iter_match_up_to_whitespace(&end_iter);
+        grv_strarr_push(&arr, substr);
+        if (grv_str_iter_is_end(&end_iter)) break;
+        grv_str_iter_match_up_to_non_whitespace(&end_iter);
+        if (grv_str_iter_is_end(&end_iter)) grv_strarr_push(&arr, grv_str_ref(""));
+        start_iter = end_iter; 
+    }
+
+
+    return arr;
+}
+
 bool grv_str_iter_match(grv_str_iter_t* iter, grv_str_t match_str) {
     bool match = _grv_str_iter_eq_str(iter, match_str);
     if (match) {
@@ -572,7 +590,7 @@ bool grv_str_iter_rmatch(grv_str_iter_t* iter, grv_str_t match_str) {
 
 int grv_str_iter_match_int(grv_str_iter_t* iter) {
     int res = 0;
-    if (grv_str_iter_is_white_space(iter)) {
+    if (grv_str_iter_is_whitespace(iter)) {
         grv_str_iter_match_white_space(iter);
     }
     while (!grv_str_iter_is_end(iter)) {
@@ -590,7 +608,7 @@ int grv_str_iter_match_int(grv_str_iter_t* iter) {
 s64 grv_str_iter_match_s64(grv_str_iter_t* iter) {
     s64 res = 0;
     s64 sign = 1;
-    if (grv_str_iter_is_white_space(iter)) {
+    if (grv_str_iter_is_whitespace(iter)) {
         grv_str_iter_match_white_space(iter);
     }
     char c = grv_str_iter_get_char(iter);
@@ -615,11 +633,11 @@ s64 grv_str_iter_match_s64(grv_str_iter_t* iter) {
 bool grv_str_iter_match_white_space(grv_str_iter_t* iter) {
     if (grv_str_iter_is_end(iter)) return false;
     char c = grv_str_iter_get_char(iter);
-    if (!grv_is_white_space(c)) return false;
+    if (!grv_is_whitespace(c)) return false;
     grv_str_iter_inc(iter);
     while(!grv_str_iter_is_end(iter)) {
         c = grv_str_iter_get_char(iter);
-        if (!grv_is_white_space(c)) break;
+        if (!grv_is_whitespace(c)) break;
         grv_str_iter_inc(iter);
     }
     return true;
@@ -664,9 +682,9 @@ bool grv_str_iter_is_digit(grv_str_iter_t* iter) {
     return grv_is_digit(grv_str_iter_get_char(iter));
 }
 
-bool grv_str_iter_is_white_space(grv_str_iter_t* iter) {
+bool grv_str_iter_is_whitespace(grv_str_iter_t* iter) {
     if (grv_str_iter_is_end(iter)) return false;
-    return grv_is_white_space(grv_str_iter_get_char(iter));
+    return grv_is_whitespace(grv_str_iter_get_char(iter));
 }
 
 grv_str_t grv_str_iter_match_up_to_char(grv_str_iter_t* iter, char match) {
@@ -679,12 +697,54 @@ grv_str_t grv_str_iter_match_up_to_char(grv_str_iter_t* iter, char match) {
 
     while (!grv_str_iter_is_end(iter)) {
         char c = grv_str_iter_get_char(iter);
-        grv_str_iter_inc(iter);
 
         if (c == match) {
             return r;
         } else {
             r.size++;
+            grv_str_iter_inc(iter);
+        }
+    }
+    return r;
+}
+
+grv_str_t grv_str_iter_match_up_to_whitespace(grv_str_iter_t* iter) {
+    grv_str_t r = {
+        .data=iter->str->data + iter->pos,
+        .size=0,
+        .is_valid=true,
+        .owns_data=false
+    };
+
+    while (!grv_str_iter_is_end(iter)) {
+        char c = grv_str_iter_get_char(iter);
+
+        if (grv_is_whitespace(c)) {
+            return r;
+        } else {
+            r.size++;
+            grv_str_iter_inc(iter);
+        }
+    }
+    return r;
+}
+
+grv_str_t grv_str_iter_match_up_to_non_whitespace(grv_str_iter_t* iter) {
+    grv_str_t r = {
+        .data=iter->str->data + iter->pos,
+        .size=0,
+        .is_valid=true,
+        .owns_data=false
+    };
+
+    while (!grv_str_iter_is_end(iter)) {
+        char c = grv_str_iter_get_char(iter);
+
+        if (!grv_is_whitespace(c)) {
+            return r;
+        } else {
+            r.size++;
+            grv_str_iter_inc(iter);
         }
     }
     return r;
