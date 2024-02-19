@@ -610,7 +610,7 @@ GRVBLD_INLINE int grvbld_test(grvbld_config_t* config, char* name) {
         exit(1);
     }
 
-    system(dst_file);
+    return system(dst_file);
     
     #if 0
     if (grv_cmd_available(grv_str_ref("valgrind"))) {
@@ -624,16 +624,18 @@ GRVBLD_INLINE int grvbld_test(grvbld_config_t* config, char* name) {
 
 GRVBLD_INLINE int grvbld_run_tests(grvbld_config_t* config) {
     grvbld_strarr_t* test_files = get_files_in_dir(config->test_dir);
+    bool success = true;
     for (size_t i = 0; i < test_files->size; ++i) {
         char* test_file = test_files->data[i];
         if (starts_with(test_file, "test_")
             && ends_with(test_file, ".c")) {
             grvbld_cstr_remove_ext(test_file);
-            grvbld_test(config, test_file);
+            int test_result = grvbld_test(config, test_file);
+            if (test_result > 0) success = false;
         }
     }
+    return success ? 0 : 1;
 }
-
 
 GRVBLD_INLINE int grvbld_build_static_library(grvbld_config_t* config, grvbld_target_t* target) {
     char* lib_file = grvbld_cstr_new_with_format("%s/lib%s.a", config->build_dir, target->name);
@@ -683,6 +685,7 @@ GRVBLD_INLINE int grvbld_build_static_library(grvbld_config_t* config, grvbld_ta
         log_error("failed to build %s", target->name);
         exit(1);
     }
+    return result;
 }
 
 GRVBLD_INLINE int grvbld_build_target(grvbld_config_t* config, grvbld_target_t* target) {
@@ -691,7 +694,7 @@ GRVBLD_INLINE int grvbld_build_target(grvbld_config_t* config, grvbld_target_t* 
     char* cmd = grvbld_build_cmd(config);
     
     if (target->type == GRVBLD_STATIC_LIBRARY) {
-        grvbld_build_static_library(config, target);
+        return grvbld_build_static_library(config, target);
     } else if (target->type == GRVBLD_EXECUTABLE) {
         log_newline();
         log_info("BUILDING EXECUTABLE %s", target->name);
@@ -723,7 +726,11 @@ GRVBLD_INLINE int grvbld_build_target(grvbld_config_t* config, grvbld_target_t* 
             char* debug_cmd = grvbld_cstr_new_with_format("gdb -q -ex run -ex quit %s", dst_file);
             system(debug_cmd);
         }
-    }
+        return result;
+    } else {
+        log_error("Unknown target type");
+        return 1;
+    }   
 }
 
 

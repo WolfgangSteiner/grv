@@ -3,6 +3,8 @@
 int main(int argc, char** argv) {
     GRV_CHECK_AND_REBUILD();    
     grvbld_config_t* config =  grvbld_config_new(argc, argv);
+    //config->cc = "tcc";
+    //config->use_ccache = false;
     grvbld_strarr_push(&config->warnings, "-Wextra -Wpedantic");
 
     grvbld_target_t* libgrv = grvbld_target_create("grv", GRVBLD_STATIC_LIBRARY);
