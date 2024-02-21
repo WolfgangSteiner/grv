@@ -29,15 +29,21 @@ int grv_util_get_terminal_width() {
   #endif
 }
 
+int grv_system(grv_str_t cmd) {
+    char* cmd_str = grv_str_copy_to_cstr(cmd);
+    int result = system(cmd_str);
+    grv_free(cmd_str);
+    return result;
+}
 
-grv_strarr_t grv_system(grv_str_t cmd) {
+grv_strarr_t grv_system_with_capture(grv_str_t cmd) {
   char* cmd_cstr = grv_str_cstr(cmd);
-  grv_strarr_t result = grv_system_cstr(cmd_cstr); 
+  grv_strarr_t result = grv_system_with_capture_cstr(cmd_cstr); 
   grv_free(cmd_cstr);
   return result;
 }
 
-grv_strarr_t grv_system_cstr(char* cmd) {  
+grv_strarr_t grv_system_with_capture_cstr(char* cmd) {  
   grv_strarr_t result = grv_strarr_new();
   FILE* fp = popen(cmd, "r");
   if (fp == NULL) {
@@ -51,6 +57,7 @@ grv_strarr_t grv_system_cstr(char* cmd) {
     grv_str_t line_str = grv_str_ref(line);
     line_str = grv_str_remove_trailing_newline(line_str); 
     grv_strarr_push(&result, grv_str_copy(line_str));
+    grv_str_free(&line_str);
   }
 
   pclose(fp);

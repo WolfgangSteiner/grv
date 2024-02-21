@@ -8,13 +8,17 @@
 // Returns the width of the terminal
 int grv_util_get_terminal_width();
 
-// executes a command and returns the output as a grv_strarr
-grv_strarr_t grv_system(grv_str_t cmd);
-grv_strarr_t grv_system_cstr(char* cmd);
+// executes a command without capturing the output
+// returns result of subcommand
+int grv_system(grv_str_t cmd);
+
+// executes a command, capturing the output using popen
+// returns the output as a grv_strarr
+grv_strarr_t grv_system_with_capture(grv_str_t cmd);
+grv_strarr_t grv_system_with_capture_cstr(char* cmd);
 
 // Returns list of files given a pattern 
 grv_strarr_t grv_util_glob(grv_str_t pattern);
-
 
 // generate a unique id
 u64 grv_util_generate_uid();
