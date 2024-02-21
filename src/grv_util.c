@@ -1,5 +1,6 @@
 #include "grv/grv_util.h"
 #include "grv/grv_memory.h"
+#include "grv/grv_str.h"
 #include <stdio.h>
 #include <glob.h>
 #include <time.h>
@@ -66,6 +67,20 @@ grv_strarr_t grv_system_with_capture_cstr(char* cmd) {
   }
 
   return result;
+}
+
+pid_t grv_fork(grv_str_t cmd, grv_strarr_t* args) {
+    pid_t pid = fork();
+    if (pid == 0) {
+        size_t num_args = args ? args->size : 0;
+        char** arg_arr = grv_alloc_zeros(sizeof(char*) * (num_args + 2));
+        arg_arr[0] = grv_str_copy_to_cstr(cmd);
+        for (int i = 0; i < num_args; ++i) {
+            arg_arr[i+1] = grv_str_copy_to_cstr(args->arr[i]);
+        }
+        execvp(arg_arr[0], arg_arr);
+    }
+    return pid;
 }
 
 grv_strarr_t grv_util_glob(grv_str_t pattern) {

@@ -4,6 +4,7 @@
 #include "grv_base.h"
 #include "grv_str.h"
 #include "grv_strarr.h"
+#include <unistd.h>
 
 // Returns the width of the terminal
 int grv_util_get_terminal_width();
@@ -16,6 +17,9 @@ int grv_system(grv_str_t cmd);
 // returns the output as a grv_strarr
 grv_strarr_t grv_system_with_capture(grv_str_t cmd);
 grv_strarr_t grv_system_with_capture_cstr(char* cmd);
+
+// fork process
+pid_t grv_fork(grv_str_t cmd, grv_strarr_t* args);
 
 // Returns list of files given a pattern 
 grv_strarr_t grv_util_glob(grv_str_t pattern);
