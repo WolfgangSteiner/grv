@@ -26,8 +26,11 @@ char* grv_cstr_alloc(grv_cstr_size_t len) {
   return new_data;
 }
 
-char* grv_cstr_new() {
-  return grv_cstr_alloc(0);
+char* grv_cstr_new(const char* src) {
+  grv_cstr_size_t len = grv_cstr_len(src);
+  char* res = grv_cstr_alloc(len);
+  memcpy(res, src, len + 1);
+  return res;
 }
 
 void grv_cstr_free(char* str) {
@@ -47,13 +50,6 @@ char* cstr_grow(char* str, grv_cstr_size_t new_len) {
   }
 }
 
-char* grv_cstr_copy(const char* src) {
-  size_t len = strlen(src);
-  char* dst = grv_cstr_alloc(len);
-  memcpy(dst, src, len + 1);
-  return dst;
-}                   
-
 char* grv_cstr_cat(const char* a, const char* b) {
   grv_cstr_size_t a_len = grv_cstr_len(a);
   grv_cstr_size_t b_len = grv_cstr_len(b);
@@ -69,7 +65,7 @@ char* grv_cstr_append(char* str, const char* append_str) {
   grv_cstr_size_t append_str_len = grv_cstr_len(append_str);
   grv_cstr_size_t new_len = str_len + append_str_len;
   str = cstr_grow(str, new_len);
-  memcpy(str + str_len, append_str, append_str_len);
+  memcpy(str + str_len, append_str, append_str_len + 1);
   return str;
 }
 
