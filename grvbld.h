@@ -6,6 +6,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <assert.h>
 
 #ifndef NULL
@@ -120,35 +121,6 @@ GRVBLD_INLINE void log_error(char* fmt, ...) {
 GRVBLD_INLINE void log_newline() {
     printf("\n");
 }
-
-GRVBLD_INLINE int rebuild_file(char* filename) {
-    char* src = grvbld_cstr_cat(filename, ".c");
-    char* cmd = grvbld_cstr_cat("gcc -o ", filename);
-    cmd = grvbld_cstr_append(cmd, " -DGRV_BUILD_CONFIGURED -Iinclude ");
-    cmd = grvbld_cstr_append(cmd, src);
-    //cmd = grvbld_cstr_append(cmd, " src/grvbld.c");
-    log_info("Rebuilding %s:", filename);
-    log_info("%s", cmd);
-    int result = system(cmd);
-    free(src);
-    free(cmd);
-    return result;
-}
-
-#define GRV_CHECK_AND_REBUILD() \
-    char* _executable_name = argv[0]; \
-    if (is_source_file_newer(_executable_name)) { \
-        int result = rebuild_file(_executable_name); \
-        if (result == 0) { \
-            log_info("Rebuilding of %s successful.", _executable_name); \
-            system(_executable_name); \
-            return 1; \
-        } else { \
-            log_error("Failed to rebuild %s", _executable_name); \
-            return result; \
-        } \
-    }
-
 //==============================================================================
 // Data types
 //==============================================================================
@@ -358,14 +330,18 @@ GRVBLD_INLINE grvbld_config_t* grvbld_config_new(int argc, char** argv) {
     ///grvbld_strarr_push(&config->warnings, "-Wextra");
     //grvbld_strarr_push(&config->warnings, "-Wpedantic");
     grvbld_strarr_push(&config->warnings, "-Werror=implicit-function-declaration");
-
-
     grvbld_strarr_push(&config->libs, "-lm");
 
     if (grvbld_args_contain(argc, argv, "--debug")) config->debug = true;
     if (grvbld_args_contain(argc, argv, "--use-ccache")) config->use_ccache = true;
     if (grvbld_args_contain(argc, argv, "--no-use-ccache")) config->use_ccache = false;
     if (grvbld_args_contain(argc, argv, "--tests")) config->tests_only = true;
+    if (grvbld_args_contain(argc, argv, "-vv")) {
+        config->verbosity = 2;
+    } else if (grvbld_args_contain(argc, argv, "-v")) {
+        config->verbosity = 1;
+    }
+    printf("verbosity: %d\n", config->verbosity);
     return config;
 }
 
@@ -503,6 +479,58 @@ bool grvbld_cmd_available(char* cmd) {
     return result;
 }
 
+char* grvbld_add_diagnostics_filter(char* cmd) {
+    char* sed_command = "sed -n -e '/\\(warning\\|error\\):/ { s/\\(warning\\)/\\o033[33m\\1\\o033[0m/; s/\\(error\\)/\\o033[31m\\1\\o033[0m/; s/^/        /; p }'";
+    cmd = grvbld_cstr_append_arg(cmd, "2>&1 | ");
+    return grvbld_cstr_append_arg(cmd, sed_command);
+}
+
+int grvbld_execute_build_cmd(grvbld_config_t* config, char* cmd) {
+    if (config->verbosity > 0) log_info("%s", cmd);
+    if (config->verbosity < 2) cmd = grvbld_add_diagnostics_filter(cmd);
+    return system(cmd);
+}
+
+//==============================================================================
+// rebuilding 
+//==============================================================================
+GRVBLD_INLINE int rebuild_file(char* filename) {
+    char* src = grvbld_cstr_cat(filename, ".c");
+    char* cmd = grvbld_cstr_cat("gcc -o ", filename);
+    cmd = grvbld_cstr_append(cmd, " -Iinclude ");
+    cmd = grvbld_cstr_append(cmd, src);
+    //cmd = grvbld_cstr_append(cmd, " src/grvbld.c");
+    log_info("Rebuilding %s:", filename);
+    log_info("%s", cmd);
+    int result = system(cmd);
+    free(src);
+    free(cmd);
+    return result;
+}
+
+GRVBLD_INLINE char* grvbld_cat_argv(int argc, char** argv) {
+    char* cmd = grvbld_cstr_new("");
+    for (int i = 0; i < argc; ++i) {
+         cmd = grvbld_cstr_append_arg(cmd, argv[i]);
+    }
+    return cmd;
+}
+
+#define GRV_CHECK_AND_REBUILD() \
+    char* _executable_name = argv[0]; \
+    if (is_source_file_newer(_executable_name)) { \
+        int result = rebuild_file(_executable_name); \
+        if (result == 0) { \
+            log_info("Rebuilding of %s successful.", _executable_name); \
+            system(grvbld_cat_argv(argc, argv)); \
+            return 1; \
+        } else { \
+            log_error("Failed to rebuild %s", _executable_name); \
+            return result; \
+        } \
+    }
+
+    
 //==============================================================================
 // grvbld_target_t
 //==============================================================================
@@ -639,11 +667,7 @@ GRVBLD_INLINE int grvbld_test(grvbld_config_t* config, char* name) {
     cmd = grvbld_cstr_append_arg(cmd, "-lm");
     // cmd = grvbld_cstr_append_arg(cmd, "src/grv.c");
 
-    if (config->verbosity > 0) {
-        log_info("%s", cmd);
-    }
-    
-    int result = system(cmd);
+    int result = grvbld_execute_build_cmd(config, cmd);
     if (result != 0) {
         log_error("failed to build test \"%s\"", name);
         exit(1);
@@ -682,7 +706,6 @@ GRVBLD_INLINE int grvbld_build_static_library(grvbld_config_t* config, grvbld_ta
     char* cmd = grvbld_build_cmd(config);
     cmd = grvbld_cstr_append_arg(cmd, "-c");
 
-    log_newline();
     log_info("BUILDING STATIC LIBRARY %s", target->name);
 
     // compile all of the source files
@@ -696,8 +719,7 @@ GRVBLD_INLINE int grvbld_build_static_library(grvbld_config_t* config, grvbld_ta
         cmd = grvbld_cstr_append_arg(cmd, "-c");
         ar_cmd = grvbld_cstr_append_arg(ar_cmd, obj_file);
 
-        log_info("%s", cmd);
-        int result = system(cmd);
+        int result = grvbld_execute_build_cmd(config, cmd);
         if (result != 0) {
             log_error("failed to build %s", target->name);
             exit(1);
@@ -734,7 +756,6 @@ GRVBLD_INLINE int grvbld_build_target(grvbld_config_t* config, grvbld_target_t* 
     if (target->type == GRVBLD_STATIC_LIBRARY) {
         return grvbld_build_static_library(config, target);
     } else if (target->type == GRVBLD_EXECUTABLE) {
-        log_newline();
         log_info("BUILDING EXECUTABLE %s", target->name);
         char* dst_file = grvbld_cstr_new_with_format("%s/%s", config->build_dir, target->name);
         cmd = grvbld_cstr_append_arg_format(cmd, "-o %s", dst_file);
@@ -758,8 +779,9 @@ GRVBLD_INLINE int grvbld_build_target(grvbld_config_t* config, grvbld_target_t* 
         }        
 
         cmd = grvbld_cstr_append_arg(cmd, "-lm");
-        log_info("%s", cmd);
-        int result = system(cmd);
+            
+        int result = grvbld_execute_build_cmd(config, cmd);
+
         if (result == 0 && target->run_after_build) {
             char* debug_cmd = grvbld_cstr_new_with_format("gdb -q -ex run -ex quit %s", dst_file);
             system(debug_cmd);
