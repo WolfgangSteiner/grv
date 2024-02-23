@@ -357,11 +357,8 @@ bool grv_str_is_float(grv_str_t str) {
         state_exponent = 2
     } current_state = state_integer_part;   
 
-    f32 integer_part = 0.0f;
-    f32 fractional_part = 0.0f;
-    i32 fractional_position = 0;
-    f32 exponent = 0.0f;
     bool exponent_sign_encountered = false;
+    bool digit_in_exponent_encountered = false;
 
     if (str.size == 0) return false;
     i32 idx = 0;
@@ -381,17 +378,10 @@ bool grv_str_is_float(grv_str_t str) {
             current_state = state_exponent;
         } else if (c=='-' || c=='+') {
             if (current_state != state_exponent || exponent_sign_encountered) return false;
+            else if (current_state == state_exponent && digit_in_exponent_encountered) return false;
             exponent_sign_encountered = true;
         } else if (grv_is_digit(c)) {
-            f32 digit = (f32)grv_char_to_int(c);
-            if (current_state == state_integer_part) {
-                integer_part = 10.0f * integer_part + digit;
-            } else if (current_state == state_fractional_part) {
-                fractional_position++;
-                fractional_part += digit * powf(10.0f, -fractional_position);
-            } else if (current_state == state_exponent) {
-                exponent = 10.0f * exponent + digit;
-            }
+            if (current_state == state_exponent) digit_in_exponent_encountered = true;
         } else {
             return false;
         }
@@ -551,7 +541,6 @@ struct grv_strarr_t grv_str_split(grv_str_t str, grv_str_t sep) {
 
 struct grv_strarr_t grv_str_split_whitespace(grv_str_t str) {
     grv_strarr_t arr = grv_strarr_new();
-    bool is_in_whitespace = false;
     grv_str_iter_t start_iter = grv_str_iter_begin(&str);
     grv_str_iter_t end_iter = start_iter;
     while (!grv_str_iter_is_end(&end_iter)) {
@@ -562,8 +551,6 @@ struct grv_strarr_t grv_str_split_whitespace(grv_str_t str) {
         if (grv_str_iter_is_end(&end_iter)) grv_strarr_push(&arr, grv_str_ref(""));
         start_iter = end_iter; 
     }
-
-
     return arr;
 }
 
