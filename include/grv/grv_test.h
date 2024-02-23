@@ -40,7 +40,7 @@ static inline void _put_str(grv_str_t s) {
   fflush(stdout);
 }
 static inline void _put(char* s) { printf("%s", s); }
-static inline void _newline() { puts(""); }
+static inline void _newline(void) { puts(""); }
 static inline void _grv_test_begin(_grv_test_t test) {
   if (GRV_TEST_VERBOSITY) {
     _put("       "); 
@@ -71,7 +71,7 @@ static inline void _grv_test_begin_new(_grv_test_t test) {
   
 
 #define GRV_TEST_BEGIN(NAME) \
-  static bool test_##NAME() { \
+  static bool test_##NAME(void) { \
     _grv_test_t _test = { .name = grv_str_ref(#NAME) }; \
     _grv_test_begin(_test); \
 
@@ -92,11 +92,11 @@ static inline bool _grv_test_end(_grv_test_t test) {
 #define GRV_TEST_END() return _grv_test_end(_test); } 
 
 #define GRV_TEST_BEGIN_NEW(NAME) \
-  bool test_##NAME(); \
-  static bool execute_test() { \
+  bool test_##NAME(void); \
+  static bool execute_test(void) { \
     return test_##NAME(); \
   } \
-  bool test_##NAME() { \
+  bool test_##NAME(void) { \
     _grv_test_t _test = { .name = grv_str_ref(#NAME) }; \
     _grv_test_begin_new(_test); \
 

@@ -330,6 +330,7 @@ GRVBLD_INLINE grvbld_config_t* grvbld_config_new(int argc, char** argv) {
     grvbld_strarr_push(&config->warnings, "-Wextra");
     grvbld_strarr_push(&config->warnings, "-Wpedantic");
     grvbld_strarr_push(&config->warnings, "-Werror=implicit-function-declaration");
+    grvbld_strarr_push(&config->warnings, "-Werror=strict-prototypes"); 
     grvbld_strarr_push(&config->libs, "-lm");
 
     if (grvbld_args_contain(argc, argv, "--debug")) config->debug = true;

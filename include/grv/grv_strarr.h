@@ -12,7 +12,7 @@ typedef struct grv_strarr_t {
     grv_str_size_t capacity;
 } grv_strarr_t;
 
-grv_strarr_t grv_strarr_new();
+grv_strarr_t grv_strarr_new(void);
 grv_strarr_t grv_strarr_new_from_cstrarr(char** cstr_arr, grv_str_size_t size);
 void grv_strarr_free(grv_strarr_t* strarr);
 static inline grv_str_size_t grv_strarr_size(grv_strarr_t strarr) { return strarr.size; }

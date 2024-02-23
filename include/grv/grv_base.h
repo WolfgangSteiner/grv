@@ -33,14 +33,14 @@ typedef double f64;
 #define U64_MAX UINT64_MAX
 #define I64_MAX INT64_MAX
 
-GRV_INLINE u8 grv_max_value_u8() { return U8_MAX; }
-GRV_INLINE u16 grv_max_value_u16() { return U16_MAX; }
-GRV_INLINE u32 grv_max_value_u32() { return U32_MAX; }
-GRV_INLINE u64 grv_max_value_u64() { return U64_MAX; }
-GRV_INLINE i8 grv_max_value_i8() { return I8_MAX; }
-GRV_INLINE i16 grv_max_value_i16() { return I16_MAX; }
-GRV_INLINE i32 grv_max_value_i32() { return I32_MAX; }
-GRV_INLINE i64 grv_max_value_i64() { return I64_MAX; }
+GRV_INLINE u8 grv_max_value_u8(void) { return U8_MAX; }
+GRV_INLINE u16 grv_max_value_u16(void) { return U16_MAX; }
+GRV_INLINE u32 grv_max_value_u32(void) { return U32_MAX; }
+GRV_INLINE u64 grv_max_value_u64(void) { return U64_MAX; }
+GRV_INLINE i8 grv_max_value_i8(void) { return I8_MAX; }
+GRV_INLINE i16 grv_max_value_i16(void) { return I16_MAX; }
+GRV_INLINE i32 grv_max_value_i32(void) { return I32_MAX; }
+GRV_INLINE i64 grv_max_value_i64(void) { return I64_MAX; }
 
 #define GRV_MAX_VALUE(VALUE) _Generic((VALUE), \
     u8: grv_max_value_u8, \

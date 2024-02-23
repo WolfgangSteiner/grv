@@ -4,7 +4,7 @@
 #include <string.h>
 
 // grv_strarr
-grv_strarr_t grv_strarr_new() {
+grv_strarr_t grv_strarr_new(void) {
     grv_strarr_t arr = {0};
     return arr;
 }

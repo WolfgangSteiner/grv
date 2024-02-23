@@ -25,6 +25,6 @@ vec2i grv_bitmap_font_calc_size(grv_bitmap_font_t* font, grv_str_t str);
 extern grv_bitmap_font_t grv_basic_font_8x8;
 extern char _binary_src_grv_gfx_cozette_psf_start[];
 extern char _binary_src_grv_gfx_cozette_psf_end[];
-grv_bitmap_font_t* grv_get_cozette_font();
+grv_bitmap_font_t* grv_get_cozette_font(void);
 grv_bitmap_font_t* grv_load_psf_font(char* data, size_t size);
 #endif

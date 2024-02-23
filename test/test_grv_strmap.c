@@ -28,7 +28,7 @@ GRV_TEST_BEGIN(grv_strmap_insert_find)
     grv_strmap_free(&map);
 GRV_TEST_END()
 
-int main() {
+int main(void) {
     GRV_TEST_INIT(grv_strmap);
     GRV_TEST_RUN(grv_strmap_insert_find);
     GRV_TEST_FINISH();

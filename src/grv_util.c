@@ -15,7 +15,7 @@
 #endif
 
 
-int grv_util_get_terminal_width() {
+int grv_util_get_terminal_width(void) {
   #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     int columns, rows;
@@ -106,7 +106,7 @@ grv_strarr_t grv_util_glob(grv_str_t pattern) {
 #define GRV_UTIL_EPOCH 1679604975
 #define GRV_UTIL_UID_NUM_RANDOM_BITS 20
 
-u64 grv_util_generate_uid() {
+u64 grv_util_generate_uid(void) {
   u64 result = 0;
   
   // get the number of microseconds since the epoch
@@ -136,18 +136,18 @@ bool grv_cmd_available(grv_str_t cmd) {
   return result == 0;
 }
 
-struct tm grv_local_time() {
+struct tm grv_local_time(void) {
   time_t t = time(NULL);
   return *localtime(&t);
 }
 
-grv_str_t grv_local_time_str() {
+grv_str_t grv_local_time_str(void) {
   struct tm tm = grv_local_time();
   grv_str_t result = grv_str_new_with_format("%02d:%02d:%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
   return result;
 }
 
-f32 grv_local_time_f32() {
+f32 grv_local_time_f32(void) {
   struct tm tm = grv_local_time();
   f32 result = (f32)tm.tm_hour + (f32)tm.tm_min / 60.0f + (f32)tm.tm_sec / 3600.0f;
   return result;

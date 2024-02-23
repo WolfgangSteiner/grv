@@ -6,7 +6,7 @@
 #include <time.h>
 
 
-u8 color_for_time() {
+u8 color_for_time(void) {
     f32 time = grv_local_time_f32();
     if (time < 6.0f || time > 23.0f) {
         return 8;

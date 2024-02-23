@@ -111,7 +111,7 @@ void grv_window_present(grv_window_t* w) {
     SDL_RenderPresent(renderer);
 }
 
-void grv_window_poll_events() {
+void grv_window_poll_events(void) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
