@@ -211,6 +211,7 @@ grv_str_t grv_read_file(grv_str_t file_name) {
         grv_str_append_str(&result, new_str);
     }
     grv_free(buffer);
+    fclose(fp);
     return result;
 }
 
