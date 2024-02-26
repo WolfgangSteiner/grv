@@ -1,5 +1,14 @@
 #include "grvbld.h"
 
+static void build_exe(grvbld_config_t* config, char* src_file) {
+    char* name = grvbld_cstr_filename(src_file);
+    grvbld_cstr_remove_ext(name);
+    grvbld_target_t* target = grvbld_target_create_executable(name);
+    grvbld_target_add_src(target, src_file);
+    grvbld_target_link_library(target, "grv");
+    grvbld_build_target(config, target);
+}
+
 int main(int argc, char** argv) {
     GRV_CHECK_AND_REBUILD();    
     grvbld_config_t* config =  grvbld_config_new(argc, argv);
@@ -21,11 +30,8 @@ int main(int argc, char** argv) {
     grvbld_target_add_data_file(libgrvgfx, "src/grv_gfx/cozette.psf");
     grvbld_build_target(config, libgrvgfx);
 
-
-    grvbld_target_t* grvcc = grvbld_target_create_executable("grvcc");
-    grvbld_target_add_src(grvcc, "tools/grvcc.c");
-    grvbld_target_link_library(grvcc, "grv");
-    grvbld_build_target(config, grvcc);
+    build_exe(config, "tools/grvcc.c");
+    build_exe(config, "tools/new_test.c");
     
     grvbld_target_t* grv_clock = grvbld_target_create("grv_clock", GRVBLD_EXECUTABLE);
     grvbld_target_add_src(grv_clock, "apps/grv_clock.c");
