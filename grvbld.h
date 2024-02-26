@@ -378,7 +378,7 @@ GRVBLD_INLINE void grvbld_config_add_include_directories(grvbld_config_t* config
 GRVBLD_INLINE void grvbld_config_add_library_directory(grvbld_config_t* config, char* path) {
     grvbld_strarr_push(&config->library_dirs, path);
 }
-//
+
 //==============================================================================
 // utility functions
 //==============================================================================
@@ -610,6 +610,10 @@ GRVBLD_INLINE char* grvbld_build_cmd(grvbld_config_t* config) {
     
     for (size_t i = 0; i < config->inc.size; ++i) {
         cmd = grvbld_cstr_append_arg_format(cmd, "-I%s", config->inc.data[i]);
+    }
+
+    for (size_t i = 0; i < config->library_dirs.size; ++i) {
+        cmd = grvbld_cstr_append_arg_format(cmd, "-L%s", config->library_dirs.data[i]);
     }
 
     for (size_t i = 0; i < config->warnings.size; ++i) {
