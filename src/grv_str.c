@@ -48,16 +48,6 @@ grv_str_t grv_str_ref(char* cstr) {
         .owns_data=false}; 
 }
 
-grv_str_t grv_str_copy(grv_str_t str) {
-    grv_str_t r = {
-        .data=malloc(str.size),
-        .size=str.size,
-        .is_valid=str.is_valid,
-        .owns_data=true};
-    memcpy(r.data, str.data, str.size);
-    return r;
-}
-
 grv_str_t grv_str_repeat_char(char c, grv_str_size_t count) {
     grv_str_t r = {
         .data=malloc(count),
@@ -269,8 +259,6 @@ grv_str_t grv_str_reduce_char_spans(grv_str_t str, char c) {
     return res;
 }
 
-
-
 bool grv_str_eq_str(grv_str_t a, grv_str_t b) {
     if (a.size != b.size) return false;
     return memcmp(a.data, b.data, a.size) == 0;
@@ -393,62 +381,8 @@ bool grv_str_is_float(grv_str_t str) {
 }
 
 f32 grv_str_to_f32(grv_str_t str) {
-    enum {
-        state_integer_part = 0,
-        state_fractional_part = 1,
-        state_exponent = 2
-    } current_state = state_integer_part;   
-
-    f32 sign_mantissa = 1.0f;
-    f32 sign_exponent = 1.0f;
-    f32 result = 0.0f;
-    f32 integer_part = 0.0f;
-    f32 fractional_part = 0.0f;
-    i32 fractional_position = 0;
-    f32 exponent = 0.0f;
-    bool exponent_sign_encountered = false;
-
-    if (str.size == 0) return result;
-    i32 idx = 0;
-    if (str.data[0] == '-') {
-        sign_mantissa = -1.0f;
-        idx++;
-    } else if (str.data[0] == '+') {
-        idx++;
-    } 
-
-    while (idx < str.size) {
-        char c = str.data[idx];
-        if (c == '.') {
-            if (current_state != state_integer_part) break;
-            current_state = state_fractional_part;
-        } else if (c=='e' || c=='E') {
-            if (current_state == state_exponent) break;
-            current_state = state_exponent;
-        } else if (c=='-') {
-            if (current_state != state_exponent || exponent_sign_encountered) break; 
-            exponent_sign_encountered = true;
-            sign_exponent = -1.0f;
-        } else if (c=='+') {
-            if (current_state != state_exponent || exponent_sign_encountered) break; 
-            exponent_sign_encountered = true;
-        } else if (grv_is_digit(c)) {
-            f32 digit = (f32)grv_char_to_int(c);
-            if (current_state == state_integer_part) {
-                integer_part = 10.0f * integer_part + digit;
-            } else if (current_state == state_fractional_part) {
-                fractional_position++;
-                fractional_part += digit * powf(10.0f, -fractional_position);
-            } else if (current_state == state_exponent) {
-                exponent = 10.0f * exponent + digit;
-            }
-        } else {
-            break;        
-        }
-        idx++;
-    }
-
-    return sign_mantissa * (integer_part + fractional_part) * powf(10.0f, sign_exponent * exponent);
+    grv_str_iter_t iter = grv_str_iter_begin(&str);
+    return grv_str_iter_match_f32(&iter);
 }
 
 char grv_str_get_char(grv_str_t str, grv_str_size_t pos) { return str.data[pos]; }
@@ -458,15 +392,20 @@ void grv_str_iter_set_char(grv_str_iter_t* iter, char c) {
     iter->str->data[iter->pos] = c;
 }
 
-void grv_str_iter_inc(grv_str_iter_t* iter) { iter->pos++; }
-void grv_str_iter_dec(grv_str_iter_t* iter) { iter->pos--; }
+void grv_str_iter_inc(grv_str_iter_t* iter, grv_str_size_t inc) {
+    iter->pos+= inc;
+}
+
+void grv_str_iter_dec(grv_str_iter_t* iter, grv_str_size_t dec) {
+    iter->pos-= dec;
+}
 
 grv_str_iter_t grv_str_find_str(grv_str_t* str, grv_str_t match_str) {
     if (match_str.size == 0 || str->size < match_str.size) return grv_str_iter_end(str);
     grv_str_iter_t iter = grv_str_iter_begin(str);
     while (iter.pos <= str->size - match_str.size) {
         if (_grv_str_iter_eq_str(&iter, match_str)) return iter;
-        grv_str_iter_inc(&iter);
+        grv_str_iter_inc(&iter, 1);
     }
     return grv_str_iter_end(str);
 }
@@ -476,7 +415,7 @@ grv_str_iter_t grv_str_rfind_str(grv_str_t* str, grv_str_t match_str) {
     grv_str_iter_t iter = {str, str->size - match_str.size};
     while (!grv_str_iter_is_rend(&iter)) {
         if (_grv_str_iter_eq_str(&iter, match_str)) return iter;
-        grv_str_iter_dec(&iter);
+        grv_str_iter_dec(&iter, 1);
     }
     return grv_str_iter_rend(str);
 }
@@ -485,7 +424,7 @@ grv_str_iter_t grv_str_find_char(grv_str_t* str, char c) {
     grv_str_iter_t iter = grv_str_iter_begin(str);
     while (!grv_str_iter_is_end(&iter)) {
         if (grv_str_iter_get_char(&iter) == c) return iter;
-        grv_str_iter_inc(&iter);
+        grv_str_iter_inc(&iter, 1);
     }
     return iter;
 }
@@ -494,7 +433,7 @@ grv_str_iter_t grv_str_rfind_char(grv_str_t* str, char c) {
     grv_str_iter_t iter = grv_str_iter_rbegin(str);
     while (!grv_str_iter_is_rend(&iter)) {
         if (grv_str_iter_get_char(&iter) == c) return iter;
-        grv_str_iter_dec(&iter);
+        grv_str_iter_dec(&iter, 1);
     }
     return iter;
 }
@@ -504,16 +443,22 @@ grv_str_iter_t grv_str_find_any_char(grv_str_t* str, grv_str_t chars) {
     while (!grv_str_iter_is_end(&iter)) {
         char c = grv_str_iter_get_char(&iter);
         if (grv_str_contains_char(chars, c)) return iter;
-        grv_str_iter_inc(&iter);
+        grv_str_iter_inc(&iter, 1);
     }
     return iter;
+}
+
+grv_str_t grv_str_split_head_at_char(grv_str_t str, char c) {
+    grv_str_iter_t start_iter = grv_str_iter_begin(&str);
+    grv_str_iter_t end_iter = grv_str_find_char(&str, c);
+    return grv_str_substr_with_iters(start_iter, end_iter);
 }
 
 grv_str_t grv_str_split_tail_at_char(grv_str_t str, char c) {
     grv_str_iter_t iter = grv_str_find_char(&str, c);
     // the char is not in the string
     if (grv_str_iter_is_end(&iter)) return grv_str_ref("");
-    grv_str_iter_inc(&iter);
+    grv_str_iter_inc(&iter, 1);
     // the char is the last char in the string
     if (grv_str_iter_is_end(&iter)) return grv_str_ref("");
     grv_str_t result = {
@@ -555,6 +500,14 @@ struct grv_strarr_t grv_str_split_whitespace(grv_str_t str) {
     return arr;
 }
 
+grv_str_t grv_str_split_tail_from_front(grv_str_t str, grv_str_t sep) {
+    grv_str_iter_t start_iter = grv_str_find_str(&str, sep);
+    if (grv_str_iter_is_end(&start_iter)) return grv_str_ref("");
+    grv_str_iter_inc(&start_iter, sep.size);
+    grv_str_iter_t end_iter = grv_str_iter_end(&str);
+    return grv_str_substr_with_iters(start_iter, end_iter);
+}
+
 bool grv_str_iter_match(grv_str_iter_t* iter, grv_str_t match_str) {
     bool match = _grv_str_iter_eq_str(iter, match_str);
     if (match) {
@@ -585,7 +538,7 @@ int grv_str_iter_match_int(grv_str_iter_t* iter) {
         char c = grv_str_iter_get_char(iter);
         if (grv_is_digit(c)) {
             res = 10 * res + grv_char_to_int(c);
-            grv_str_iter_inc(iter);
+            grv_str_iter_inc(iter, 1);
         } else {
           break;
         }
@@ -602,15 +555,15 @@ i64 grv_str_iter_match_i64(grv_str_iter_t* iter) {
     char c = grv_str_iter_get_char(iter);
     if (c == '-') {
         sign = -1;
-        grv_str_iter_inc(iter);
+        grv_str_iter_inc(iter, 1);
     } else if (c == '+') {
-        grv_str_iter_inc(iter);
+        grv_str_iter_inc(iter, 1);
     }
     while (!grv_str_iter_is_end(iter)) {
         char c = grv_str_iter_get_char(iter);
         if (grv_is_digit(c)) {
             res = 10 * res + grv_char_to_int(c);
-            grv_str_iter_inc(iter);
+            grv_str_iter_inc(iter, 1);
         } else {
           break;
         }
@@ -618,15 +571,74 @@ i64 grv_str_iter_match_i64(grv_str_iter_t* iter) {
     return sign * res;
 }
 
+f32 grv_str_iter_match_f32(grv_str_iter_t* iter) {
+    enum {
+        state_integer_part = 0,
+        state_fractional_part = 1,
+        state_exponent = 2
+    } current_state = state_integer_part;   
+
+    f32 sign_mantissa = 1.0f;
+    f32 sign_exponent = 1.0f;
+    f32 result = 0.0f;
+    f32 integer_part = 0.0f;
+    f32 fractional_part = 0.0f;
+    i32 fractional_position = 0;
+    f32 exponent = 0.0f;
+    bool exponent_sign_encountered = false;
+
+    if (grv_str_iter_is_end(iter)) return result;
+
+    if (grv_str_iter_get_char(iter) == '-') {
+        sign_mantissa = -1.0f;
+        grv_str_iter_inc(iter, 1);
+    } else if (grv_str_iter_get_char(iter) == '+') {
+        grv_str_iter_inc(iter, 1);
+    } 
+
+    while (!grv_str_iter_is_end(iter)) {
+        char c = grv_str_iter_get_char(iter);
+        if (c == '.') {
+            if (current_state != state_integer_part) break;
+            current_state = state_fractional_part;
+        } else if (c=='e' || c=='E') {
+            if (current_state == state_exponent) break;
+            current_state = state_exponent;
+        } else if (c=='-') {
+            if (current_state != state_exponent || exponent_sign_encountered) break; 
+            exponent_sign_encountered = true;
+            sign_exponent = -1.0f;
+        } else if (c=='+') {
+            if (current_state != state_exponent || exponent_sign_encountered) break; 
+            exponent_sign_encountered = true;
+        } else if (grv_is_digit(c)) {
+            f32 digit = (f32)grv_char_to_int(c);
+            if (current_state == state_integer_part) {
+                integer_part = 10.0f * integer_part + digit;
+            } else if (current_state == state_fractional_part) {
+                fractional_position++;
+                fractional_part += digit * powf(10.0f, -fractional_position);
+            } else if (current_state == state_exponent) {
+                exponent = 10.0f * exponent + digit;
+            }
+        } else {
+            break;        
+        }
+        grv_str_iter_inc(iter, 1);
+    }
+
+    return sign_mantissa * (integer_part + fractional_part) * powf(10.0f, sign_exponent * exponent);
+}
+
 bool grv_str_iter_match_white_space(grv_str_iter_t* iter) {
     if (grv_str_iter_is_end(iter)) return false;
     char c = grv_str_iter_get_char(iter);
     if (!grv_is_whitespace(c)) return false;
-    grv_str_iter_inc(iter);
+    grv_str_iter_inc(iter, 1);
     while(!grv_str_iter_is_end(iter)) {
         c = grv_str_iter_get_char(iter);
         if (!grv_is_whitespace(c)) break;
-        grv_str_iter_inc(iter);
+        grv_str_iter_inc(iter, 1);
     }
     return true;
 }
@@ -634,7 +646,7 @@ bool grv_str_iter_match_white_space(grv_str_iter_t* iter) {
 bool grv_str_iter_match_char(grv_str_iter_t* iter, char match) {
     if (grv_str_iter_is_end(iter)) return false;
     if (grv_str_iter_get_char(iter) == match) {
-        grv_str_iter_inc(iter);
+        grv_str_iter_inc(iter, 1);
         return true;
     } else {
         return false;
@@ -644,7 +656,7 @@ bool grv_str_iter_match_char(grv_str_iter_t* iter, char match) {
 bool grv_str_iter_match_any_char(grv_str_iter_t* iter, grv_str_t chars) {
     if (grv_str_iter_is_end(iter)) return false;
     if (grv_str_contains_char(chars, grv_str_iter_get_char(iter))) {
-        grv_str_iter_inc(iter);
+        grv_str_iter_inc(iter, 1);
         return true;
     } else {
         return false;
@@ -690,7 +702,7 @@ grv_str_t grv_str_iter_match_up_to_char(grv_str_iter_t* iter, char match) {
             return r;
         } else {
             r.size++;
-            grv_str_iter_inc(iter);
+            grv_str_iter_inc(iter, 1);
         }
     }
     return r;
@@ -711,7 +723,7 @@ grv_str_t grv_str_iter_match_up_to_whitespace(grv_str_iter_t* iter) {
             return r;
         } else {
             r.size++;
-            grv_str_iter_inc(iter);
+            grv_str_iter_inc(iter, 1);
         }
     }
     return r;
@@ -732,7 +744,7 @@ grv_str_t grv_str_iter_match_up_to_non_whitespace(grv_str_iter_t* iter) {
             return r;
         } else {
             r.size++;
-            grv_str_iter_inc(iter);
+            grv_str_iter_inc(iter, 1);
         }
     }
     return r;
@@ -750,7 +762,7 @@ grv_str_t grv_str_iter_match_up_to_str(grv_str_iter_t* iter, grv_str_t match) {
         if (grv_str_iter_eq_str(iter, match)) {
             return r;
         } 
-        grv_str_iter_inc(iter);
+        grv_str_iter_inc(iter, 1);
         r.size++;
     }
 
@@ -770,7 +782,7 @@ grv_str_t grv_str_iter_match_word(grv_str_iter_t* iter) {
         if (grv_is_word_separator(c)) {
             return r;
         } 
-        grv_str_iter_inc(iter);
+        grv_str_iter_inc(iter, 1);
         r.size++;
     }
     return r;
@@ -815,6 +827,13 @@ grv_str_t grv_str_new(char* cstr) {
 grv_str_t grv_str_new_with_capacity(grv_str_size_t capacity) {
     capacity = _grv_str_capacity_for_size(capacity);
     return (grv_str_t) {.data=grv_alloc(capacity), .size=0, .is_valid=true, .owns_data=true};
+}
+
+grv_str_t grv_str_copy(grv_str_t str) {
+    grv_str_t res = grv_str_new_with_capacity(str.size);
+    res.size = str.size;
+    memcpy(res.data, str.data, str.size);
+    return res;
 }
 
 grv_str_t grv_str_new_with_format(char* fmt, ...) {

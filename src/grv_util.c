@@ -161,7 +161,7 @@ grv_strarr_t grv_readlines(grv_str_t filename) {
     while (!grv_str_iter_is_end(&iter)) {
         grv_str_t line = grv_str_iter_match_up_to_char(&iter, '\n');
         grv_strarr_push_copy(&result, line);
-        grv_str_iter_inc(&iter);
+        grv_str_iter_inc(&iter, 1);
     }
   
     grv_str_free(&content);

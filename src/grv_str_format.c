@@ -6,6 +6,7 @@
 #include "grv/grv_base.h"
 #include "grv/grv_str.h"
 #include "grv/grv_cstr.h"
+#include "grv/grv_memory.h"
 
 typedef struct {
     grv_str_t key;
@@ -46,14 +47,22 @@ grv_str_t _str_format_callback_u16(va_list* args, grv_str_t specifier) {
 }
 
 grv_str_t _str_format_callback_int(va_list* args, grv_str_t specifier) {
+    int arg = va_arg(*args, int);
     if (grv_str_eq(specifier, grv_str_ref("hex"))) {
-        int arg = va_arg(*args, int);
         char* formatted_cstr = grv_cstr_new_with_format("%x", arg);
         grv_str_t result = grv_str_new(formatted_cstr);
         free(formatted_cstr);
         return result;
+    } else if (!grv_str_empty(specifier)) {
+        char* spec_str = grv_str_copy_to_cstr(specifier);
+        char* fmt_str = grv_cstr_new_with_format("%%%sd", spec_str);
+        char* formatted_cstr = grv_cstr_new_with_format(fmt_str, arg);
+        grv_str_t result = grv_str_new(formatted_cstr);
+        grv_free(spec_str);
+        grv_free(fmt_str);
+        grv_free(formatted_cstr);
+        return result;
     } else {
-        int arg = va_arg(*args, int);
         return grv_str_from_int(arg);
     }
 }
@@ -82,8 +91,6 @@ grv_str_t _str_format_callback_f32(va_list* args, grv_str_t specifier) {
         char* fmt_cstr = grv_cstr_new_with_format("%%%d.%df", width, precision); 
         formatted_cstr = grv_cstr_new_with_format(fmt_cstr, arg);
         free(fmt_cstr);
-        grv_str_t result = grv_str_new(formatted_cstr);
-        return result;
     } else {
         formatted_cstr = grv_cstr_new_with_format("%.3g", arg);
     }   
@@ -96,7 +103,7 @@ void _str_format_register_pattern(grv_str_t key, grv_str_format_callback_t callb
     str_format_patterns.data[str_format_patterns.size++] = (str_format_pattern_t){ key, callback };
 }
 
-void _str_format_initialize_pattern_list() {
+void _str_format_initialize_pattern_list(void) {
     static bool first = true;
     if (first) {
         first = false;
@@ -111,7 +118,7 @@ void _str_format_initialize_pattern_list() {
     }
 }
 
-str_format_pattern_list_t* _str_format_get_patterns() {
+str_format_pattern_list_t* _str_format_get_patterns(void) {
     _str_format_initialize_pattern_list();
     return &str_format_patterns;
 }
@@ -185,6 +192,7 @@ grv_str_t _str_vformat(grv_str_t fmt, va_list* args) {
     while (!grv_str_iter_is_end(&iter)) {
         if (grv_str_iter_match_char(&iter, '{')) {
             grv_str_t pattern = grv_str_iter_match_up_to_char(&iter, '}');
+            grv_str_iter_match_char(&iter, '}');
             grv_str_t key = _str_format_pattern_to_lookup_key(pattern);
             grv_str_t specifier = _str_format_pattern_get_format_specifier(pattern);
             grv_str_format_callback_t callback = _str_format_get_callback_for_key(key);
@@ -199,7 +207,7 @@ grv_str_t _str_vformat(grv_str_t fmt, va_list* args) {
             }
         } else {
             grv_str_append_char(&result, grv_str_iter_get_char(&iter));
-            grv_str_iter_inc(&iter);
+            grv_str_iter_inc(&iter, 1);
         }
     }
 

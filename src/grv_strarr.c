@@ -146,3 +146,17 @@ void grv_strarr_remove_str(grv_strarr_t* arr, grv_str_t str) {
     }
     arr->size--;
 }
+
+bool grv_strarr_any_contains_str(grv_strarr_t strarr, grv_str_t str) {
+    for (int i = 0; i < strarr.size; ++i) {
+         if (grv_str_contains_str(strarr.arr[i], str)) return true;
+    }
+    return false;
+}
+
+grv_str_t* grv_strarr_find_str_containing_str(grv_strarr_t strarr, grv_str_t substr) {
+    for (int i = 0; i < strarr.size; ++i) {
+         if (grv_str_contains_str(strarr.arr[i], substr)) return &strarr.arr[i];
+    }
+    return NULL;
+}

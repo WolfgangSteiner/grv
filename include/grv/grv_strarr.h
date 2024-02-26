@@ -56,6 +56,8 @@ static inline grv_str_t* grv_strarr_back(grv_strarr_t strarr) {
 grv_str_t grv_strarr_pop_front(grv_strarr_t* strarr);
 grv_str_t grv_strarr_pop_back(grv_strarr_t* strarr);
 
+bool grv_strarr_any(grv_strarr_t strarr, bool(*predicate)(grv_str_t, void*), void* user_data); 
+
 bool grv_strarr_contains_str(grv_strarr_t strarr, grv_str_t str);
 GRV_INLINE bool grv_strarr_contains_cstr(grv_strarr_t strarr, char* cstr) {
     return grv_strarr_contains_str(strarr, grv_str_ref(cstr));
@@ -63,7 +65,17 @@ GRV_INLINE bool grv_strarr_contains_cstr(grv_strarr_t strarr, char* cstr) {
 #define grv_strarr_contains(STRARR, STR) _Generic((STR), \
     grv_str_t: grv_strarr_contains_str, \
     char*: grv_strarr_contains_cstr \
-)(STRARR, STR)  
+)(STRARR, STR)
+
+bool grv_strarr_any_contains_str(grv_strarr_t strarr, grv_str_t substr); 
+GRV_INLINE bool grv_strarr_any_contains_cstr(grv_strarr_t strarr, char* cstr) {
+    return grv_strarr_any_contains_str(strarr, grv_str_ref(cstr));
+}
+
+grv_str_t* grv_strarr_find_str_containing_str(grv_strarr_t strarr, grv_str_t substr);
+GRV_INLINE grv_str_t* grv_strarr_find_str_containing_cstr(grv_strarr_t strarr, char* substr) {
+    return grv_strarr_find_str_containing_str(strarr, grv_str_ref(substr));
+}
 
 i32 grv_strarr_index_of_str(grv_strarr_t strarr, grv_str_t str);
 

@@ -26,6 +26,9 @@ grv_str_t grv_str_ref(char* cstr);
 // create grv_str by copying cstr
 grv_str_t grv_str_new(char* cstr);
 
+// create a copy of a string.
+grv_str_t grv_str_copy(grv_str_t str);
+
 grv_str_t grv_str_new_with_format(char* fmt, ...);
 grv_str_t grv_str_new_with_capacity(grv_str_size_t capacity);
 void grv_str_free(grv_str_t*);
@@ -95,9 +98,13 @@ void grv_str_append_space(grv_str_t* str);
 
 char* grv_str_cstr(grv_str_t str);
 char* grv_str_copy_to_cstr(grv_str_t str);
+<<<<<<< HEAD
 grv_str_t grv_str_copy(grv_str_t str);
 
 grv_str_t grv_str_repeat_char(char c, i32 count);
+=======
+grv_str_t grv_str_repeat_char(char c, s32 count);
+>>>>>>> b2bf93c (inc)
 
 grv_str_t grv_str_lstrip(grv_str_t);
 grv_str_t grv_str_lstrip_char(grv_str_t, char);
@@ -115,17 +122,19 @@ grv_str_iter_t grv_str_rfind_char(grv_str_t* str, char c);
 grv_str_iter_t grv_str_find_any_char(grv_str_t* str, grv_str_t chars);
 
 grv_str_t grv_str_split_tail_at_char(grv_str_t str, char c);
+grv_str_t grv_str_split_head_at_char(grv_str_t str, char c);
 grv_str_t grv_str_reduce_char_spans(grv_str_t, char);
 struct grv_strarr_t grv_str_split(grv_str_t str, grv_str_t sep);
 struct grv_strarr_t grv_str_split_whitespace(grv_str_t str);
+grv_str_t grv_str_split_tail_from_front(grv_str_t str, grv_str_t sep);
 
 grv_str_iter_t grv_str_find_str(grv_str_t* str, grv_str_t match_str);
 grv_str_iter_t grv_str_rfind_str(grv_str_t* str, grv_str_t match_str);
 
-grv_str_t grv_separate_head_front(grv_str_t* str, grv_str_t sep);
-grv_str_t grv_separate_head_back(grv_str_t* str, grv_str_t sep);
-grv_str_t grv_separate_tail_front(grv_str_t* str, grv_str_t sep);
-grv_str_t grv_separate_tail_back(grv_str_t* str, grv_str_t sep);
+grv_str_t grv_str_separate_head_front(grv_str_t* str, grv_str_t sep);
+grv_str_t grv_str_separate_head_back(grv_str_t* str, grv_str_t sep);
+grv_str_t grv_str_separate_tail_front(grv_str_t* str, grv_str_t sep);
+grv_str_t grv_str_separate_tail_back(grv_str_t* str, grv_str_t sep);
 
 bool grv_str_iter_is_end(grv_str_iter_t* iter);
 bool grv_str_iter_is_rend(grv_str_iter_t* iter);
@@ -149,12 +158,13 @@ grv_str_t grv_str_from_i64(i64 x);
 
 char grv_str_iter_get_char(grv_str_iter_t* iter);
 void grv_str_iter_set_char(grv_str_iter_t* iter, char c);
-void grv_str_iter_inc(grv_str_iter_t* iter);
-void grv_str_iter_dec(grv_str_iter_t* iter);
+void grv_str_iter_inc(grv_str_iter_t* iter, grv_str_size_t inc);
+void grv_str_iter_dec(grv_str_iter_t* iter, grv_str_size_t dec);
 bool grv_str_iter_match(grv_str_iter_t* iter, grv_str_t match_str);
 bool grv_str_iter_rmatch(grv_str_iter_t* iter, grv_str_t match_str);
 int grv_str_iter_match_int(grv_str_iter_t* iter);
 i64 grv_str_iter_match_i64(grv_str_iter_t* iter);
+f32 grv_str_iter_match_f32(grv_str_iter_t* iter);
 bool grv_str_iter_is_digit(grv_str_iter_t* iter);
 bool grv_str_iter_is_whitespace(grv_str_iter_t* iter);
 bool grv_str_iter_match_white_space(grv_str_iter_t* iter);

@@ -23,9 +23,12 @@ void grv_log(int log_level, char* log_tag, char* format, ...) {
 }
 
 void grv_log_info(char* format, ...) {
+    if (GRV_LOG_LEVEL_INFO < (int)grv_log_level) return;
     va_list args;
     va_start(args, format);
-    grv_log(GRV_LOG_LEVEL_INFO, GRV_LOG_LEVEL_INFO_STR, format, args);
+    printf("[INFO] ");
+    vprintf(format, args);
+    printf("\n");
 }
 
 void grv_log_error(char* format, ...) {
