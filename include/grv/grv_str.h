@@ -36,6 +36,8 @@ grv_str_t grv_str_substr_with_iters(grv_str_iter_t start_iter, grv_str_iter_t en
 
 GRV_INLINE grv_str_size_t grv_str_len(grv_str_t str) { return str.size; }
 GRV_INLINE bool grv_str_empty(grv_str_t str) { return str.size == 0; }
+GRV_INLINE bool grv_str_owns_data(grv_str_t str) { return str.owns_data; }
+GRV_INLINE bool grv_str_is_valid(grv_str_t str) { return str.is_valid; }
 
 bool grv_str_is_int(grv_str_t str);
 int grv_str_to_int(grv_str_t str);

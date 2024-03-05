@@ -9,8 +9,8 @@ char* lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam
 GRV_TEST_BEGIN(grv_str_new)
   grv_str_t s = grv_str_ref("TEST");
   GRV_TEST_EQUAL_SIZE(s.size, 4);
-  GRV_TEST_FALSE(s.owns_data);
-  GRV_TEST_TRUE(s.is_valid);
+  GRV_TEST_FALSE(grv_str_owns_data(s));
+  GRV_TEST_TRUE(grv_str_is_valid(s));
   GRV_TEST_EQUAL_STR(s, "TEST");
   
   grv_str_t s2 = str_new(lorem);
