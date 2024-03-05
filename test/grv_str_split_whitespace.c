@@ -3,7 +3,7 @@
 #include "grv/grv_strarr.h"
 
 GRV_TEST_BEGIN_NEW(grv_str_split_whitespace)
-    grv_str_t s = grv_str_ref(" This is a test.    ");
+    grv_str_t s = grv_str_ref(" This is a\n \ttest.    ");
     grv_strarr_t arr = grv_str_split_whitespace(s);
     GRV_TEST_EQUAL_INT(arr.size, 6);
     GRV_TEST_EQUAL_STR(arr.arr[0], "");
