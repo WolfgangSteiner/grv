@@ -11,6 +11,42 @@ static size_t _grv_calc_alloc_size(size_t size) {
   return result;
 }
 
+static void* _grv_default_allocator_alloc(grv_allocator_t* allocator, size_t size) {
+    GRV_UNUSED(allocator);
+    return malloc(size);
+}
+
+static void* _grv_default_allocator_alloc_zero(grv_allocator_t* allocator, size_t size) {
+    GRV_UNUSED(allocator);
+    return calloc(size, 1);
+}
+
+static void _grv_default_allocator_free(grv_allocator_t* allocator, void* ptr) {
+    GRV_UNUSED(allocator);
+    free(ptr);
+}
+
+static void* _grv_default_allocator_realloc(grv_allocator_t* allocator, void* ptr, size_t size) {
+    GRV_UNUSED(allocator);
+    return realloc(ptr, size);
+}
+
+static void _grv_default_allocator_deinit(grv_allocator_t* allocator) {
+    GRV_UNUSED(allocator);
+}
+
+grv_allocator_t* grv_default_allocator() {
+    static grv_allocator_t default_allocator = {
+        .alloc=_grv_default_allocator_alloc,
+        .alloc_zero=_grv_default_allocator_alloc_zero,
+        .free=_grv_default_allocator_free,
+        .realloc=_grv_default_allocator_realloc,
+        .deinit=_grv_default_allocator_deinit,
+        .impl=NULL
+    };
+    return &default_allocator;
+}
+
 #ifdef GRV_DEBUG_MEMORY
   static size_t grv_impl_get_alloc_size(void* ptr) {
     size_t* alloc_ptr = ptr;
