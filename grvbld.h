@@ -388,6 +388,20 @@ GRVBLD_INLINE void grvbld_config_add_include_directory(grvbld_config_t* config, 
     grvbld_strarr_push(&config->inc, path);
 }
 
+GRVBLD_INLINE void grvbld_config_add_include_directories(grvbld_config_t* config, ...) {
+    va_list args;
+    va_start(args, config);
+    char* dir = 0;
+    int counter = 0;
+    while ((dir = va_arg(args, char*)) != NULL) {
+        assert(counter++ < 32);
+        grvbld_strarr_push(&config->inc, dir);
+    }
+}
+GRVBLD_INLINE void grvbld_config_add_library_directory(grvbld_config_t* config, char* path) {
+    grvbld_strarr_push(&config->library_dirs, path);
+}
+//
 //==============================================================================
 // utility functions
 //==============================================================================
@@ -518,6 +532,17 @@ GRVBLD_INLINE void grvbld_target_link_library(grvbld_target_t* target, char* lib
     grvbld_strarr_push(&target->libs, lib);
 }
 
+GRVBLD_INLINE void grvbld_target_link_libraries(grvbld_target_t* target, ...) {
+    va_list args;
+    va_start(args, target);
+    char* lib = 0;
+    int counter = 0;
+    while ((lib = va_arg(args, char*)) != NULL) {
+        assert(counter++ < 32);
+        grvbld_strarr_push(&target->libs, lib);
+    }
+}
+
 GRVBLD_INLINE void grvbld_target_add_data_file(grvbld_target_t* target, char* data_file) {
     grvbld_strarr_push(&target->data_files, data_file);
 }
@@ -583,6 +608,10 @@ GRVBLD_INLINE char* grvbld_build_cmd(grvbld_config_t* config) {
 //    }
 
     cmd = grvbld_cstr_append_arg_format(cmd, "-L%s", config->build_dir);
+
+    for (size_t i = 0; i < config->library_dirs.size; ++i) {
+        cmd = grvbld_cstr_append_arg_format(cmd, "-L%s", config->library_dirs.data[i]);
+    }
 
     return cmd;
 }
