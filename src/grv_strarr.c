@@ -128,8 +128,8 @@ grv_strarr_t grv_strarr_filter(grv_strarr_t arr, bool (*predicate)(grv_str_t)) {
 }
 
 
-s32 grv_strarr_index_of_str(grv_strarr_t arr, grv_str_t str) {
-    for (s32 idx = 0; idx < arr.size; ++idx) {
+i32 grv_strarr_index_of_str(grv_strarr_t arr, grv_str_t str) {
+    for (i32 idx = 0; idx < arr.size; ++idx) {
          if (grv_str_eq_str(arr.arr[idx], str)) return idx;
     }
 
@@ -138,7 +138,7 @@ s32 grv_strarr_index_of_str(grv_strarr_t arr, grv_str_t str) {
 
 void grv_strarr_remove_str(grv_strarr_t* arr, grv_str_t str) {
     grv_assert(grv_strarr_contains(*arr, str));
-    s32 idx = grv_strarr_index_of_str(*arr, str);
+    i32 idx = grv_strarr_index_of_str(*arr, str);
     grv_str_t remove_str = arr->arr[idx];
     grv_str_free(&remove_str);
     if (idx != arr->size - 1) {

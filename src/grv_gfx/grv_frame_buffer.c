@@ -32,7 +32,7 @@ recti_t* grv_clipping_stack_top(grv_clipping_stack_t* stack) {
     return stack->size ? stack->stack + stack->size - 1 : NULL;
 }
 
-void grv_frame_buffer_init(grv_frame_buffer_t* fb, grv_frame_buffer_type_t type, s32 width, s32 height) {
+void grv_frame_buffer_init(grv_frame_buffer_t* fb, grv_frame_buffer_type_t type, i32 width, i32 height) {
     fb->type = type;
     fb->width = width;
     fb->height = height;
@@ -71,7 +71,7 @@ recti_t grv_frame_buffer_get_clipping_rect(grv_frame_buffer_t* fb) {
     }
 }
 
-u8* grv_frame_buffer_pixel_address_u8(grv_frame_buffer_t* fb, s32 x, s32 y) {
+u8* grv_frame_buffer_pixel_address_u8(grv_frame_buffer_t* fb, i32 x, i32 y) {
     assert(x >= 0 && x < fb->width);
     assert(y >= 0 && y < fb->height);
     return fb->indexed_data + y * fb->width + x;
@@ -81,7 +81,7 @@ void grv_frame_buffer_clear_span_buffer(grv_frame_buffer_t* fb) {
     fb->span_buffer.count = 0;
 }
 
-void grv_frame_buffer_push_span(grv_frame_buffer_t* fb, s32 y, s32 x1, s32 x2) {
+void grv_frame_buffer_push_span(grv_frame_buffer_t* fb, i32 y, i32 x1, i32 x2) {
     if (fb->span_buffer.count == 0) {
         fb->span_buffer.y_start = y;
     } 
@@ -89,18 +89,18 @@ void grv_frame_buffer_push_span(grv_frame_buffer_t* fb, s32 y, s32 x1, s32 x2) {
     if (fb->span_buffer.count >= fb->span_buffer.capacity) {
         assert(false);
     } else {
-        fb->span_buffer.spans[fb->span_buffer.count++] = (grv_span_t){grv_min_s32(x1, x2), grv_max_s32(x1, x2)};
+        fb->span_buffer.spans[fb->span_buffer.count++] = (grv_span_t){grv_min_i32(x1, x2), grv_max_i32(x1, x2)};
     }
 }
 
-void grv_frame_buffer_render_argb(grv_frame_buffer_t* fb, u32* argb_data, s32 pitch) {
+void grv_frame_buffer_render_argb(grv_frame_buffer_t* fb, u32* argb_data, i32 pitch) {
     if (fb->type == FRAME_BUFFER_INDEXED) {
-        s32 num_colors = fb->palette.num_entries;
+        i32 num_colors = fb->palette.num_entries;
         u32* row_ptr = argb_data;
         u8* src_ptr = fb->indexed_data;
-        for (s32 y = 0; y < fb->height; ++y) {
+        for (i32 y = 0; y < fb->height; ++y) {
             u32* dst_ptr = row_ptr; 
-            for (s32 x = 0; x < fb->width; ++x) {
+            for (i32 x = 0; x < fb->width; ++x) {
                 u8 index = *src_ptr++;
                 u32 color_rgba = 0;
                 if (num_colors <= 128 && index & 0x80) {
@@ -116,9 +116,9 @@ void grv_frame_buffer_render_argb(grv_frame_buffer_t* fb, u32* argb_data, s32 pi
     } else {
         u32* src_ptr = fb->rgba_data;
         u32* row_ptr = argb_data;
-        for (s32 y = 0; y < fb->height; ++y) {
+        for (i32 y = 0; y < fb->height; ++y) {
             u32* dst_ptr = row_ptr;
-            for (s32 x = 0; x < fb->width; ++x) {
+            for (i32 x = 0; x < fb->width; ++x) {
                 *dst_ptr++ = grv_rgba_to_argb(*src_ptr++);
             }
             row_ptr += pitch / sizeof(u32);
@@ -148,7 +148,7 @@ void grv_frame_buffer_fill_rect_u8(grv_frame_buffer_t* fb, recti_t rect, u8 colo
     }
     if (rect.w <= 0 || rect.h <= 0) return;
 
-    for (s32 y = recti_ymin(rect); y <= recti_ymax(rect); ++y) {
+    for (i32 y = recti_ymin(rect); y <= recti_ymax(rect); ++y) {
         u8* pixel = grv_frame_buffer_pixel_address_u8(fb, rect.x, y);
         memset(pixel, color, rect.w);
     }

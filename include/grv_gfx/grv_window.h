@@ -7,7 +7,7 @@
 #include "grv/grv_arr.h"
 
 typedef struct {
-    s32 width, height;
+    i32 width, height;
     f32 scale;
     grv_str_t title;
     grv_frame_buffer_t frame_buffer;
@@ -17,7 +17,7 @@ typedef struct {
     void* handle;
 } grv_window_t;
 
-grv_window_t* grv_window_new(s32 width, s32 height, f32 scale, grv_str_t title);
+grv_window_t* grv_window_new(i32 width, i32 height, f32 scale, grv_str_t title);
 bool grv_window_show(grv_window_t* w);
 
 GRV_ARR_TYPEDEF(grv_window_t*) grv_window_active_windows_arr_t;

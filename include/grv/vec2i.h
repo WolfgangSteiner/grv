@@ -4,7 +4,7 @@
 #include "grv_base.h"
 
 typedef struct vec2i_s {
-    s32 x, y;
+    i32 x, y;
 } vec2i;
 
 

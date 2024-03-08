@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
 
         // get current time
         grv_str_t time_str = grv_local_time_str();
-        s32 scale = 7;
+        i32 scale = 7;
         int str_width = scale * grv_bitmap_font_calc_size(NULL, time_str).x;
         int x = (w->width - str_width) / 2;
         int y = (w->height - 8 * scale) / 2;

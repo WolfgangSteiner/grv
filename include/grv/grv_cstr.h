@@ -3,7 +3,7 @@
 
 #include "grv_base.h"
 
-typedef s32 grv_cstr_size_t;
+typedef i32 grv_cstr_size_t;
 
 char* grv_cstr_alloc(grv_cstr_size_t len);
 char* grv_cstr_new();

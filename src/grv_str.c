@@ -24,7 +24,7 @@ static grv_str_size_t _grv_str_capacity_for_size(grv_str_size_t size) {
 static str_cstr_buffer_t str_cstr_buffer = { .data=0, .capacity=0 };
 
 char* _get_cstr_buffer(grv_str_size_t capacity) {
-    capacity = grv_max_s64(capacity, 1024);
+    capacity = grv_max_i64(capacity, 1024);
     if (str_cstr_buffer.data == 0) {
         str_cstr_buffer.capacity = capacity;
         str_cstr_buffer.data = grv_alloc(str_cstr_buffer.capacity);
@@ -305,7 +305,7 @@ bool grv_str_is_int(grv_str_t str) {
     if (str.size == 0) return false;
     if (str.size == 1) return grv_is_digit(str.data[0]);
     bool first_char = true;
-    for (s32 i = 0; i < str.size; ++i) {
+    for (i32 i = 0; i < str.size; ++i) {
         char c = grv_str_at(str, i);
         bool valid_char = grv_is_digit(c) || (first_char && (c == '+' || c == '-'));
         if (!valid_char) return false;
@@ -340,7 +340,7 @@ int grv_str_to_int(grv_str_t str) {
     return is_negative ? -res : res;
 }
 
-s64 grv_str_to_s64(grv_str_t str) {
+i64 grv_str_to_i64(grv_str_t str) {
     int res = 0;
     for (grv_str_size_t i = 0; i < str.size; ++i) {
         char c = grv_str_at(str, i);        
@@ -359,12 +359,12 @@ bool grv_str_is_float(grv_str_t str) {
 
     f32 integer_part = 0.0f;
     f32 fractional_part = 0.0f;
-    s32 fractional_position = 0;
+    i32 fractional_position = 0;
     f32 exponent = 0.0f;
     bool exponent_sign_encountered = false;
 
     if (str.size == 0) return false;
-    s32 idx = 0;
+    i32 idx = 0;
     if (str.data[0] == '-') {
         idx++;
     } else if (str.data[0] == '+') {
@@ -413,12 +413,12 @@ f32 grv_str_to_f32(grv_str_t str) {
     f32 result = 0.0f;
     f32 integer_part = 0.0f;
     f32 fractional_part = 0.0f;
-    s32 fractional_position = 0;
+    i32 fractional_position = 0;
     f32 exponent = 0.0f;
     bool exponent_sign_encountered = false;
 
     if (str.size == 0) return result;
-    s32 idx = 0;
+    i32 idx = 0;
     if (str.data[0] == '-') {
         sign_mantissa = -1.0f;
         idx++;
@@ -605,9 +605,9 @@ int grv_str_iter_match_int(grv_str_iter_t* iter) {
     return res;
 }
 
-s64 grv_str_iter_match_s64(grv_str_iter_t* iter) {
-    s64 res = 0;
-    s64 sign = 1;
+i64 grv_str_iter_match_i64(grv_str_iter_t* iter) {
+    i64 res = 0;
+    i64 sign = 1;
     if (grv_str_iter_is_whitespace(iter)) {
         grv_str_iter_match_white_space(iter);
     }
@@ -803,7 +803,7 @@ int_arr_t str_iter_match_int_list(grv_str_iter_t* iter) {
         grv_str_iter_match_white_space(iter);
         char c = grv_str_iter_get_char(iter);
         if (!grv_is_digit(c) && c!='-' && c!='+') break; 
-        s64 v = grv_str_iter_match_s64(iter);
+        i64 v = grv_str_iter_match_i64(iter);
         int_arr_push(&r, v);
     }
     return r;
@@ -910,7 +910,7 @@ grv_str_t grv_str_from_int(grv_str_size_t i) {
     return grv_str_new(buffer);
 }
 
-grv_str_t grv_str_from_s64(s64 i) {
+grv_str_t grv_str_from_i64(i64 i) {
     char* buffer = _get_cstr_buffer(32);
     sprintf(buffer, "%ld", i);
     return grv_str_new(buffer);

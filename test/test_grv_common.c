@@ -2,10 +2,10 @@
 #include "grv/grv_common.h"
 
 GRV_TEST_BEGIN(grv_common_min_max)
-    GRV_TEST_EQUAL_INT(grv_min_s32(1, 2), 1);
-    GRV_TEST_EQUAL_INT(grv_min_s32(2, 1), 1);
-    GRV_TEST_EQUAL_INT(grv_max_s32(1, 2), 2);
-    GRV_TEST_EQUAL_INT(grv_max_s32(2, 1), 2);
+    GRV_TEST_EQUAL_INT(grv_min_i32(1, 2), 1);
+    GRV_TEST_EQUAL_INT(grv_min_i32(2, 1), 1);
+    GRV_TEST_EQUAL_INT(grv_max_i32(1, 2), 2);
+    GRV_TEST_EQUAL_INT(grv_max_i32(2, 1), 2);
 GRV_TEST_END()
 
 GRV_TEST_BEGIN(grv_common_round)
@@ -16,9 +16,9 @@ GRV_TEST_BEGIN(grv_common_round)
 GRV_TEST_END()
 
 GRV_TEST_BEGIN(grv_common_swp)
-    s32 a = 1;
-    s32 b = 2;
-    grv_swp_s32(&a, &b);
+    i32 a = 1;
+    i32 b = 2;
+    grv_swp_i32(&a, &b);
     GRV_TEST_EQUAL_INT(a, 2);
     GRV_TEST_EQUAL_INT(b, 1);
 
@@ -33,9 +33,9 @@ GRV_TEST_BEGIN(grv_common_abs)
     GRV_TEST_EQUAL_INT(grv_abs_f32(1.0f), 1.0f);
     GRV_TEST_EQUAL_INT(grv_abs_f32(-1.0f), 1.0f);
     GRV_TEST_EQUAL_INT(grv_abs_f32(0.0f), 0.0f);
-    GRV_TEST_EQUAL_INT(grv_abs_s32(-10), 10);
-    GRV_TEST_EQUAL_INT(grv_abs_s32(10), 10);
-    GRV_TEST_EQUAL_INT(grv_abs_s32(0), 0);
+    GRV_TEST_EQUAL_INT(grv_abs_i32(-10), 10);
+    GRV_TEST_EQUAL_INT(grv_abs_i32(10), 10);
+    GRV_TEST_EQUAL_INT(grv_abs_i32(0), 0);
 GRV_TEST_END()
 
 int main(void) {

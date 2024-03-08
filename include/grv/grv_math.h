@@ -30,7 +30,7 @@ f32 sqr_f32(f32 a);
 
 f32 lerp_f32(f32 a, f32 b, f32 t);
 
-s32 grv_count_leading_zero_bits_u8(u8 x);
-s32 grv_count_trailing_zero_bits_u8(u8 x);
+i32 grv_count_leading_zero_bits_u8(u8 x);
+i32 grv_count_trailing_zero_bits_u8(u8 x);
 
 #endif

@@ -79,7 +79,7 @@ static inline bool _grv_test_end(_grv_test_t test) {
   bool success = test.failed_count == 0;
   if (success) {
     if (GRV_TEST_VERBOSITY) {
-      int padding_count = GRV_TEST_ALIGN_WIDTH - (s32)(test.name.size) - 4;
+      int padding_count = GRV_TEST_ALIGN_WIDTH - (i32)(test.name.size) - 4;
       grv_str_t padding = grv_str_repeat_char('.', padding_count);
       printf(" %s " GRV_TEST_GREEN(ok) "\n", grv_str_cstr(padding));
       grv_str_free(&padding);
@@ -245,7 +245,7 @@ static inline void _grv_test_fail(_grv_test_t* test, char* file, int line) {
   grv_test_print_error(test, "Test failed.", file, line);
 }
 
-static inline void _grv_test_equal_int(_grv_test_t* test, char* expression, s64 actual, s64 expected, char* file, int line) {
+static inline void _grv_test_equal_int(_grv_test_t* test, char* expression, i64 actual, i64 expected, char* file, int line) {
   test->total_count++;
   if (actual != expected) {
     test->failed_count++;
@@ -255,7 +255,7 @@ static inline void _grv_test_equal_int(_grv_test_t* test, char* expression, s64 
   }
 }
 
-static inline void _grv_test_not_equal_int(_grv_test_t* test, char* expression, s64 actual, s64 expected, char* file, int line) {
+static inline void _grv_test_not_equal_int(_grv_test_t* test, char* expression, i64 actual, i64 expected, char* file, int line) {
   test->total_count++;
   if (actual == expected) {
     test->failed_count++;

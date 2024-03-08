@@ -4,7 +4,7 @@
 #include "grv_base.h"
 #include <stdarg.h>
 
-typedef s32 grv_str_size_t;
+typedef i32 grv_str_size_t;
 
 struct grv_strarr_t;
 
@@ -41,7 +41,7 @@ GRV_INLINE bool grv_str_is_valid(grv_str_t str) { return str.is_valid; }
 
 bool grv_str_is_int(grv_str_t str);
 int grv_str_to_int(grv_str_t str);
-s64 grv_str_to_s64(grv_str_t str);
+i64 grv_str_to_i64(grv_str_t str);
 bool grv_str_is_float(grv_str_t str);
 f32 grv_str_to_f32(grv_str_t str);
 char grv_str_at(grv_str_t str, grv_str_size_t idx);
@@ -97,7 +97,7 @@ char* grv_str_cstr(grv_str_t str);
 char* grv_str_copy_to_cstr(grv_str_t str);
 grv_str_t grv_str_copy(grv_str_t str);
 
-grv_str_t grv_str_repeat_char(char c, s32 count);
+grv_str_t grv_str_repeat_char(char c, i32 count);
 
 grv_str_t grv_str_lstrip(grv_str_t);
 grv_str_t grv_str_lstrip_char(grv_str_t, char);
@@ -145,7 +145,7 @@ bool grv_is_word_separator(char c);
 bool grv_is_newline(char c);
 
 grv_str_t grv_str_from_int(int x);
-grv_str_t grv_str_from_s64(s64 x);
+grv_str_t grv_str_from_i64(i64 x);
 
 char grv_str_iter_get_char(grv_str_iter_t* iter);
 void grv_str_iter_set_char(grv_str_iter_t* iter, char c);
@@ -154,7 +154,7 @@ void grv_str_iter_dec(grv_str_iter_t* iter);
 bool grv_str_iter_match(grv_str_iter_t* iter, grv_str_t match_str);
 bool grv_str_iter_rmatch(grv_str_iter_t* iter, grv_str_t match_str);
 int grv_str_iter_match_int(grv_str_iter_t* iter);
-s64 grv_str_iter_match_s64(grv_str_iter_t* iter);
+i64 grv_str_iter_match_i64(grv_str_iter_t* iter);
 bool grv_str_iter_is_digit(grv_str_iter_t* iter);
 bool grv_str_iter_is_whitespace(grv_str_iter_t* iter);
 bool grv_str_iter_match_white_space(grv_str_iter_t* iter);
@@ -180,7 +180,7 @@ typedef grv_str_format_callback_t str_format_callback_t;
 #define str_free grv_str_free
 #define str_len grv_str_len
 #define str_to_int grv_str_to_int
-#define str_to_s64 grv_str_to_s64
+#define str_to_i64 grv_str_to_i64
 #define str_at grv_str_at
 #define str_get_char grv_str_get_char
 
@@ -251,7 +251,7 @@ typedef grv_str_format_callback_t str_format_callback_t;
 #define is_word_separator grv_is_word_separator
 #define is_newline grv_is_newline
 #define str_from_int grv_str_from_int
-#define str_from_s64 grv_str_from_s64
+#define str_from_i64 grv_str_from_i64
 #define str_iter_get_char grv_str_iter_get_char
 #define str_iter_set_char grv_str_iter_set_char
 #define str_iter_inc grv_str_iter_inc
@@ -259,7 +259,7 @@ typedef grv_str_format_callback_t str_format_callback_t;
 #define str_iter_match grv_str_iter_match
 #define str_iter_rmatch grv_str_iter_rmatch
 #define str_iter_match_int grv_str_iter_match_int
-#define str_iter_match_s64 grv_str_iter_match_s64
+#define str_iter_match_i64 grv_str_iter_match_i64
 #define str_iter_is_digit grv_str_iter_is_digit
 #define str_iter_is_whitespace grv_str_iter_is_whitespace
 #define str_iter_match_white_space grv_str_iter_match_white_space

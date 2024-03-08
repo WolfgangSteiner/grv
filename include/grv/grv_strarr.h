@@ -65,7 +65,7 @@ GRV_INLINE bool grv_strarr_contains_cstr(grv_strarr_t strarr, char* cstr) {
     char*: grv_strarr_contains_cstr \
 )(STRARR, STR)  
 
-s32 grv_strarr_index_of_str(grv_strarr_t strarr, grv_str_t str);
+i32 grv_strarr_index_of_str(grv_strarr_t strarr, grv_str_t str);
 
 grv_str_t grv_strarr_join(grv_strarr_t strarr, grv_str_t separator);
 

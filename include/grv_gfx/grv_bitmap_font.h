@@ -19,7 +19,7 @@ typedef struct {
 } grv_bitmap_font_t;
 
 void grv_put_text_u8(grv_frame_buffer_t* fb, grv_str_t str, vec2i pos, grv_bitmap_font_t* font, u8 color);
-void grv_put_text_scaled_u8(grv_frame_buffer_t* fb, grv_str_t str, vec2i pos, grv_bitmap_font_t* font, s32 scale, u8 color);
+void grv_put_text_scaled_u8(grv_frame_buffer_t* fb, grv_str_t str, vec2i pos, grv_bitmap_font_t* font, i32 scale, u8 color);
 vec2i grv_bitmap_font_calc_size(grv_bitmap_font_t* font, grv_str_t str);
 
 extern grv_bitmap_font_t grv_basic_font_8x8;

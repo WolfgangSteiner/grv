@@ -18,8 +18,8 @@ int main(int argc, char** argv) {
         grv_window_poll_events();
         grv_frame_buffer_clear(&w->frame_buffer);
         
-        for (s32 y = 0; y < 4; y++) {
-            for (s32 x = 0; x < 4; x++) {
+        for (i32 y = 0; y < 4; y++) {
+            for (i32 x = 0; x < 4; x++) {
                 u8 color = y * 4 + x;
                 u32 size = 32;
                 recti_t rect = {x*size, y*size, size, size};

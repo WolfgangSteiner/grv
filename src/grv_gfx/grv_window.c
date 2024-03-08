@@ -14,7 +14,7 @@ typedef struct {
 } grv_window_impl_t;
 
 
-grv_window_t* grv_window_new(s32 width, s32 height, f32 scale, grv_str_t title) {
+grv_window_t* grv_window_new(i32 width, i32 height, f32 scale, grv_str_t title) {
     grv_window_t* w = grv_alloc_zeros(sizeof(grv_window_t));
     w->width = width;
     w->height = height;
@@ -35,8 +35,8 @@ bool grv_window_show(grv_window_t* w) {
         SDL_Init(SDL_INIT_VIDEO);
     }
 
-    s32 window_width = (s32)(w->width * w->scale);
-    s32 window_height = (s32)(w->height * w->scale);
+    i32 window_width = (i32)(w->width * w->scale);
+    i32 window_height = (i32)(w->height * w->scale);
 
     int flags = SDL_WINDOW_SHOWN;
     if (w->borderless) {
@@ -95,17 +95,17 @@ void grv_window_present(grv_window_t* w) {
     f32 scale_y = (f32)window_height / (f32)w->height;
     f32 scalef = grv_min_f32(scale_x, scale_y);
     
-    s32 dst_width, dst_height;
+    i32 dst_width, dst_height;
     if (!w->use_int_scaling || scalef < 1.0f) {
-        dst_width = (s32)(w->width * scalef);
-        dst_height = (s32)(w->height * scalef);
+        dst_width = (i32)(w->width * scalef);
+        dst_height = (i32)(w->height * scalef);
     } else {
-        s32 scale = grv_floor_f32(scalef);
+        i32 scale = grv_floor_f32(scalef);
         dst_width = w->width * scale;
         dst_height = w->height * scale;
     }
-    s32 dst_x = (window_width - dst_width) / 2;
-    s32 dst_y = (window_height - dst_height) / 2;
+    i32 dst_x = (window_width - dst_width) / 2;
+    i32 dst_y = (window_height - dst_height) / 2;
     SDL_Rect dst_rect = {dst_x, dst_y, dst_width, dst_height};
     SDL_RenderCopy(renderer, texture, &src_rect, &dst_rect);
     SDL_RenderPresent(renderer);
@@ -115,7 +115,7 @@ void grv_window_poll_events() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
-            for (s32 i = 0; i < grv_window_active_windows_arr.size; ++i) {
+            for (i32 i = 0; i < grv_window_active_windows_arr.size; ++i) {
                 grv_window_t* w = grv_window_active_windows_arr.arr[i];
                 grv_window_impl_t* impl = w->handle;
                 if(impl->sdl_window == SDL_GetWindowFromID(event.window.windowID)) {

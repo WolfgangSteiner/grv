@@ -14,7 +14,7 @@ u8 _grv_bitmap_font_invert_byte(u8 byte) {
     return byte;
 }
 
-static void grv_put_char_u8(grv_frame_buffer_t* fb, char c, vec2i pos, grv_bitmap_font_t* font, s32 scale, u8 color) {
+static void grv_put_char_u8(grv_frame_buffer_t* fb, char c, vec2i pos, grv_bitmap_font_t* font, i32 scale, u8 color) {
     u8* glyph_data = font->glyph_data + font->glyph_byte_count * (u32)c;
     u8 bytes_per_row = font->glyph_byte_count / font->glyph_height;
     u8* glyph_row_ptr = glyph_data + font->topskip * bytes_per_row;
@@ -40,18 +40,18 @@ u8* grv_bitmap_font_get_glyph_ptr(grv_bitmap_font_t* font, char c) {
 
 vec2i grv_bitmap_font_glyph_size(grv_bitmap_font_t* font, char c) {
     if (font == NULL) font = &grv_basic_font_8x8;
-    s32 y1 = 0; s32 y2 = font->glyph_height - 1;
+    i32 y1 = 0; i32 y2 = font->glyph_height - 1;
     u8* glyph_ptr = grv_bitmap_font_get_glyph_ptr(font, c);
     while (glyph_ptr[y1] == 0 && y1 < font->glyph_height) y1++;
     if (y1 == font->glyph_height) return (vec2i){0};
     while (glyph_ptr[y2] == 0 && y2 >= 0) y2--;
     u8 or_row = 0;
-    for (s32 y = y1; y <= y2; ++y) {
+    for (i32 y = y1; y <= y2; ++y) {
         u8 row = glyph_ptr[y];
         or_row |= row;
     }
-    s32 w = font->glyph_width - grv_count_leading_zero_bits_u8(or_row) - grv_count_trailing_zero_bits_u8(or_row);
-    s32 h = y2 - y1 + 1;
+    i32 w = font->glyph_width - grv_count_leading_zero_bits_u8(or_row) - grv_count_trailing_zero_bits_u8(or_row);
+    i32 h = y2 - y1 + 1;
     return (vec2i){w, h};
 }
 
@@ -61,7 +61,7 @@ void grv_put_text_u8(grv_frame_buffer_t* fb, grv_str_t str, vec2i pos, grv_bitma
     //grv_put_text_scaled_u8(fb, str, (vec2i){pos.x+1, pos.y}, font, 1, color);
 }
 
-void grv_put_text_scaled_u8(grv_frame_buffer_t* fb, grv_str_t str, vec2i pos, grv_bitmap_font_t* font, s32 scale, u8 color) {
+void grv_put_text_scaled_u8(grv_frame_buffer_t* fb, grv_str_t str, vec2i pos, grv_bitmap_font_t* font, i32 scale, u8 color) {
     vec2i line_pos = pos;
     vec2i glyph_pos = pos;
     if (font == NULL) font = &grv_basic_font_8x8;
@@ -83,12 +83,12 @@ void grv_put_text_scaled_u8(grv_frame_buffer_t* fb, grv_str_t str, vec2i pos, gr
 
 vec2i grv_bitmap_font_calc_size(grv_bitmap_font_t* font, grv_str_t text) {
     if (font == NULL) font = &grv_basic_font_8x8;
-    s32 x = 0;
+    i32 x = 0;
     vec2i size = {0};
     if (text.size == 0) return size;
     size.y = font->glyph_height;
-    s32 max_chars_per_line = 0;
-    s32 font_spacing = font->hskip - font->em;
+    i32 max_chars_per_line = 0;
+    i32 font_spacing = font->hskip - font->em;
 
     for (grv_str_size_t i = 0; i < text.size; ++i) {
         char c = text.data[i];
@@ -97,7 +97,7 @@ vec2i grv_bitmap_font_calc_size(grv_bitmap_font_t* font, grv_str_t text) {
             x = 0;
         } else { 
             x++;
-            max_chars_per_line = grv_max_s32(max_chars_per_line, x);
+            max_chars_per_line = grv_max_i32(max_chars_per_line, x);
         }
     }
     size.x = max_chars_per_line * font->em + (max_chars_per_line - 1) * font_spacing;
