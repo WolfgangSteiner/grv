@@ -29,6 +29,9 @@ GRV_INLINE void grv_allocator_deinit(grv_allocator_t* allocator) {
     allocator->deinit(allocator);
 }
 
+#define GRV_ALLOC_OBJECT(TYPE) grv_alloc_zeros(sizeof(TYPE))
+
+
 grv_allocator_t* grv_default_allocator();
 
 
