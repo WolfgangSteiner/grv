@@ -37,9 +37,9 @@ int main(int argc, char** argv) {
         grv_str_append_space(&cmd);
     }
 
-    grv_str_append_cstr(&cmd, " -I. -Igrv/include -Iinclude -Wall -Wextra -pedantic ");
+    grv_str_append_cstr(&cmd, " -I. -I./grv/include -I./include -I./lib/grv/include -L./build -L./lib/grv/build -Wall -Wextra -pedantic ");
     grv_str_append_str(&cmd, grv_strarr_join(args, grv_str_ref(" ")));
-    grv_str_append_cstr(&cmd, " -Lbuild -Lgrv/build -lgrv -lm");
+    grv_str_append_cstr(&cmd, " -lm");
     grv_log_info(grv_str_cstr(cmd));
     if (!dry_run) {
         grv_system(cmd);
