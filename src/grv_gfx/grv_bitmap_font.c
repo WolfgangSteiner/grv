@@ -115,10 +115,12 @@ struct psf_header {
     u32 glyph_width;
 };
 
+#if 0
 static void _grv_psf_font_extract_glyph_geometry(grv_bitmap_font_t* font) {
     u8* glyph_data = font->glyph_data + font->glyph_byte_count * 'A';
     GRV_UNUSED(glyph_data);
 }
+#endif 
 
 grv_bitmap_font_t* grv_load_psf_font(char* data, size_t size) {
     GRV_UNUSED(size);

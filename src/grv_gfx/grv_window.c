@@ -115,7 +115,7 @@ void grv_window_poll_events(void) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
-            for (i32 i = 0; i < grv_window_active_windows_arr.size; ++i) {
+            for (size_t i = 0; i < grv_window_active_windows_arr.size; ++i) {
                 grv_window_t* w = grv_window_active_windows_arr.arr[i];
                 grv_window_impl_t* impl = w->handle;
                 if(impl->sdl_window == SDL_GetWindowFromID(event.window.windowID)) {
