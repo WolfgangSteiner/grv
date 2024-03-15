@@ -20,8 +20,13 @@ typedef struct {
   #define GRV_TEST_ALIGN_WIDTH 64
 #endif
 
+#ifdef GRV_USE_COLOR
 #define GRV_TEST_RED(TEXT) "\x1B[31m" #TEXT "\x1B[0m"
 #define GRV_TEST_GREEN(TEXT) "\x1B[32m" #TEXT "\x1B[0m"
+#else 
+#define GRV_TEST_RED(TEXT) #TEXT
+#define GRV_TEST_GREEN(TEXT) #TEXT
+#endif
 
 #define GRV_TEST_ERROR_MSG_PREFIX "          " GRV_TEST_RED([ERROR]) " " 
 #define GRV_TEST_NEWLINE() puts("")
