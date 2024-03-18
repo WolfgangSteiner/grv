@@ -395,6 +395,12 @@ void grv_str_iter_set_char(grv_str_iter_t* iter, char c) {
 void grv_str_iter_inc(grv_str_iter_t* iter, grv_str_size_t inc) { iter->pos+= inc; }
 void grv_str_iter_dec(grv_str_iter_t* iter, grv_str_size_t dec) { iter->pos-= dec; }
 
+grv_str_t grv_str_iter_get_line(grv_str_iter_t* iter) {
+    grv_str_t line = grv_str_iter_match_up_to_char(iter, '\n');
+    if (!grv_str_iter_is_end(iter)) {
+        grv_str_iter_match_newline(iter);
+    }
+    return line;
 }
 
 grv_str_iter_t grv_str_find_str(grv_str_t* str, grv_str_t match_str) {
