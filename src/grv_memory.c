@@ -35,7 +35,7 @@ static void _grv_default_allocator_deinit(grv_allocator_t* allocator) {
     GRV_UNUSED(allocator);
 }
 
-grv_allocator_t* grv_default_allocator() {
+grv_allocator_t* grv_default_allocator(void) {
     static grv_allocator_t default_allocator = {
         .alloc=_grv_default_allocator_alloc,
         .alloc_zero=_grv_default_allocator_alloc_zero,

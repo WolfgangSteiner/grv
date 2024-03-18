@@ -32,7 +32,7 @@ GRV_INLINE void grv_allocator_deinit(grv_allocator_t* allocator) {
 #define GRV_ALLOC_OBJECT(TYPE) grv_alloc_zeros(sizeof(TYPE))
 
 
-grv_allocator_t* grv_default_allocator();
+grv_allocator_t* grv_default_allocator(void);
 
 
 static inline void grv_memmove(void* dst, void* src, size_t num_elements, size_t element_size) {
