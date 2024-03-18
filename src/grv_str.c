@@ -877,6 +877,7 @@ void grv_str_grow(grv_str_t* str, grv_str_size_t new_size) {
 }
 
 void grv_str_append_str(grv_str_t* str, grv_str_t append_str) {
+    if (append_str.size == 0) return;
     grv_str_size_t new_size = str->size + append_str.size;
     grv_str_grow(str, new_size);
     memcpy(str->data + str->size, append_str.data, append_str.size);
