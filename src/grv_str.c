@@ -911,13 +911,19 @@ void grv_str_prepend_char(grv_str_t* str, char c) {
 }
 
 
-grv_str_t grv_str_from_int(grv_str_size_t i) {
+grv_str_t grv_str_from_int(i32 i) {
     char* buffer = _get_cstr_buffer(32);
     sprintf(buffer, "%d", i);
     return grv_str_new(buffer);
 }
 
 grv_str_t grv_str_from_i64(i64 i) {
+    char* buffer = _get_cstr_buffer(64);
+    sprintf(buffer, "%ld", i);
+    return grv_str_new(buffer);
+}
+
+grv_str_t grv_str_from_u64(u64 i) {
     char* buffer = _get_cstr_buffer(32);
     sprintf(buffer, "%ld", i);
     return grv_str_new(buffer);

@@ -150,6 +150,7 @@ bool grv_is_newline(char c);
 
 grv_str_t grv_str_from_int(int x);
 grv_str_t grv_str_from_i64(i64 x);
+grv_str_t grv_str_from_u64(u64 x);
 
 char grv_str_iter_get_char(grv_str_iter_t* iter);
 void grv_str_iter_set_char(grv_str_iter_t* iter, char c);
