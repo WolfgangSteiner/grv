@@ -67,16 +67,16 @@ grv_str_t _str_format_callback_int(va_list* args, grv_str_t specifier) {
     }
 }
 
-grv_str_t _str_format_callback_s64(va_list* args, grv_str_t specifier) {
+grv_str_t _str_format_callback_i64(va_list* args, grv_str_t specifier) {
     if (grv_str_eq(specifier, grv_str_ref("hex"))) {
-        s64 arg = va_arg(*args, s64);
+        i64 arg = va_arg(*args, i64);
         char* formatted_cstr = grv_cstr_new_with_format("%lx", arg);
         grv_str_t result = grv_str_new(formatted_cstr);
         free(formatted_cstr);
         return result;
     } else {
-        s64 arg = va_arg(*args, s64);
-        return grv_str_from_s64(arg);
+        i64 arg = va_arg(*args, i64);
+        return grv_str_from_i64(arg);
     }
 }
 
@@ -113,7 +113,7 @@ void _str_format_initialize_pattern_list(void) {
         _str_format_register_pattern(grv_str_ref("str"), _str_format_callback_str);
         _str_format_register_pattern(grv_str_ref("cstr"), _str_format_callback_cstr);
         _str_format_register_pattern(grv_str_ref("int"), _str_format_callback_int);
-        _str_format_register_pattern(grv_str_ref("s64"), _str_format_callback_s64);
+        _str_format_register_pattern(grv_str_ref("i64"), _str_format_callback_i64);
         _str_format_register_pattern(grv_str_ref("f32"), _str_format_callback_f32);
     }
 }
@@ -184,7 +184,7 @@ grv_str_format_callback_t _str_format_get_callback_for_key(grv_str_t key) {
 }
 
 grv_str_t _str_vformat(grv_str_t fmt, va_list* args) {
-    // find patterns of form {TYPE}, where type is str, int, s64, f32
+    // find patterns of form {TYPE}, where type is str, int, i64, f32
     // replace with value of type
     grv_str_iter_t iter = grv_str_iter_begin(&fmt);
     grv_str_t result = grv_str_new("");
