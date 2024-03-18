@@ -98,13 +98,8 @@ void grv_str_append_space(grv_str_t* str);
 
 char* grv_str_cstr(grv_str_t str);
 char* grv_str_copy_to_cstr(grv_str_t str);
-<<<<<<< HEAD
 grv_str_t grv_str_copy(grv_str_t str);
-
 grv_str_t grv_str_repeat_char(char c, i32 count);
-=======
-grv_str_t grv_str_repeat_char(char c, s32 count);
->>>>>>> b2bf93c (inc)
 
 grv_str_t grv_str_lstrip(grv_str_t);
 grv_str_t grv_str_lstrip_char(grv_str_t, char);
