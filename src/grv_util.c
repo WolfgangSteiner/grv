@@ -147,6 +147,13 @@ grv_str_t grv_local_time_str(void) {
   return result;
 }
 
+grv_str_t grv_local_datetime_str() {
+  struct tm tm = grv_local_time();
+  grv_str_t result = grv_str_new_with_format(
+    "%d%02d%02dT%02d%02d%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+  return result;
+}
+
 f32 grv_local_time_f32(void) {
   struct tm tm = grv_local_time();
   f32 result = (f32)tm.tm_hour + (f32)tm.tm_min / 60.0f + (f32)tm.tm_sec / 3600.0f;

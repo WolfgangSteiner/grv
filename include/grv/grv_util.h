@@ -39,8 +39,8 @@ bool grv_cmd_available(grv_str_t cmd);
 struct tm grv_local_time(void);
 grv_str_t grv_local_time_str(void);
 f32 grv_local_time_f32(void);
+grv_str_t grv_local_datetime_str(void);
 
 grv_strarr_t grv_readlines(grv_str_t path);
-
 
 #endif
