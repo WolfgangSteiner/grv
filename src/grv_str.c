@@ -392,12 +392,9 @@ void grv_str_iter_set_char(grv_str_iter_t* iter, char c) {
     iter->str->data[iter->pos] = c;
 }
 
-void grv_str_iter_inc(grv_str_iter_t* iter, grv_str_size_t inc) {
-    iter->pos+= inc;
-}
+void grv_str_iter_inc(grv_str_iter_t* iter, grv_str_size_t inc) { iter->pos+= inc; }
+void grv_str_iter_dec(grv_str_iter_t* iter, grv_str_size_t dec) { iter->pos-= dec; }
 
-void grv_str_iter_dec(grv_str_iter_t* iter, grv_str_size_t dec) {
-    iter->pos-= dec;
 }
 
 grv_str_iter_t grv_str_find_str(grv_str_t* str, grv_str_t match_str) {
