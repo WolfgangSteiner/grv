@@ -142,7 +142,7 @@ grv_bitmap_font_t* grv_load_psf_font(char* data, size_t size) {
 grv_bitmap_font_t* grv_get_cozette_font(void) {
     static grv_bitmap_font_t* cozette_font = NULL;
     if (cozette_font == NULL) {
-        grv_log_info("Loading cozette font");
+        grv_log_info(grv_str_ref("Loading cozette font"));
         size_t size = (size_t)&_binary_src_grv_gfx_cozette_psf_end - (size_t)&_binary_src_grv_gfx_cozette_psf_start;
         cozette_font = grv_load_psf_font((char*)&_binary_src_grv_gfx_cozette_psf_start, size);
         cozette_font->hskip = 7;

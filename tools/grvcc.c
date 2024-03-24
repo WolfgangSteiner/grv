@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
         // the last argument is assumed to be the program to be compiled
         grv_str_t* src_file = grv_strarr_back(args);
         if (src_file == 0 || !grv_str_ends_with_cstr(*src_file, ".c")) {
-            grv_log_error("Usage: grvgcc [OPTIONS] <src_file>");
+            grv_log_error(grv_str_ref("Usage: grvgcc [OPTIONS] <src_file>"));
             exit(1);
         }
         grv_str_t dst_file = grv_str_substr(*src_file, 0, -3);
@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     grv_str_append_cstr(&cmd, " -I. -I./grv/include -I./include -I./lib/grv/include -L./build -L./lib/grv/build -Wall -Wextra -pedantic ");
     grv_str_append_str(&cmd, grv_strarr_join(args, grv_str_ref(" ")));
     grv_str_append_cstr(&cmd, " -lm");
-    grv_log_info(grv_str_cstr(cmd));
+    grv_log_info(cmd);
     if (!dry_run) {
         grv_system(cmd);
     }
