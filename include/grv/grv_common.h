@@ -40,4 +40,9 @@ GRV_INLINE f32 grv_abs_i32(i32 a) { return a < 0 ? -a : a; }
 GRV_INLINE void grv_swp_i32(i32* a, i32* b) { i32 c = *a; *a = *b; *b = c; }
 GRV_INLINE void grv_swp_f32(f32* a, f32* b) { f32 c = *a; *a = *b; *b = c; }
 
+bool grv_char_is_lower(char c);
+bool grv_char_is_upper(char c);
+char grv_char_to_lower(char c);
+char grv_char_to_upper(char c);
+
 #endif
