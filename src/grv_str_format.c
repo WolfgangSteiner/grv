@@ -5,6 +5,7 @@
 
 #include "grv/grv_base.h"
 #include "grv/grv_str.h"
+#include "grv/grv_strarr.h"
 #include "grv/grv_cstr.h"
 #include "grv/grv_memory.h"
 
@@ -20,10 +21,48 @@ typedef struct {
 
 static str_format_pattern_list_t str_format_patterns = {0};
 
+void _str_format_color(grv_str_t* str, grv_str_t color_format) {
+    grv_assert(grv_str_starts_with_cstr(color_format, "color="));
+    grv_str_t color_str = grv_str_substr(color_format, 6, -1); 
+    grv_str_t esc = {0};
+    if (grv_str_eq_cstr(color_str, "red")) {
+        esc = grv_str_ref("\033[31m");
+    } else if (grv_str_eq_cstr(color_str, "green")) {
+        esc = grv_str_ref("\033[32m");
+    } else if (grv_str_eq_cstr(color_str, "yellow")) {
+        esc = grv_str_ref("\033[33m");
+    } else if (grv_str_eq_cstr(color_str, "blue")) {
+        esc = grv_str_ref("\033[34m");
+    } else if (grv_str_eq_cstr(color_str, "magenta")) {
+        esc = grv_str_ref("\033[35m");
+    } else if (grv_str_eq_cstr(color_str, "cyan")) {
+        esc = grv_str_ref("\033[36m");
+    } else if (grv_str_eq_cstr(color_str, "white")) {
+        esc = grv_str_ref("\033[37");
+    } else {
+        grv_assert(false);
+    }
+    if (!grv_str_empty(esc)) {
+        grv_str_prepend(str, esc);
+        grv_str_append(str, grv_str_ref("\033[0m"));
+    }
+}
+
 grv_str_t _str_format_callback_str(va_list* args, grv_str_t specifier) {
     (void) specifier;
     grv_str_t arg = va_arg(*args, grv_str_t);
-    return grv_str_copy(arg);
+    grv_str_t str = grv_str_copy(arg);
+    if (specifier.size) {
+        grv_strarr_t specifier_arr = grv_str_split(specifier, grv_str_ref(","));
+        for (size_t i = 0; i < specifier_arr.size; ++i) {
+            grv_str_t s = specifier_arr.arr[i];
+            if (grv_str_starts_with_cstr(s, "color=")) {
+                _str_format_color(&str, s);
+            }
+        }
+        grv_strarr_free(&specifier_arr);
+    }
+    return str;
 }   
 
 grv_str_t _str_format_callback_cstr(va_list* args, grv_str_t specifier) {
