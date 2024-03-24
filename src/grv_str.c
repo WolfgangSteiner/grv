@@ -227,12 +227,6 @@ bool grv_file_exists(grv_str_t file_name) {
     return false;
 }
 
-bool grv_path_exists(grv_str_t path) {
-    GRV_UNUSED(path);
-    assert(false);
-    return false;
-}
-
 bool grv_str_contains_str(grv_str_t str, grv_str_t search_str) {
     if (str.size < search_str.size) return false;
     char* cptr = str.data;
