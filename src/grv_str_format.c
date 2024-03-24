@@ -8,6 +8,7 @@
 #include "grv/grv_strarr.h"
 #include "grv/grv_cstr.h"
 #include "grv/grv_memory.h"
+#include "grv/grv_log.h"
 
 typedef struct {
     grv_str_t key;
@@ -233,6 +234,8 @@ grv_str_format_callback_t _str_format_get_callback_for_key(grv_str_t key) {
             return pattern->callback;
         }
     }
+    grv_log_error(grv_str_format(grv_str_ref("Unsupported format specifier {str}"), key));
+    grv_assert(false);
     return 0;
 }
 
