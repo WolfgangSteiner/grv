@@ -53,4 +53,5 @@ grv_str_t grv_local_datetime_str(void);
 grv_strarr_t grv_readlines(grv_str_t path);
 
 char grv_query_user(grv_str_t msg, grv_str_t choices);
+
 #endif
