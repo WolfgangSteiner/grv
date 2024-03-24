@@ -189,16 +189,19 @@ grv_str_t grv_get_line(grv_str_iter_t* iter) {
     return result;
 }
 
-grv_str_t grv_read_file(grv_str_t file_name) {
-    grv_str_t result = {0};
+grv_str_return_t grv_read_file(grv_str_t file_name) {
+    grv_str_return_t result = {0};
     FILE* fp = fopen(grv_str_cstr(file_name), "rb");
-    if (fp == 0) return result;
+    if (fp == 0) {
+        result.error = GRV_ERROR_FILE_NOT_READABLE;
+        return result;
+    }
     size_t buffer_size = 1024;
     char* buffer = grv_alloc(buffer_size);
     size_t bytes_read;
     while ((bytes_read = fread(buffer, sizeof(char), buffer_size, fp)) > 0) {
         grv_str_t new_str = {.data=buffer, .size=bytes_read};
-        grv_str_append_str(&result, new_str);
+        grv_str_append_str(&result.str, new_str);
     }
     grv_free(buffer);
     fclose(fp);

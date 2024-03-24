@@ -143,7 +143,13 @@ grv_str_iter_t grv_str_iter_rbegin(grv_str_t* str);
 GRV_INLINE grv_str_iter_t grv_str_iter_rend(grv_str_t* str) { return (grv_str_iter_t){.str=str, .pos=-1}; } 
 void grv_str_print(grv_str_t str);
 grv_str_t grv_get_line(grv_str_iter_t* iter);
-grv_str_t grv_read_file(grv_str_t file_name);
+
+typedef struct {
+    grv_str_t str;
+    grv_error_t error;
+} grv_str_return_t;
+
+grv_str_return_t grv_read_file(grv_str_t file_name);
 bool grv_file_exists(grv_str_t file_name);
 
 int grv_char_to_int(char c);
