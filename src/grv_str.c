@@ -900,7 +900,7 @@ void grv_str_grow(grv_str_t* str, grv_str_size_t new_size) {
     if (str->owns_data) { 
         assert(new_size > str->size);
         grv_str_size_t old_capacity = _grv_str_capacity_for_size(str->size);
-        if (new_capacity > old_capacity) str->data = grv_realloc(str->data, new_capacity);
+        str->data = grv_realloc(str->data, new_capacity);
     } else {
         char* new_data = grv_alloc(new_capacity);
         memcpy(new_data, str->data, str->size);
