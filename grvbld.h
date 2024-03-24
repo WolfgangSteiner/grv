@@ -558,6 +558,17 @@ GRVBLD_INLINE void grvbld_target_add_src(grvbld_target_t* target, char* src) {
     grvbld_strarr_push(&target->src_files, src);
 }
 
+GRVBLD_INLINE void grvbld_target_add_src_files(grvbld_target_t* target, ...) {
+    va_list args;
+    va_start(args, target);
+    char* src = 0;
+    int counter = 0;
+    while ((src = va_arg(args, char*)) != NULL) {
+        assert(counter++ < 32);
+        grvbld_target_add_src(target, src); 
+    }
+}
+
 GRVBLD_INLINE void grvbld_target_link_library(grvbld_target_t* target, char* lib) {
     grvbld_strarr_push(&target->libs, lib);
 }
