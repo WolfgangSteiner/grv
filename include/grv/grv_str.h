@@ -89,6 +89,7 @@ static inline grv_str_t grv_str_cat_cstr_cstr(char* a, char* b) {return grv_str_
 
 void grv_str_append_str(grv_str_t* str, grv_str_t append_str);
 void grv_str_append_char(grv_str_t* str, char c);
+GRV_INLINE void grv_str_append_newline(grv_str_t* str) { grv_str_append_char(str, '\n'); }
 static inline void grv_str_append_cstr(grv_str_t* str, char* append_str) { grv_str_append_str(str, grv_str_ref(append_str)); }
 #define grv_str_append(a,b) _Generic((b), grv_str_t: grv_str_append_str, char*: grv_str_append_cstr, int: grv_str_append_char)(a,b)
 
