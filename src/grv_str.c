@@ -208,6 +208,16 @@ grv_str_return_t grv_read_file(grv_str_t file_name) {
     return result;
 }
 
+grv_error_t grv_str_write_to_file(grv_str_t str, grv_str_t filename) {
+    FILE* fp = fopen(grv_str_cstr(filename), "wb");
+    if (fp == 0) {
+        return GRV_ERROR_FILE_NOT_WRITABLE;
+    }
+    fwrite(str.data, str.size, 1, fp);
+    fclose(fp);
+    return GRV_ERROR_SUCCESS;
+}
+
 bool grv_file_exists(grv_str_t file_name) {
     FILE* file = fopen(grv_str_cstr(file_name), "rb");
     if (file != NULL) {

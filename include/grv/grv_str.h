@@ -150,6 +150,7 @@ typedef struct {
 } grv_str_return_t;
 
 grv_str_return_t grv_read_file(grv_str_t file_name);
+grv_error_t grv_str_write_to_file(grv_str_t str, grv_str_t file_name);
 bool grv_file_exists(grv_str_t file_name);
 
 int grv_char_to_int(char c);
