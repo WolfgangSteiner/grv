@@ -124,6 +124,7 @@ grv_str_t grv_str_split_tail_at_char(grv_str_t str, char c);
 grv_str_t grv_str_split_head_at_char(grv_str_t str, char c);
 grv_str_t grv_str_reduce_char_spans(grv_str_t, char);
 struct grv_strarr_t grv_str_split(grv_str_t str, grv_str_t sep);
+struct grv_strarr_t grv_str_split_char(grv_str_t str, char sep);
 struct grv_strarr_t grv_str_split_whitespace(grv_str_t str);
 grv_str_t grv_str_split_tail_from_front(grv_str_t str, grv_str_t sep);
 
