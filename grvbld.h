@@ -8,6 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+#include <glob.h>
 
 #ifndef NULL
 #define NULL ((void*)0L);
@@ -182,6 +183,12 @@ GRVBLD_INLINE void grvbld_strarr_init(grvbld_strarr_t* arr) {
     arr->data = calloc(arr->capacity, sizeof(char*));
 }
 
+GRVBLD_INLINE grvbld_strarr_t* grvbld_strarr_new(void) { 
+    grvbld_strarr_t* res = calloc(1, sizeof(grvbld_strarr_t));
+    grvbld_strarr_init(res);
+    return res;
+}
+
 GRVBLD_INLINE void grvbld_strarr_push(grvbld_strarr_t* arr, char* str) {
     if (arr->size >= arr->capacity) {
         arr->capacity *= 2;
@@ -226,6 +233,16 @@ GRVBLD_INLINE char* grvbld_cstr_append_arg(char* dst, char* arg) {
     dst = grvbld_cstr_append(dst, " ");
     dst = grvbld_cstr_append(dst, arg);
     return dst;
+}
+
+GRVBLD_INLINE char* grvbld_dirname(char* str) {
+    char* last_sep = strrchr(str, GRVBLD_PATH_SEP);
+    char* res = grvbld_cstr_new(str);
+    if (last_sep) {
+        size_t pos = last_sep - str;
+        res[pos] = 0;
+    } 
+    return res;
 }
 
 GRVBLD_INLINE char* grvbld_cstr_filename(char* str) {
@@ -297,6 +314,11 @@ GRVBLD_INLINE bool grvbld_cstr_eq(char* a, char* b) {
     return strcmp(a, b) == 0;
 }
 
+void grvbld_cstr_rstrip(char* str) {
+    size_t len = strlen(str);
+    while (len > 0 && str[len] == '\n') len--;
+}
+
 GRVBLD_INLINE bool grvbld_args_contain(int argc, char** argv, char* arg) {
     for (int i = 0; i < argc; ++i) {
         if (grvbld_cstr_eq(argv[i], arg)) {
@@ -346,7 +368,6 @@ GRVBLD_INLINE grvbld_config_t* grvbld_config_new(int argc, char** argv) {
     printf("verbosity: %d\n", config->verbosity);
     return config;
 }
-
 
 GRVBLD_INLINE grvbld_config_t* grvbld_config_dup(grvbld_config_t* src) {
     grvbld_config_t* dst = calloc(1, sizeof(grvbld_config_t));
@@ -666,15 +687,16 @@ GRVBLD_INLINE int grvbld_test(grvbld_config_t* config, char* name) {
     config->debug = true;
     //grvbld_strarr_push(&config->defines, "GRV_DEBUG_MEMORY");
 
-    char* dst_dir = grvbld_cstr_new_with_format("%s/test", config->build_dir);
+    char* src_dir = grvbld_dirname(name);
+    char* dst_dir = grvbld_cstr_new_with_format("%s/%s", config->build_dir, src_dir);
     bool make_path_ok = make_path(dst_dir);
     if (!make_path_ok) {
         log_error("failed to create path \"%s\"", dst_dir);
         exit(1);
     }
 
-    char* src_file = grvbld_cstr_new_with_format("%s/%s.c", config->test_dir, name);
-    char* dst_file = grvbld_cstr_new_with_format("%s/test/%s", config->build_dir, name);
+    char* src_file = grvbld_cstr_new_with_format("%s.c", name);
+    char* dst_file = grvbld_cstr_new_with_format("%s/%s", config->build_dir, name);
     char* cmd = grvbld_build_cmd(config);
     
     cmd = grvbld_cstr_append_arg_format(cmd, "-o %s", dst_file);
@@ -702,16 +724,44 @@ GRVBLD_INLINE int grvbld_test(grvbld_config_t* config, char* name) {
     #endif
 }
 
+grvbld_strarr_t* grvbld_system(char* cmd) {
+    grvbld_strarr_t* res = grvbld_strarr_new();
+    size_t buffer_size = 4096;
+    char* buffer = calloc(buffer_size, 1);
+    FILE* fp = popen(cmd, "r");
+    while (fgets(buffer, buffer_size, fp)) {
+        grvbld_cstr_rstrip(buffer);
+        grvbld_strarr_push(res, grvbld_cstr_new(buffer));
+    }
+    free(buffer);
+    return res;
+}
+
+grvbld_strarr_t* grvbld_glob(char* pattern) {
+    grvbld_strarr_t* res = grvbld_strarr_new();
+    glob_t glob_result;
+    glob(pattern, GLOB_TILDE, NULL, &glob_result);
+
+    if (glob_result.gl_pathc == 0) {
+        globfree(&glob_result);
+        return res;
+    }
+    for (size_t i = 0; i < glob_result.gl_pathc; ++i) {
+        char* path = grvbld_cstr_new(glob_result.gl_pathv[i]);
+        grvbld_strarr_push(res, path);
+    }
+    globfree(&glob_result);
+    return res;
+}
+
 GRVBLD_INLINE int grvbld_run_tests(grvbld_config_t* config) {
-    grvbld_strarr_t* test_files = get_files_in_dir(config->test_dir);
+    grvbld_strarr_t* test_files = grvbld_system("find test -name \"*.c\" | sort");
     bool success = true;
     for (size_t i = 0; i < test_files->size; ++i) {
         char* test_file = test_files->data[i];
-        if (ends_with(test_file, ".c")) {
-            grvbld_cstr_remove_ext(test_file);
-            int test_result = grvbld_test(config, test_file);
-            if (test_result > 0) success = false;
-        }
+        grvbld_cstr_remove_ext(test_file);
+        int test_result = grvbld_test(config, test_file);
+        if (test_result > 0) success = false;
     }
     return success ? 0 : 1;
 }
