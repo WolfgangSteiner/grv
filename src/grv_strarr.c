@@ -31,6 +31,14 @@ void grv_strarr_clear(grv_strarr_t* a) {
     a->size = 0;
 } 
 
+grv_strarr_t grv_strarr_copy(grv_strarr_t arr) {
+    grv_strarr_t res = {0};
+    for (grv_str_size_t i = 0; i < arr.size; ++i) {
+         grv_strarr_push_copy(&res, arr.arr[i]);
+    }
+    return res;
+}
+
 void grv_strarr_push_cstr(grv_strarr_t* arr, char* s) {
     grv_str_t str = grv_str_new(s);
     grv_arr_push(arr, str);
