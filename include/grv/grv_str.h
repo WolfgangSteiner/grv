@@ -49,6 +49,8 @@ bool grv_str_is_float(grv_str_t str);
 f32 grv_str_to_f32(grv_str_t str);
 char grv_str_at(grv_str_t str, grv_str_size_t idx);
 char grv_str_get_char(grv_str_t str, grv_str_size_t pos);
+grv_str_t grv_str_to_lower(grv_str_t str);
+grv_str_t grv_str_to_upper(grv_str_t str);
 
 bool grv_str_eq_str(grv_str_t a, grv_str_t b);
 static inline bool grv_str_eq_cstr(grv_str_t a, char* b) {return grv_str_eq_str(a, grv_str_ref(b));}

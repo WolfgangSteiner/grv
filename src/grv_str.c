@@ -268,6 +268,22 @@ int grv_char_to_int(char c) {
     return (int)(c - '0');
 }
 
+grv_str_t grv_str_to_lower(grv_str_t str) {
+    grv_str_t res = grv_str_copy(str);
+    for (grv_str_size_t i = 0; i < str.size; ++i) {
+         res.data[i] = grv_char_to_lower(str.data[i]);
+    }
+    return res;
+}
+
+grv_str_t grv_str_to_upper(grv_str_t str) {
+    grv_str_t res = grv_str_copy(str);
+    for (grv_str_size_t i = 0; i < str.size; ++i) {
+         res.data[i] = grv_char_to_upper(str.data[i]);
+    }
+    return res;
+}
+
 bool grv_is_digit(char c) {
     return c >= '0' && c <= '9';
 }
