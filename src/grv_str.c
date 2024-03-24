@@ -236,6 +236,13 @@ bool grv_str_contains_char(grv_str_t str, char c) {
     return false;
 }
 
+bool grv_str_contains_char_insensitive(grv_str_t str, char c) {
+    for (grv_str_size_t i = 0; i < str.size; ++i) {
+        if (grv_char_to_lower(str.data[i]) == grv_char_to_lower(c)) return true;
+    }
+    return false;
+}
+
 grv_str_t grv_str_reduce_char_spans(grv_str_t str, char c) {
     grv_str_t res = grv_str_copy(str);
     char* r = str.data;
