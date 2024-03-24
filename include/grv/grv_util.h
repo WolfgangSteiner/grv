@@ -28,7 +28,16 @@ grv_strarr_t grv_util_glob(grv_str_t pattern);
 u64 grv_util_generate_uid(void);
 
 // generate random bytes
-void grv_util_random_bytes(void* buffer, u64 length);
+void grv_random_bytes(void* buffer, u64 length);
+
+// generate one random byte
+u8 grv_random_u8(void);
+
+// generate random u32 
+u32 grv_random_u32(void);
+
+// generate random u64
+u64 grv_random_u64(void);
 
 // get the current timestamp
 f32 grv_timestamp(void);

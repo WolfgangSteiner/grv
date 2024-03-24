@@ -107,24 +107,38 @@ grv_strarr_t grv_util_glob(grv_str_t pattern) {
 #define GRV_UTIL_UID_NUM_RANDOM_BITS 20
 
 u64 grv_util_generate_uid(void) {
-  u64 result = 0;
-  
-  // get the number of microseconds since the epoch
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  u64 seconds = tv.tv_sec - GRV_UTIL_EPOCH;
-  u64 miliseconds = tv.tv_usec / 1000;
-  u64 timestamp = seconds * 1000 + miliseconds;
-
-  u32 random_part;
-  grv_util_random_bytes(&random_part, sizeof(random_part));
-
-  result = (timestamp << GRV_UTIL_UID_NUM_RANDOM_BITS) | (random_part & ((1 << GRV_UTIL_UID_NUM_RANDOM_BITS) - 1));
-  return result;
+    u64 result = 0;
+    // get the number of microseconds since the epoch
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    u64 seconds = tv.tv_sec - GRV_UTIL_EPOCH;
+    u64 miliseconds = tv.tv_usec / 1000;
+    u64 timestamp = seconds * 1000 + miliseconds;
+    u32 random_part = grv_random_u32();
+    result = (timestamp << GRV_UTIL_UID_NUM_RANDOM_BITS) | (random_part & ((1 << GRV_UTIL_UID_NUM_RANDOM_BITS) - 1));
+    return result;
 } 
 
-void grv_util_random_bytes(void* buffer, size_t buffer_size) {
-  getrandom(buffer, buffer_size, 0);
+void grv_random_bytes(void* buffer, size_t buffer_size) {
+    getrandom(buffer, buffer_size, 0);
+}
+
+u8 grv_random_u8(void) {
+    u8 result = 0;
+    getrandom(&result, sizeof(u8), 0);
+    return result;
+}
+
+u32 grv_random_u32(void) {
+    u32 result = 0;
+    getrandom(&result, sizeof(u32), 0);
+    return result;
+}
+
+u64 grv_random_u64(void) {
+    u64 res = 0;
+    grv_random_bytes(&res, sizeof(res));
+    return res;
 }
 
 bool grv_cmd_available(grv_str_t cmd) {
