@@ -1,4 +1,6 @@
+#include "grv/grv_common.h"
 #include "grv/grv_util.h"
+#include "grv/grv_base.h"
 #include "grv/grv_memory.h"
 #include "grv/grv_str.h"
 #include <stdio.h>
@@ -187,5 +189,38 @@ grv_strarr_t grv_readlines(grv_str_t filename) {
   
     grv_str_free(&content);
     return result;
+}
+
+char grv_query_user(grv_str_t msg, grv_str_t choices) {
+    grv_assert(choices.size);
+    char default_choice = 0;
+    for (grv_str_size_t i = 0; i < choices.size; ++i) {
+        char choice = choices.data[i];
+        if (grv_char_is_upper(choice)) {
+            grv_assert(default_choice == 0);
+            default_choice = grv_char_to_lower(choice);
+        }
+    }
+
+query:
+    grv_str_t msg_str = grv_str_format(grv_str_ref("{str} [{str}]"), msg, choices);
+    grv_str_print(msg_str);
+    grv_str_free(&msg_str);
+    char response[16];
+    fgets(response, 16, stdin);
+    char choice = response[0];
+    if (choice == '\n') {
+        if (default_choice) {
+            return default_choice;
+        } else {
+            printf("Invalid choice. ");
+            goto query;
+        }
+    } else if (grv_str_contains_char_insensitive(choices, choice)) {
+            return grv_char_to_lower(choice);
+    } else {
+        printf("Invalid choice. ");
+        goto query;
+    }
 }
 
