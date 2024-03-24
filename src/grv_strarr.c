@@ -9,23 +9,23 @@ grv_strarr_t grv_strarr_new(void) {
     return arr;
 }
 
-grv_strarr_t grv_strarr_new_from_cstrarr(char** arr, grv_str_size_t size) {
+grv_strarr_t grv_strarr_new_from_cstrarr(char** arr, grv_strarr_size_t size) {
     grv_strarr_t r = { .size=size, .capacity=size, .arr=grv_alloc(size * sizeof(grv_str_t)) };
-    for (grv_str_size_t i = 0; i < size; i++) {
+    for (grv_strarr_size_t i = 0; i < size; i++) {
         r.arr[i] = grv_str_new(arr[i]);
     }
     return r;
 } 
 
 void grv_strarr_free(grv_strarr_t* a) {
-    for (grv_str_size_t i = 0; i < a->size; i++) {
+    for (grv_strarr_size_t i = 0; i < a->size; i++) {
         grv_str_free(&a->arr[i]);
     }
     grv_arr_free(a);
 }
 
 void grv_strarr_clear(grv_strarr_t* a) {
-    for (grv_str_size_t i = 0; i < a->size; i++) {
+    for (grv_strarr_size_t i = 0; i < a->size; i++) {
         grv_str_free(&a->arr[i]);
     }
     a->size = 0;
@@ -33,7 +33,7 @@ void grv_strarr_clear(grv_strarr_t* a) {
 
 grv_strarr_t grv_strarr_copy(grv_strarr_t arr) {
     grv_strarr_t res = {0};
-    for (grv_str_size_t i = 0; i < arr.size; ++i) {
+    for (grv_strarr_size_t i = 0; i < arr.size; ++i) {
          grv_strarr_push_copy(&res, arr.arr[i]);
     }
     return res;
@@ -60,7 +60,7 @@ grv_str_t* grv_strarr_push_front(grv_strarr_t* arr, grv_str_t str) {
 }
 
 void grv_strarr_append(grv_strarr_t* a, grv_strarr_t b) {
-    for (grv_str_size_t i = 0; i < b.size; i++) {
+    for (grv_strarr_size_t i = 0; i < b.size; i++) {
         grv_str_t* s = &b.arr[i];
         if (s->owns_data) {
             grv_strarr_push(a, grv_str_copy(*s));
@@ -93,7 +93,7 @@ void grv_strarr_remove_front(grv_strarr_t* arr) {
     }
 
     grv_str_free(&arr->arr[0]);
-    for (grv_str_size_t i = 0; i < arr->size - 1; ++i) {
+    for (grv_strarr_size_t i = 0; i < arr->size - 1; ++i) {
         arr->arr[i] = arr->arr[i + 1];
     }
     arr->size--;
@@ -109,7 +109,7 @@ void grv_strarr_remove_back(grv_strarr_t* arr) {
 
 grv_str_t grv_strarr_join(grv_strarr_t arr, grv_str_t join_str) {
     grv_str_t res = grv_str_copy(arr.arr[0]);
-    for (grv_str_size_t i = 1; i < arr.size; ++i) {
+    for (grv_strarr_size_t i = 1; i < arr.size; ++i) {
         grv_str_append(&res, join_str);
         grv_str_append(&res, arr.arr[i]);
     }
@@ -117,7 +117,7 @@ grv_str_t grv_strarr_join(grv_strarr_t arr, grv_str_t join_str) {
 }
 
 bool grv_strarr_contains_str(grv_strarr_t arr, grv_str_t str) {
-    for (grv_str_size_t i = 0; i < arr.size; ++i) {
+    for (grv_strarr_size_t i = 0; i < arr.size; ++i) {
         if (grv_str_eq(arr.arr[i], str)) {
             return true;
         }
@@ -127,7 +127,7 @@ bool grv_strarr_contains_str(grv_strarr_t arr, grv_str_t str) {
 
 grv_strarr_t grv_strarr_filter(grv_strarr_t arr, bool (*predicate)(grv_str_t)) {
     grv_strarr_t result = grv_strarr_new();
-    for (grv_str_size_t i = 0; i < arr.size; ++i) {
+    for (grv_strarr_size_t i = 0; i < arr.size; ++i) {
         if (predicate(arr.arr[i])) {
             grv_strarr_push_copy(&result, arr.arr[i]);
         }

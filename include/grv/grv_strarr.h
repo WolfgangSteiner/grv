@@ -5,18 +5,19 @@
 
 #define GRV_STRARR_DEFAULT_CAPACITY 16
 #define GRV_STRARR_GROWTH_FACTOR 2
+typedef i32 grv_strarr_size_t;
 
 typedef struct grv_strarr_t {
     grv_str_t* arr;
-    grv_str_size_t size;
-    grv_str_size_t capacity;
+    grv_strarr_size_t size;
+    grv_strarr_size_t capacity;
 } grv_strarr_t;
 
 
 grv_strarr_t grv_strarr_new(void);
-grv_strarr_t grv_strarr_new_from_cstrarr(char** cstr_arr, grv_str_size_t size);
+grv_strarr_t grv_strarr_new_from_cstrarr(char** cstr_arr, grv_strarr_size_t size);
 void grv_strarr_free(grv_strarr_t* strarr);
-static inline grv_str_size_t grv_strarr_size(grv_strarr_t strarr) { return strarr.size; }
+static inline grv_strarr_size_t grv_strarr_size(grv_strarr_t strarr) { return strarr.size; }
 
 // copy a strarr. copy owns all of the strings.
 grv_strarr_t grv_strarr_copy(grv_strarr_t arr);
@@ -37,12 +38,12 @@ grv_str_t* grv_strarr_push_copy(grv_strarr_t* strarr, grv_str_t str);
 
 void grv_strarr_append(grv_strarr_t* strarr, grv_strarr_t other);
 
-static inline grv_str_t* grv_strarr_at(grv_strarr_t strarr, grv_str_size_t index) {
+static inline grv_str_t* grv_strarr_at(grv_strarr_t strarr, grv_strarr_size_t index) {
     assert(index >= 0 && index < strarr.size);
     return &strarr.arr[index];
 }
 
-GRV_INLINE grv_str_t grv_strarr_get(grv_strarr_t strarr, grv_str_size_t index) { 
+GRV_INLINE grv_str_t grv_strarr_get(grv_strarr_t strarr, grv_strarr_size_t index) { 
     assert(index >= 0 && index < strarr.size);
     return strarr.arr[index];
 }

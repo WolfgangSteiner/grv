@@ -55,7 +55,7 @@ grv_str_t _str_format_callback_str(va_list* args, grv_str_t specifier) {
     grv_str_t str = grv_str_copy(arg);
     if (specifier.size) {
         grv_strarr_t specifier_arr = grv_str_split(specifier, grv_str_ref(","));
-        for (size_t i = 0; i < specifier_arr.size; ++i) {
+        for (grv_str_size_t i = 0; i < specifier_arr.size; ++i) {
             grv_str_t s = specifier_arr.arr[i];
             if (grv_str_starts_with_cstr(s, "color=")) {
                 _str_format_color(&str, s);

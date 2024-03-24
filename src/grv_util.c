@@ -74,10 +74,10 @@ grv_strarr_t grv_system_with_capture_cstr(char* cmd) {
 pid_t grv_fork(grv_str_t cmd, grv_strarr_t* args) {
     pid_t pid = fork();
     if (pid == 0) {
-        size_t num_args = args ? args->size : 0;
+        grv_strarr_size_t num_args = args ? args->size : 0;
         char** arg_arr = grv_alloc_zeros(sizeof(char*) * (num_args + 2));
         arg_arr[0] = grv_str_copy_to_cstr(cmd);
-        for (int i = 0; i < num_args; ++i) {
+        for (grv_strarr_size_t i = 0; i < num_args; ++i) {
             arg_arr[i+1] = grv_str_copy_to_cstr(args->arr[i]);
         }
         execvp(arg_arr[0], arg_arr);
@@ -205,25 +205,21 @@ char grv_query_user(grv_str_t msg, grv_str_t choices) {
         }
     }
 
-query:
-    grv_str_t msg_str = grv_str_format(grv_str_ref("{str} [{str}]"), msg, choices);
-    grv_str_print(msg_str);
-    grv_str_free(&msg_str);
-    char response[16];
-    fgets(response, 16, stdin);
-    char choice = response[0];
-    if (choice == '\n') {
-        if (default_choice) {
-            return default_choice;
-        } else {
-            printf("Invalid choice. ");
-            goto query;
-        }
-    } else if (grv_str_contains_char_insensitive(choices, choice)) {
-            return grv_char_to_lower(choice);
-    } else {
+    while(true) {
+        grv_str_t msg_str = grv_str_format(grv_str_ref("{str} [{str}]"), msg, choices);
+        grv_str_print(msg_str);
+        grv_str_free(&msg_str);
+        char response[16];
+        fgets(response, 16, stdin);
+        char choice = response[0];
+        if (choice == '\n') {
+            if (default_choice) {
+                return default_choice;
+            }
+        } else if (grv_str_contains_char_insensitive(choices, choice)) {
+                return grv_char_to_lower(choice);
+        } 
         printf("Invalid choice. ");
-        goto query;
     }
 }
 
