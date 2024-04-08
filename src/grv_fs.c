@@ -37,15 +37,36 @@ grv_str_t grv_fs_stem(grv_str_t path) {
   return grv_str_substr(path, 0, find_iter.pos + offset);
 }
 
-grv_strarr_t grv_fs_split_path(grv_str_t path) {
-  GRV_UNUSED(path);
-  grv_strarr_t result = {0}; // = grv_str_split(path, "/");
-  return result;
+grv_strarr_t grv_split_path(grv_str_t path) {
+    grv_strarr_t result = {0};
+    if (grv_str_empty(path)) return result;
+
+    result = grv_str_split_char(path, GRV_PATH_SEPARATOR);
+    if (grv_str_starts_with_char(path, GRV_PATH_SEPARATOR)) {
+        *grv_strarr_front(result) = grv_str_ref(GRV_PATH_SEPARATOR_STR); 
+    }
+    return result;
 }
 
-grv_str_t grv_fs_join_path(grv_strarr_t path_components) {
-  grv_str_t result = grv_strarr_join(path_components, grv_str_ref("/"));
-  return result;
+grv_str_t grv_join_path(grv_strarr_t path_components) {
+    grv_str_t path = {0};
+    if (path_components.size == 0) return path;
+    i32 idx = 0;
+    if (grv_str_eq_cstr(path_components.arr[0], GRV_PATH_SEPARATOR_STR)) {
+        path = grv_str_ref(GRV_PATH_SEPARATOR_STR);
+        idx++;
+    }
+
+    bool first = true;
+
+    while (idx < path_components.size) {
+        if (!first) grv_str_append_char(&path, GRV_PATH_SEPARATOR);
+        grv_str_append_str(&path, path_components.arr[idx]);
+        idx++;
+        first = false;
+    }
+    
+    return path;
 }
 
 void grv_path_append(grv_str_t* path_a, grv_str_t path_b) {
@@ -191,7 +212,7 @@ grv_error_t grv_make_path(grv_str_t path) {
         goto end;
     }
 
-    path_arr = grv_fs_split_path(path);
+    path_arr = grv_split_path(path);
 
     while (path_arr.size) {
         grv_path_append(&current_path, grv_strarr_pop_front(&path_arr));

@@ -9,6 +9,7 @@
     #define GRV_PATH_SEPARATOR '\\'
 #else
     #define GRV_PATH_SEPARATOR '/'
+    #define GRV_PATH_SEPARATOR_STR "/"
 #endif
 
 grv_str_t grv_fs_basename(grv_str_t path);
@@ -16,10 +17,10 @@ grv_str_t grv_fs_dirname(grv_str_t path);
 grv_str_t grv_fs_stem(grv_str_t path);
 
 // split a path into its components
-grv_strarr_t grv_fs_split_path(grv_str_t path);
+grv_strarr_t grv_split_path(grv_str_t path);
 
 // join a path from its components
-grv_str_t grv_fs_join_path(grv_strarr_t path_components); 
+grv_str_t grv_join_path(grv_strarr_t path_components); 
 
 // read a file into a grv_str
 grv_str_t grv_fs_read_file(grv_str_t path);
