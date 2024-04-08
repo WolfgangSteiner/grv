@@ -1,4 +1,5 @@
 #include "grv/grv.h"
+#include "grv/grv_fs.h"
 #include "grv/grv_str.h"
 
 char* template = 
@@ -23,6 +24,9 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
+    grv_str_t path = grv_path_dirname(grv_str_ref(filename));
+    grv_make_path(path);
+
     FILE* fp = fopen(filename, "wb");
     if (!fp) {
         grv_str_t msg = grv_str_new_with_format("Could not open %s for writing.", filename);
@@ -31,10 +35,12 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
+    grv_str_t test_func_name = grv_path_basename(grv_str_ref(name));
+
     grv_str_t msg = grv_str_new_with_format("Created new test file: %s", filename);
     grv_log_info(msg);
     grv_str_free(&msg);
-    fprintf(fp, template, name);
+    fprintf(fp, template, test_func_name);
     fclose(fp);
     return 0;
 }
