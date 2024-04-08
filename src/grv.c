@@ -5,6 +5,8 @@
 #include "grv_memory.c"
 #include "grv_fs.c"
 #include "grv_str.c"
+#include "grv_str/grv_str_append_word.c"
+#include "grv_str/grv_str_append_line.c"
 #include "grv_str/grv_str_split_char.c"
 #include "grv_str_format.c"
 #include "grv_strarr.c"
