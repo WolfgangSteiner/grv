@@ -177,21 +177,28 @@ f32 grv_local_time_f32(void) {
 }
 
 grv_strarr_t grv_readlines(grv_str_t filename) {
-    grv_strarr_t arr = grv_strarr_new();
-    grv_str_return_t result = grv_read_file(filename);
-    if (result.error != GRV_ERROR_SUCCESS) {
-        return arr;
+    grv_strarr_t result = grv_strarr_new();
+    FILE* fp = fopen(grv_str_cstr(filename), "r");
+    if (fp == NULL) {
+        return result;
     }
-    grv_str_iter_t iter = grv_str_iter_begin(&result.str);
-    
-    while (!grv_str_iter_is_end(&iter)) {
-        grv_str_t line = grv_str_iter_match_up_to_char(&iter, '\n');
-        grv_strarr_push_copy(&arr, line);
-        grv_str_iter_inc(&iter, 1);
+
+    char* line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    while ((read = getline(&line, &len, fp)) != -1) {
+        grv_str_t line_str = grv_str_ref(line);
+        line_str = grv_str_remove_trailing_newline(line_str); 
+        grv_strarr_push(&result, grv_str_copy(line_str));
+        grv_str_free(&line_str);
     }
-  
-    grv_str_free(&result.str);
-    return arr;
+
+    fclose(fp);
+    if (line) {
+        free(line);
+    }
+
+    return result;
 }
 
 char grv_query_user(grv_str_t msg, grv_str_t choices) {
