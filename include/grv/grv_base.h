@@ -54,6 +54,7 @@ GRV_INLINE i64 grv_max_value_i64(void) { return I64_MAX; }
 )()
 
 #define grv_assert(COND) assert(COND)
+#define GRV_NOT_IMPLEMENTED() assert(false)
 
 #ifdef GRV_DEBUG
     #define grv_debug_assert(COND) grv_assert(COND)
