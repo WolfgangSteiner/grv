@@ -38,7 +38,7 @@ GRV_INLINE void* grv_arr_iter_next(grv_arr_iter_t* iter) {
     return ptr;
 }
 
-#define grv_arr_element_size(ARR) (sizeof(*(ARR)->arr))
+#define grv_arr_element_size(ARR) (sizeof(*((ARR)->arr)))
 
 #define grv_arr_init(ARR) do { \
     (ARR)->capacity = GRV_ARR_INITIAL_CAPACITY;\
