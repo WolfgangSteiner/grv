@@ -138,6 +138,15 @@ grv_str_t grv_str_separate_head_back(grv_str_t* str, grv_str_t sep);
 grv_str_t grv_str_separate_tail_front(grv_str_t* str, grv_str_t sep);
 grv_str_t grv_str_separate_tail_back(grv_str_t* str, grv_str_t sep);
 
+typedef struct {
+    grv_str_t first;
+    grv_str_t second;
+} grv_strpair_t;
+grv_strpair_t grv_str_split_head_front(grv_str_t str, grv_str_t sep);
+grv_strpair_t grv_str_split_head_back(grv_str_t str, grv_str_t sep);
+grv_strpair_t grv_str_split_tail_front(grv_str_t str, grv_str_t sep);
+grv_strpair_t grv_str_split_tail_back(grv_str_t str, grv_str_t sep);
+
 bool grv_str_iter_is_end(grv_str_iter_t* iter);
 bool grv_str_iter_is_rend(grv_str_iter_t* iter);
 grv_str_iter_t grv_str_iter_begin(grv_str_t* str);
