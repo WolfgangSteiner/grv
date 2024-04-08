@@ -1,11 +1,10 @@
 #include "grv/grv_fs.h"
 #include "grv/grv_base.h"
 #include "grv/grv_memory.h"
-#include "grv/grv_str.h"
+#include "grv/grv_path.h"
 #include "grv/grv_cstr.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <assert.h>
 #include <errno.h>
 
 #ifdef _WIN32
@@ -15,69 +14,7 @@
   #include <dirent.h>
 #endif
 
-grv_str_t grv_fs_basename(grv_str_t path) {
-  if (!grv_str_contains_char(path, GRV_PATH_SEPARATOR)) return path;
-  grv_str_iter_t find_iter = grv_str_rfind_char(&path, GRV_PATH_SEPARATOR);
-  return grv_str_substr(path, find_iter.pos + 1, path.size - find_iter.pos - 1);
-}
 
-grv_str_t grv_fs_dirname(grv_str_t path) {
-  if (grv_str_eq_cstr(path, "/")) return grv_str_ref("/");
-  if (grv_str_ends_with_char(path, GRV_PATH_SEPARATOR)) path = grv_str_substr(path, 0, path.size - 1); 
-  if (!grv_str_contains_char(path, GRV_PATH_SEPARATOR)) return grv_str_ref(".");
-  grv_str_iter_t find_iter = grv_str_rfind_char(&path, GRV_PATH_SEPARATOR);
-  return grv_str_substr(path, 0, find_iter.pos);
-}
-
-grv_str_t grv_fs_stem(grv_str_t path) {
-  grv_str_t basename = grv_fs_basename(path);
-  if (!grv_str_contains_char(basename, '.')) return path;
-  grv_str_iter_t find_iter = grv_str_rfind_char(&basename, '.');
-  grv_str_size_t offset = basename.data - path.data;
-  return grv_str_substr(path, 0, find_iter.pos + offset);
-}
-
-grv_strarr_t grv_split_path(grv_str_t path) {
-    grv_strarr_t result = {0};
-    if (grv_str_empty(path)) return result;
-
-    result = grv_str_split_char(path, GRV_PATH_SEPARATOR);
-    if (grv_str_starts_with_char(path, GRV_PATH_SEPARATOR)) {
-        *grv_strarr_front(result) = grv_str_ref(GRV_PATH_SEPARATOR_STR); 
-    }
-    return result;
-}
-
-grv_str_t grv_join_path(grv_strarr_t path_components) {
-    grv_str_t path = {0};
-    if (path_components.size == 0) return path;
-    i32 idx = 0;
-    if (grv_str_eq_cstr(path_components.arr[0], GRV_PATH_SEPARATOR_STR)) {
-        path = grv_str_ref(GRV_PATH_SEPARATOR_STR);
-        idx++;
-    }
-
-    bool first = true;
-
-    while (idx < path_components.size) {
-        if (!first) grv_str_append_char(&path, GRV_PATH_SEPARATOR);
-        grv_str_append_str(&path, path_components.arr[idx]);
-        idx++;
-        first = false;
-    }
-    
-    return path;
-}
-
-void grv_path_append(grv_str_t* path_a, grv_str_t path_b) {
-    grv_str_append_char(path_a, GRV_PATH_SEPARATOR);
-    grv_str_append_str(path_a, path_b);
-}
-
-void grv_path_prepend(grv_str_t* path, grv_str_t prefix_path) {
-    grv_str_prepend_char(path, GRV_PATH_SEPARATOR);
-    grv_str_prepend_str(path, prefix_path);
-}
 
 grv_str_t grv_fs_read_file(grv_str_t path) {
   grv_str_t result = {0};
@@ -111,18 +48,6 @@ bool grv_fs_is_file_newer_than(grv_str_t filename, grv_str_t other_filename) {
     int mod_time_a = grv_fs_file_mod_time(filename);
     int mod_time_b = grv_fs_file_mod_time(other_filename);
     return mod_time_a > mod_time_b;
-}
-
-grv_str_t grv_expand_tilde(grv_str_t path) {
-    if (grv_str_starts_with_char(path, '~')) {
-        char* home_path = getenv("HOME");
-        if (home_path == NULL) {
-            grv_log_error(grv_str_ref("HOME environmental variable not found."));
-            assert(false);
-        }
-        return grv_str_cat(grv_str_ref(home_path), grv_str_substr(path, 1, -1));
-    }
-    return grv_str_copy(path);
 }
 
 grv_read_directory_return_t grv_read_directory(grv_str_t directory_path) {
@@ -212,7 +137,7 @@ grv_error_t grv_make_path(grv_str_t path) {
         goto end;
     }
 
-    path_arr = grv_split_path(path);
+    path_arr = grv_path_split(path);
 
     while (path_arr.size) {
         grv_path_append(&current_path, grv_strarr_pop_front(&path_arr));

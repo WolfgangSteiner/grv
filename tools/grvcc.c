@@ -2,7 +2,7 @@
 #include "grv/grv_strarr.h"
 #include "grv/grv_log.h"
 #include "grv/grv_util.h"
-#include "grv/grv_fs.h"
+#include "grv/grv_path.h"
 #include <stdlib.h>
 
 #define CC "gcc"
@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
             exit(1);
         }
         grv_str_t dst_file = grv_str_substr(*src_file, 0, -3);
-        dst_file = grv_fs_basename(dst_file);
+        dst_file = grv_path_basename(dst_file);
         grv_str_append_cstr(&cmd, " -o");
         grv_str_append_str(&cmd, dst_file);
         grv_str_append_space(&cmd);

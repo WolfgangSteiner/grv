@@ -7,6 +7,7 @@
 #include "grv_strarr.h"
 #include "grv_cstr.h"
 #include "grv_util.h"
+#include "grv_path.h"
 #include "grv_fs.h"  
 #include "grv_log.h"
 #include "grv_memory.h"
