@@ -7,6 +7,7 @@
 #include "grv_str.c"
 #include "grv_str/grv_str_append_word.c"
 #include "grv_str/grv_str_append_line.c"
+#include "grv_str/grv_str_remove_trailing_newline.c"
 #include "grv_str/grv_str_split_char.c"
 #include "grv_str/grv_str_split_head_front.c"
 #include "grv_str/grv_str_to_snake_case.c"

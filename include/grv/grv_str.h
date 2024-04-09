@@ -111,7 +111,7 @@ grv_str_t grv_str_lstrip(grv_str_t);
 grv_str_t grv_str_lstrip_char(grv_str_t, char);
 grv_str_t grv_str_rstrip_char(grv_str_t, char);
 grv_str_t grv_str_strip_char(grv_str_t, char);
-GRV_INLINE grv_str_t grv_str_remove_trailing_newline(grv_str_t str) { return grv_str_rstrip_char(str, '\n'); }
+grv_str_t grv_str_remove_trailing_newline(grv_str_t str);
 
 typedef grv_str_t(*grv_str_format_callback_t)(va_list*, grv_str_t pattern);
 grv_str_t grv_str_format(grv_str_t fmt, ...); 
