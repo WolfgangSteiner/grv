@@ -7,7 +7,7 @@ char* template =
     "#include \"grv/grv.h\"\n"
     "\n"
     "GRV_TEST_BEGIN_NEW(%s)\n"
-    "\n"
+    "   GRV_TEST_FAIL()\n"
     "GRV_TEST_END_NEW()\n";
 
 int main(int argc, char** argv) {
