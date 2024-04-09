@@ -799,10 +799,12 @@ int grvbld_test(grvbld_config_t* config, char* src_file) {
     char* src_path = grvbld_dirname(src_file);
     char* dst_path = grvbld_path_construct(config->build_dir, "test", grvbld_dirname(test_name), NULL);
 
-    bool make_path_ok = make_path(dst_path);
-    if (!make_path_ok) {
-        log_error("failed to create path \"%s\"", dst_path);
-        exit(1);
+    if (!has_directory(dst_path)) {
+        bool make_path_ok = make_path(dst_path);
+        if (!make_path_ok) {
+            log_error("failed to create path \"%s\"", dst_path);
+            exit(1);
+        }
     }
 
     char* dst_file = grvbld_path_construct(config->build_dir, "test", test_name, NULL);
@@ -814,7 +816,6 @@ int grvbld_test(grvbld_config_t* config, char* src_file) {
 
     bool is_src_file = grvbld_cstr_starts_with(src_path, "src/");
     if (is_src_file) cmd = grvbld_cstr_append_arg(cmd, "-DGRV_TEST_COMPILE");
-
 
     int result = grvbld_execute_build_cmd(config, cmd);
     if (result != 0) {
