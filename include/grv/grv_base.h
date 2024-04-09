@@ -21,26 +21,27 @@ typedef int64_t i64;
 typedef float f32;
 typedef double f64;
 
-#define U8_MAX UINT8_MAX
-#define U16_MAX UINT16_MAX 
-#define U32_MAX UINT32_MAX
-#define I8_MIN INT8_MIN
-#define I8_MAX INT8_MAX
-#define I16_MIN INT16_MIN
-#define I16_MAX INT16_MAX
-#define I32_MIN INT32_MIN
-#define I32_MAX INT32_MAX
-#define U64_MAX UINT64_MAX
-#define I64_MAX INT64_MAX
+#define GRV_MAX_U8 UINT8_MAX
+#define GRV_MAX_U16 UINT16_MAX 
+#define GRV_MAX_U32 UINT32_MAX
+#define GRV_MAX_U64 UINT64_MAX
+#define GRV_MIN_I8 INT8_MIN
+#define GRV_MAX_I8 INT8_MAX
+#define GRV_MIN_I16 INT16_MIN
+#define GRV_MAX_I16 INT16_MAX
+#define GRV_MIN_I32 INT32_MIN
+#define GRV_MAX_I32 INT32_MAX
+#define GRV_MIN_I64 INT64_MIN
+#define GRV_MAX_I64 INT64_MAX
 
-GRV_INLINE u8 grv_max_value_u8(void) { return U8_MAX; }
-GRV_INLINE u16 grv_max_value_u16(void) { return U16_MAX; }
-GRV_INLINE u32 grv_max_value_u32(void) { return U32_MAX; }
-GRV_INLINE u64 grv_max_value_u64(void) { return U64_MAX; }
-GRV_INLINE i8 grv_max_value_i8(void) { return I8_MAX; }
-GRV_INLINE i16 grv_max_value_i16(void) { return I16_MAX; }
-GRV_INLINE i32 grv_max_value_i32(void) { return I32_MAX; }
-GRV_INLINE i64 grv_max_value_i64(void) { return I64_MAX; }
+GRV_INLINE u8 grv_max_value_u8(void) { return GRV_MAX_U8; }
+GRV_INLINE u16 grv_max_value_u16(void) { return GRV_MAX_U16; }
+GRV_INLINE u32 grv_max_value_u32(void) { return GRV_MAX_U32; }
+GRV_INLINE u64 grv_max_value_u64(void) { return GRV_MAX_U64; }
+GRV_INLINE i8 grv_max_value_i8(void) { return GRV_MAX_I8; }
+GRV_INLINE i16 grv_max_value_i16(void) { return GRV_MAX_I16; }
+GRV_INLINE i32 grv_max_value_i32(void) { return GRV_MAX_I32; }
+GRV_INLINE i64 grv_max_value_i64(void) { return GRV_MAX_I64; }
 
 #define GRV_MAX_VALUE(VALUE) _Generic((VALUE), \
     u8: grv_max_value_u8, \
