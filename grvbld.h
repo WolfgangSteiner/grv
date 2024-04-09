@@ -655,6 +655,8 @@ GRVBLD_INLINE char* grvbld_build_cmd(grvbld_config_t* config) {
 
     if (config->debug) {
         cmd = grvbld_cstr_append_arg(cmd, "-g");
+    } else {
+        cmd = grvbld_cstr_append_arg(cmd, "-O2");
     }
 
     if (config->treat_warnings_as_errors) {
