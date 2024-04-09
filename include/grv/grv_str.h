@@ -199,6 +199,9 @@ grv_str_t grv_str_iter_match_up_to_str(grv_str_iter_t* iter, grv_str_t match_str
 grv_str_t grv_str_iter_match_word(grv_str_iter_t* iter);
 bool grv_str_iter_eq_str(grv_str_iter_t* iter, grv_str_t match_str);
 
+grv_str_t grv_str_to_snake_case(grv_str_t str);
+
+
 #ifndef GRV_NO_SHORT_NAMES
 typedef grv_str_t str_t;
 typedef grv_str_iter_t str_iter_t;
