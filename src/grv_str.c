@@ -11,6 +11,14 @@
 #define GRV_STR_MIN_CAPACITY_16
 #define GRV_STR_ALLOC_GRANULARITY 16
 
+#include "grv_str/grv_str_append_word.c"
+#include "grv_str/grv_str_append_line.c"
+#include "grv_str/grv_str_remove_trailing_newline.c"
+#include "grv_str/grv_str_lstrip.c"
+#include "grv_str/grv_str_split_char.c"
+#include "grv_str/grv_str_split_head_front.c"
+#include "grv_str/grv_str_to_snake_case.c"
+
 typedef struct {
     char* data;
     grv_str_size_t capacity;
@@ -99,16 +107,6 @@ grv_str_t grv_str_substr_with_iters(grv_str_iter_t start_iter, grv_str_iter_t en
         .is_valid=start_iter.str->is_valid,
         .owns_data=false
     };
-    return res;
-}
-
-grv_str_t grv_str_lstrip(grv_str_t str) {
-    grv_str_t res = str;
-    res.owns_data = false;
-    while (res.size && grv_is_whitespace(res.data[0])) {
-        res.data++;
-        res.size--;
-    }
     return res;
 }
 
