@@ -60,6 +60,7 @@ grv_str_t grv_str_to_upper(grv_str_t str);
 bool grv_str_eq_str(grv_str_t a, grv_str_t b);
 static inline bool grv_str_eq_cstr(grv_str_t a, char* b) {return grv_str_eq_str(a, grv_str_ref(b));}
 #define grv_str_eq(a, b) _Generic((b), grv_str_t: grv_str_eq_str, char*: grv_str_eq_cstr)(a,b)
+int grv_str_compare(grv_str_t a, grv_str_t b);
 
 bool grv_str_contains_str(grv_str_t, grv_str_t);
 static inline bool grv_str_contains_cstr(grv_str_t a, char* b) {return grv_str_contains_str(a, grv_str_ref(b));}

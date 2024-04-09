@@ -1,3 +1,4 @@
+#include "grv_arr.c"
 #include "grv_common.c"
 #include "grv_cstr.c"
 #include "grv_log.c"

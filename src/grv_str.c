@@ -13,6 +13,7 @@
 
 #include "grv_str/grv_str_append_word.c"
 #include "grv_str/grv_str_append_line.c"
+#include "grv_str/grv_str_compare.c"
 #include "grv_str/grv_str_get_word.c"
 #include "grv_str/grv_str_remove_trailing_newline.c"
 #include "grv_str/grv_str_lstrip.c"

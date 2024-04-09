@@ -77,6 +77,12 @@ GRV_INLINE void* grv_arr_iter_next(grv_arr_iter_t* iter) {
     (ARR)->size--; \
 } while (0)
 
+void grv_arr_sort_impl(void* arr, size_t size, size_t element_size, int(*compare_func)(void*,void*));
+
+#define grv_arr_sort(ARR, COMPARE_FUNC) do { \
+    grv_arr_sort_impl((ARR)->arr, (ARR)->size, grv_arr_element_size(ARR), COMPARE_FUNC); \
+} while (0) 
+
 #ifdef __GNUC__
     static inline void* _grv_arr_front(void* arr, size_t size) {
         grv_assert(size > 0);

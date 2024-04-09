@@ -25,6 +25,10 @@ GRV_INLINE size_t grv_max_size_t(size_t a, size_t b) { return a > b ? a : b; }
 GRV_INLINE f32 grv_min_f32(f32 a, f32 b) { return a < b ? a : b; }
 GRV_INLINE f32 grv_max_f32(f32 a, f32 b) { return a > b ? a : b; }
 
+#define GRV_MIN(a, b) ((a) < (b) ? (a) : (b))
+#define GRV_MAX(a, b) ((a) > (b) ? (a) : (b))
+#define GRV_COMPARE(a, b) ((a) < (b) ? -1 : (a) > (b) ? 1 : 0)
+
 GRV_INLINE i32 grv_clamp_i32(i32 x, i32 a, i32 b) { return x < a ? a : x > b ? b : x; }
 GRV_INLINE f32 grv_clamp_f32(f32 x, f32 a, f32 b) { return x < a ? a : x > b ? b : x; }
 
@@ -44,5 +48,5 @@ bool grv_char_is_lower(char c);
 bool grv_char_is_upper(char c);
 char grv_char_to_lower(char c);
 char grv_char_to_upper(char c);
-
+GRV_INLINE int grv_char_compare(char a, char b) { return a < b ? -1 : a > b ? 1 : 0; }
 #endif
