@@ -108,6 +108,7 @@ grv_str_t grv_str_copy(grv_str_t str);
 grv_str_t grv_str_repeat_char(char c, i32 count);
 
 grv_str_t grv_str_lstrip(grv_str_t);
+grv_str_t grv_str_rstrip(grv_str_t);
 grv_str_t grv_str_lstrip_char(grv_str_t, char);
 grv_str_t grv_str_rstrip_char(grv_str_t, char);
 grv_str_t grv_str_strip_char(grv_str_t, char);

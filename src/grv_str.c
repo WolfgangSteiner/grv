@@ -15,8 +15,10 @@
 #include "grv_str/grv_str_append_line.c"
 #include "grv_str/grv_str_remove_trailing_newline.c"
 #include "grv_str/grv_str_lstrip.c"
+#include "grv_str/grv_str_rstrip.c"
 #include "grv_str/grv_str_split_char.c"
 #include "grv_str/grv_str_split_head_front.c"
+#include "grv_str/grv_str_substr_with_iters.c"
 #include "grv_str/grv_str_to_snake_case.c"
 
 typedef struct {
@@ -96,18 +98,6 @@ grv_str_t grv_str_substr(grv_str_t str, grv_str_size_t start, grv_str_size_t len
         .size=size,
         .is_valid=str.is_valid,
         .owns_data=false};
-}
-
-grv_str_t grv_str_substr_with_iters(grv_str_iter_t start_iter, grv_str_iter_t end_iter) {
-    grv_assert(start_iter.str == end_iter.str);
-    grv_assert(start_iter.pos <= end_iter.pos);
-    grv_str_t res = {
-        .data=start_iter.str->data + start_iter.pos,
-        .size=end_iter.pos - start_iter.pos,
-        .is_valid=start_iter.str->is_valid,
-        .owns_data=false
-    };
-    return res;
 }
 
 grv_str_t grv_str_lstrip_char(grv_str_t str, char c) {
