@@ -133,6 +133,8 @@ struct grv_strarr_t grv_str_split_char(grv_str_t str, char sep);
 struct grv_strarr_t grv_str_split_whitespace(grv_str_t str);
 grv_str_t grv_str_split_tail_from_front(grv_str_t str, grv_str_t sep);
 
+grv_str_t grv_str_get_word(grv_str_t str, i32 idx);
+
 grv_str_iter_t grv_str_find_str(grv_str_t* str, grv_str_t match_str);
 grv_str_iter_t grv_str_rfind_str(grv_str_t* str, grv_str_t match_str);
 
