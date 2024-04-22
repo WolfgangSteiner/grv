@@ -303,7 +303,7 @@ bool grv_is_digit(char c) {
 }
 
 bool grv_is_whitespace(char c) {
-    return c == ' ' || c == '\t' || c == '\n';
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
 bool grv_is_word_separator(char c) {
