@@ -22,6 +22,11 @@ typedef struct {
 
 // create grv_str, no ownership
 grv_str_t grv_str_ref(char* cstr);
+GRV_INLINE grv_str_t grv_str_ref_str(grv_str_t str) { 
+    grv_str_t res = str;
+    res.owns_data = false;
+    return res;
+}
 
 // create grv_str by copying cstr
 grv_str_t grv_str_new(char* cstr);
