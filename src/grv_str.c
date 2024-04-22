@@ -18,6 +18,7 @@
 #include "grv_str/grv_str_rstrip.c"
 #include "grv_str/grv_str_split_char.c"
 #include "grv_str/grv_str_split_head_front.c"
+#include "grv_str/grv_str_strip.c"
 #include "grv_str/grv_str_substr_with_iters.c"
 #include "grv_str/grv_str_to_snake_case.c"
 
