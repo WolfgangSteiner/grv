@@ -584,15 +584,12 @@ bool grvbld_cmd_available(char* cmd) {
     return result;
 }
 
-char* grvbld_add_diagnostics_filter(char* cmd) {
-    char* sed_command = "sed -n -e '/\\(warning\\|error\\):/ { s/\\(warning\\)/\\o033[33m\\1\\o033[0m/; s/\\(error\\)/\\o033[31m\\1\\o033[0m/; s/^/        /; p }'";
-    cmd = grvbld_cstr_append_arg(cmd, "2>&1 | ");
-    return grvbld_cstr_append_arg(cmd, sed_command);
-}
-
 int grvbld_execute_build_cmd(grvbld_config_t* config, char* cmd) {
     if (config->verbosity > 0) log_info("%s", cmd);
-    if (config->verbosity < 2) cmd = grvbld_add_diagnostics_filter(cmd);
+    if (config->verbosity < 2) {
+        cmd = grvbld_cstr_append_arg(cmd, "-fno-diagnostics-show-option");
+        cmd = grvbld_cstr_append_arg(cmd, "-fno-diagnostics-show-caret");
+    }
     return system(cmd);
 }
 
