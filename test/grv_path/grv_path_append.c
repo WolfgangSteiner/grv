@@ -22,6 +22,14 @@ GRV_TEST_BEGIN_NEW(grv_path_append)
     GRV_TEST_EQUAL_STR(p, "/usr/bin/sub/");
     
     grv_path_append(&p, grv_str_ref("sub2"));
-    GRV_TEST_EQUAL_STR(p, "usr/bin/sub/sub2");
+    GRV_TEST_EQUAL_STR(p, "/usr/bin/sub/sub2");
+
+    p = grv_str_ref("");
+    grv_path_append(&p, grv_str_ref("/usr"));
+    GRV_TEST_EQUAL_STR(p, "/usr");
+
+    p = grv_str_ref("/");
+    grv_path_append(&p, grv_str_ref("/usr"));
+    GRV_TEST_EQUAL_STR(p, "/usr");
 
 GRV_TEST_END_NEW()
