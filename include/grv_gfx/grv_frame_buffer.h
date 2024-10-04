@@ -35,7 +35,7 @@ recti_t* grv_clipping_stack_top(grv_clipping_stack_t* stack);
 
 typedef struct {
     grv_frame_buffer_type_t type;
-    i32 width, height;
+    i32 width, height, row_skip;
     color_palette_t palette;
     u8 clear_color_u8;
     u8* indexed_data;
@@ -47,6 +47,7 @@ typedef struct {
 
 void grv_frame_buffer_init(grv_frame_buffer_t* frame_buffer, grv_frame_buffer_type_t type, i32 width, i32 height);
 void grv_frame_buffer_clear(grv_frame_buffer_t* frame_buffer);
+void grv_frame_buffer_fill_u8(grv_frame_buffer_t* frame_buffer, u8 color);
 recti_t grv_frame_buffer_get_clipping_rect(grv_frame_buffer_t* fb);
 u8* grv_frame_buffer_pixel_address_u8(grv_frame_buffer_t* fb, i32 x, i32 y);
 void grv_frame_buffer_clear_span_buffer(grv_frame_buffer_t* fb);
