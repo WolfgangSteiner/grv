@@ -8,7 +8,7 @@
     #define GRV_PATH_SEPARATOR '\\'
 #else
     #define GRV_PATH_SEPARATOR '/'
-    #define GRV_PATH_SEPARATOR_STR "/"
+    #define GRV_PATH_SEPARATOR_CSTR "/"
 #endif
 
 grv_str_t grv_path_basename(grv_str_t path);

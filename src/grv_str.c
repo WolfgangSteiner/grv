@@ -1,4 +1,5 @@
 #include "grv/grv_str.h"
+#include "grv/grv_error.h"
 #include "grv/grv_strarr.h"
 #include "grv/grv_base.h"
 #include "grv/grv_common.h"
@@ -23,6 +24,7 @@
 #include "grv_str/grv_str_strip.c"
 #include "grv_str/grv_str_substr_with_iters.c"
 #include "grv_str/grv_str_to_snake_case.c"
+#include "grv_str/grv_str_read_from_file.c"
 
 typedef struct {
     char* data;
@@ -92,7 +94,7 @@ char* grv_str_copy_to_cstr(grv_str_t str) {
     memcpy(cstr, str.data, str.size);
     cstr[str.size] = '\0';
     return cstr;
-}   
+}
 
 grv_str_t grv_str_substr(grv_str_t str, grv_str_size_t start, grv_str_size_t length) {
     grv_str_size_t size = length > 0 ? length : str.size - start + length + 1;
@@ -180,33 +182,32 @@ grv_str_t grv_get_line(grv_str_iter_t* iter) {
     return result;
 }
 
-grv_str_return_t grv_read_file(grv_str_t file_name) {
-    grv_str_return_t result = {0};
-    FILE* fp = fopen(grv_str_cstr(file_name), "rb");
-    if (fp == 0) {
-        result.error = GRV_ERROR_FILE_NOT_READABLE;
-        return result;
-    }
-    size_t buffer_size = 1024;
-    char* buffer = grv_alloc(buffer_size);
-    size_t bytes_read;
-    while ((bytes_read = fread(buffer, sizeof(char), buffer_size, fp)) > 0) {
-        grv_str_t new_str = {.data=buffer, .size=bytes_read};
-        grv_str_append_str(&result.str, new_str);
-    }
-    grv_free(buffer);
-    fclose(fp);
-    return result;
-}
-
-grv_error_t grv_str_write_to_file(grv_str_t str, grv_str_t filename) {
+bool grv_str_write_to_file(grv_str_t str, grv_str_t filename, grv_error_t* error) {
+    bool success = true;
     FILE* fp = fopen(grv_str_cstr(filename), "wb");
     if (fp == 0) {
-        return GRV_ERROR_FILE_NOT_WRITABLE;
+        if (error) {
+            *error = grv_error_create_msg_arg(
+                GRV_ERROR_FILE_NOT_WRITABLE,
+                grv_str_ref(_grv_error_file_not_writable_cstr),
+                filename);
+        }
+        success = false;
+        goto end;
     }
-    fwrite(str.data, str.size, 1, fp);
-    fclose(fp);
-    return GRV_ERROR_SUCCESS;
+    unsigned long bytes_written = fwrite(str.data, str.size, 1, fp);
+    if (bytes_written != str.size) {
+        if (error) {
+            *error = grv_error_create_msg_arg(
+                GRV_ERROR_FILE_NO_CAPACITY,
+                grv_str_ref(_grv_error_file_no_capacity_cstr),
+                filename);
+        }
+        success = false;
+    }
+end:
+    if (fp) fclose(fp);
+    return success;
 }
 
 bool grv_file_exists(grv_str_t file_name) {

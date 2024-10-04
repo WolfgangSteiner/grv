@@ -2,23 +2,14 @@
 #define GRV_STR_H
 
 #include "grv_base.h"
+#include "grv_str_typedef.h"
+#include "grv_error.h"
 #include <stdarg.h>
 
-typedef i32 grv_str_size_t;
+#include "grv_result_type.h"
+GRV_RESULT_TYPE_DECL(grv_str_t);
 
 struct grv_strarr_t;
-
-typedef struct {
-    char* data;
-    grv_str_size_t size;
-    bool is_valid;
-    bool owns_data;
-} grv_str_t;
-
-typedef struct {
-    grv_str_t* str;
-    grv_str_size_t pos;
-} grv_str_iter_t;
 
 // create grv_str, no ownership
 grv_str_t grv_str_ref(char* cstr);
@@ -167,13 +158,8 @@ GRV_INLINE grv_str_iter_t grv_str_iter_rend(grv_str_t* str) { return (grv_str_it
 void grv_str_print(grv_str_t str);
 grv_str_t grv_get_line(grv_str_iter_t* iter);
 
-typedef struct {
-    grv_str_t str;
-    grv_error_t error;
-} grv_str_return_t;
-
-grv_str_return_t grv_read_file(grv_str_t file_name);
-grv_error_t grv_str_write_to_file(grv_str_t str, grv_str_t file_name);
+bool grv_str_read_from_file(grv_str_t file_name, grv_str_t* str, grv_error_t* error);
+bool grv_str_write_to_file(grv_str_t str, grv_str_t file_name, grv_error_t* error);
 bool grv_file_exists(grv_str_t file_name);
 
 int grv_char_to_int(char c);
