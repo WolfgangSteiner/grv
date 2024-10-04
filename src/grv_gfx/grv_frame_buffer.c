@@ -165,3 +165,31 @@ void grv_frame_buffer_fill_rect_u8(grv_frame_buffer_t* fb, recti_t rect, u8 colo
         memset(pixel, color, rect.w);
     }
 }
+
+void grv_framebuffer_blit_img8(grv_frame_buffer_t* fb, grv_img8_t* img, i32 x, i32 y) {
+    i32 x_start = x;
+    i32 x_end = x + img->w - 1;
+    i32 y_start = y;
+    i32 y_end = y + img->h - 1;
+    if (x_start >= fb->width || x_end < 0 || y_start >= fb->height || y_end < 0) return;
+
+    x_start = grv_clamp_i32(x_start, 0, fb->width - 1);
+    x_end = grv_clamp_i32(x_end, 0, fb->width - 1);
+    y_start = grv_clamp_i32(y_start, 0, fb->height - 1);
+    y_end = grv_clamp_i32(y_end, 0, fb->height - 1);
+
+    u8* src_row_ptr = img->pixel_data + (y_start - y) * img->row_skip + (x_start - x);
+    u8* dst_row_ptr = fb->indexed_data + y_start * fb->width + x_start;
+    for (i32 iy = y_start; iy <= y_end; ++iy) {
+        u8* src_ptr = src_row_ptr;
+        u8* dst_ptr = dst_row_ptr;
+        for (i32 ix = x_start; ix <= x_end; ++ix) {
+            u8 src_value = *src_ptr++;
+            if (src_value > 0) *dst_ptr = src_value;
+            dst_ptr++;
+        }
+        src_row_ptr += img->row_skip;
+        dst_row_ptr += fb->width;
+    }    
+}
+
