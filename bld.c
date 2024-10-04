@@ -2,7 +2,7 @@
 
 static void build_exe(grvbld_config_t* config, char* src_file) {
     char* name = grvbld_cstr_filename(src_file);
-    grvbld_cstr_remove_ext(name);
+    name = grvbld_cstr_remove_ext(name);
     grvbld_target_t* target = grvbld_target_create_executable(name);
     grvbld_target_add_src(target, src_file);
     grvbld_target_link_library(target, "grv");
