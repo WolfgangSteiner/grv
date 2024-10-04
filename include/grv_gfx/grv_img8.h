@@ -12,5 +12,6 @@ typedef struct {
 } grv_img8_t;
 
 bool grv_img8_load_from_bmp(grv_str_t file_name, grv_img8_t* img, grv_error_t* error);
+grv_img8_t grv_img8_from_str(grv_str_t input, i32 width, i32 height);
 
 #endif

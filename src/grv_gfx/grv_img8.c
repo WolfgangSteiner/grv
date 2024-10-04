@@ -117,4 +117,24 @@ end:
     return err;
 }
 
+void _grv_img8_parse_str(u8* dst, grv_str_t input, i32 width, i32 height) {
+    grv_assert(input.size >= width * height);
+    char* src = input.data;
+    for (int row = 0; row < height; ++row) {
+        for (int col = 0; col < width; ++col) {
+            char c = *src++;
+            c = (c == ' ') ? 0 : c - '0';
+            *dst++ = c;
+        }
+    }
+}
+
+grv_img8_t grv_img8_from_str(grv_str_t input, i32 width, i32 height) {
+    assert(width * height <= input.size);
+    u8* pixel_data = grv_alloc(width * height);
+    _grv_img8_parse_str(pixel_data, input, width, height);
+    grv_img8_t img = {.w=width, .h=height, .row_skip=width, .pixel_data=pixel_data };
+    return img;
+}
+
 
