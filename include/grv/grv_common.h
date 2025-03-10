@@ -30,6 +30,7 @@ GRV_INLINE f32 grv_max_f32(f32 a, f32 b) { return a > b ? a : b; }
 #define GRV_COMPARE(a, b) ((a) < (b) ? -1 : (a) > (b) ? 1 : 0)
 
 GRV_INLINE i32 grv_clamp_i32(i32 x, i32 a, i32 b) { return x < a ? a : x > b ? b : x; }
+GRV_INLINE i64 grv_clamp_i64(i64 x, i64 a, i64 b) { return x < a ? a : x > b ? b : x; }
 GRV_INLINE f32 grv_clamp_f32(f32 x, f32 a, f32 b) { return x < a ? a : x > b ? b : x; }
 
 GRV_INLINE bool grv_is_in_range_f32(f32 x, f32 a, f32 b) { return x >= a && x < b; }
