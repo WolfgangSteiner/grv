@@ -891,7 +891,7 @@ GRVBLD_INLINE int grvbld_build_static_library(grvbld_config_t* config, grvbld_ta
         make_path(data_obj_dir);
         data_dst = grvbld_cstr_prepend_path(data_dst, data_obj_dir);
         data_dst = grvbld_cstr_append(data_dst, ".o");
-        char* ld_cmd = grvbld_cstr_new_with_format("ld -r -b binary -o %s %s", data_dst, data_src);
+        char* ld_cmd = grvbld_cstr_new_with_format("ld -r -b binary -o %s -z noexecstack %s", data_dst, data_src);
         log_info("%s", ld_cmd);
         system(ld_cmd);
         ar_cmd = grvbld_cstr_append_arg(ar_cmd, data_dst);
