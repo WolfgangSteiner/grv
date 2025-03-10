@@ -941,7 +941,7 @@ GRVBLD_INLINE int grvbld_build_target(grvbld_config_t* config, grvbld_target_t* 
         int result = grvbld_execute_build_cmd(config, cmd);
 
         if (result == 0 && target->run_after_build) {
-            char* debug_cmd = grvbld_cstr_new_with_format("gdb -q -ex run -ex quit %s", dst_file);
+            char* debug_cmd = grvbld_cstr_new_with_format("gdb -tui -q -ex run %s", dst_file);
             system(debug_cmd);
         }
         return result;
