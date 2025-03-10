@@ -80,4 +80,22 @@ GRV_INLINE grv_fixed32_t grv_fixed32_neg(grv_fixed32_t a) {
     return (grv_fixed32_t) { .val = -a.val };
 }
 
+GRV_INLINE grv_fixed32_t grv_fixed32_min(grv_fixed32_t a, grv_fixed32_t b) {
+    i32 val = a.val < b.val ? a.val : b.val;
+    return (grv_fixed32_t) { .val=val };
+}
+
+GRV_INLINE grv_fixed32_t grv_fixed32_max(grv_fixed32_t a, grv_fixed32_t b) {
+    i32 val = a.val > b.val ? a.val : b.val;
+    return (grv_fixed32_t) { .val=val };
+}
+
+GRV_INLINE grv_fixed32_t grv_fixed32_clamp(
+    grv_fixed32_t a,
+    grv_fixed32_t b,
+    grv_fixed32_t c) {
+    i32 val = a.val < b.val ? b.val : a.val > c.val ? c.val : a.val;
+    return (grv_fixed32_t) { .val=val };
+}
+
 #endif
