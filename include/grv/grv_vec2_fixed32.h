@@ -53,4 +53,14 @@ GRV_INLINE grv_vec2_fixed32_t grv_vec2_fixed32_smula(
     };
 }
 
+GRV_INLINE grv_vec2_fixed32_t grv_vec2_fixed32_clamp(
+    grv_vec2_fixed32_t a,
+    grv_vec2_fixed32_t b,
+    grv_vec2_fixed32_t c) {
+    return (grv_vec2_fixed32_t) {
+        .x=grv_fixed32_clamp(a.x, b.x, c.x),
+        .y=grv_fixed32_clamp(a.y, b.y, c.y)
+    };
+}
+
 #endif
