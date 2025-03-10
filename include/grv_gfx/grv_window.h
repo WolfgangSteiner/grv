@@ -6,8 +6,25 @@
 #include "grv_frame_buffer.h"
 #include "grv/grv_arr.h"
 
+typedef enum {
+    GRV_WINDOW_HORIZONTAL_ALIGN_CENTER,
+    GRV_WINDOW_HORIZONTAL_ALIGN_LEFT,
+    GRV_WINDOW_HORIZONTAL_ALIGN_RIGHT,
+    GRV_WINDOW_HORIZONTAL_ALIGN_NONE
+} grv_window_horizontal_align_t;
+
+typedef enum {
+    GRV_WINDOW_VERTICAL_ALIGN_CENTER,
+    GRV_WINDOW_VERTICAL_ALIGN_TOP,
+    GRV_WINDOW_VERTICAL_ALIGN_BOTTOM,
+    GRV_WINDOW_VERTICAL_ALIGN_NONE
+} grv_window_vertical_align_t;
+
+
 typedef struct {
     i32 width, height;
+    grv_window_horizontal_align_t horizontal_align;
+    grv_window_vertical_align_t vertical_align;
     f32 scale;
     grv_str_t title;
     grv_frame_buffer_t frame_buffer;

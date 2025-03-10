@@ -28,15 +28,41 @@ grv_window_t* grv_window_new(i32 width, i32 height, f32 scale, grv_str_t title) 
     return w;
 }
 
-bool grv_window_show(grv_window_t* w) {
+SDL_Rect _grv_window_align(grv_window_t* w) {
+    SDL_Rect window_rect = {.w = (int)(w->width * w->scale), .h = (int)(w->height * w->scale) };
+    SDL_Rect screen_rect;
+    int result = SDL_GetDisplayBounds(0, &screen_rect);
+    assert(result == 0);
+    if (w->horizontal_align == GRV_WINDOW_HORIZONTAL_ALIGN_CENTER) {
+        window_rect.x = SDL_WINDOWPOS_CENTERED;
+    } else if (w->horizontal_align == GRV_WINDOW_HORIZONTAL_ALIGN_LEFT) {
+        window_rect.x = screen_rect.x;
+    } else if (w->horizontal_align == GRV_WINDOW_HORIZONTAL_ALIGN_RIGHT) {
+        window_rect.x = screen_rect.x + screen_rect.w - window_rect.w;
+    } else if (w->horizontal_align == GRV_WINDOW_HORIZONTAL_ALIGN_NONE) {
+        window_rect.x = SDL_WINDOWPOS_UNDEFINED;
+    }
+
+    if (w->vertical_align == GRV_WINDOW_VERTICAL_ALIGN_CENTER) {
+        window_rect.y = SDL_WINDOWPOS_CENTERED;
+    } else if (w->vertical_align == GRV_WINDOW_VERTICAL_ALIGN_TOP) {
+        window_rect.y = screen_rect.y;
+    } else if (w->vertical_align == GRV_WINDOW_VERTICAL_ALIGN_BOTTOM) {
+        window_rect.y = screen_rect.y + screen_rect.h - window_rect.h;
+    } else if (w->vertical_align == GRV_WINDOW_VERTICAL_ALIGN_NONE) {
+        window_rect.y = SDL_WINDOWPOS_UNDEFINED;
+    }
+
+    return window_rect;
+}
+
+bool grv_window_show(grv_window_t* w) { 
     SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
     SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
     if (!SDL_WasInit(SDL_INIT_VIDEO)) {
         SDL_Init(SDL_INIT_VIDEO);
     }
 
-    i32 window_width = (i32)(w->width * w->scale);
-    i32 window_height = (i32)(w->height * w->scale);
 
     int flags = SDL_WINDOW_SHOWN;
     if (w->borderless) {
@@ -45,10 +71,12 @@ bool grv_window_show(grv_window_t* w) {
         flags |= SDL_WINDOW_RESIZABLE;
     }
 
+    SDL_Rect window_rect = _grv_window_align(w);
+
     SDL_Window* window = SDL_CreateWindow(
         grv_str_cstr(w->title),
-        SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-        window_width, window_height, flags);
+        window_rect.x, window_rect.y,
+        window_rect.w, window_rect.h, flags);
 
     SDL_SetWindowData(window, "grv_window", w);
     
