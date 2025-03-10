@@ -39,7 +39,7 @@ u32 grv_dup_u8_u32(u8 a);
 u64 grv_dup_u8_u64(u8 a);
 
 GRV_INLINE f32 grv_abs_f32(f32 a) { return a < 0.0f ? -a : a; }
-GRV_INLINE f32 grv_abs_i32(i32 a) { return a < 0 ? -a : a; }
+GRV_INLINE i32 grv_abs_i32(i32 a) { return a < 0 ? -a : a; }
 
 GRV_INLINE void grv_swp_i32(i32* a, i32* b) { i32 c = *a; *a = *b; *b = c; }
 GRV_INLINE void grv_swp_f32(f32* a, f32* b) { f32 c = *a; *a = *b; *b = c; }
