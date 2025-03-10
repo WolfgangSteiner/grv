@@ -755,7 +755,7 @@ GRVBLD_INLINE char* grvbld_build_cmd(grvbld_config_t* config) {
     }
 
     if (config->debug) {
-        cmd = grvbld_cstr_append_arg(cmd, "-g");
+        cmd = grvbld_cstr_append_arg(cmd, "-g3");
     } else {
         cmd = grvbld_cstr_append_arg(cmd, "-O2");
     }
