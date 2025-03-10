@@ -166,6 +166,55 @@ void grv_frame_buffer_fill_rect_u8(grv_frame_buffer_t* fb, recti_t rect, u8 colo
     }
 }
 
+void _grv_frame_buffer_draw_horizontal_line_u8(
+    grv_frame_buffer_t* fb, i32 x1, i32 x2, i32 y, u8 color, recti_t clip_rect) {
+    if (y < clip_rect.y || y >= clip_rect.y + clip_rect.h) return;
+    i32 cx1 = clip_rect.x;
+    i32 cx2 = clip_rect.x + clip_rect.w - 1;
+    if (x1 > cx2 || x2 < cx1) return;
+    i32 x = grv_clamp_i32(x1, cx1, cx2);
+    x2 = grv_clamp_i32(x2, cx1, cx2);
+    u8* ptr = grv_frame_buffer_pixel_address_u8(fb, x, y);
+    while (x <= x2) {
+        *ptr++ = color;
+        x++;
+    }
+}
+
+void _grv_frame_buffer_draw_vertical_line_u8(
+    grv_frame_buffer_t* fb, i32 x, i32 y1, i32 y2, u8 color, recti_t clip_rect) {
+    if (x < clip_rect.x || x >= clip_rect.x + clip_rect.w) return;
+    i32 cy1 = clip_rect.y;
+    i32 cy2 = clip_rect.y + clip_rect.w - 1;
+    i32 y = grv_clamp_i32(y1, cy1, cy2);
+    y2 = grv_clamp_i32(y2, cy1, cy2);
+    u8* ptr = grv_frame_buffer_pixel_address_u8(fb, x, y);
+    while (y <= y2) {
+        *ptr = color;
+        ptr += fb->row_skip;
+        y++;
+    }
+}
+
+void grv_frame_buffer_draw_rect_u8(grv_frame_buffer_t* fb, recti_t rect, u8 color) {
+    recti_t clip_rect = {.x=0,.y=0,.w=fb->width,.h=fb->height};
+    if (fb->use_clipping) {
+        clip_rect = grv_frame_buffer_get_clipping_rect(fb);
+    }
+
+    if (rect.w <= 0 || rect.h <= 0) return;
+
+    i32 x1 = rect.x;
+    i32 x2 = rect.x + rect.w - 1;
+    i32 y1 = rect.y;
+    i32 y2 = rect.y + rect.h - 1;
+
+    _grv_frame_buffer_draw_horizontal_line_u8(fb, x1, x2, y1, color, clip_rect);
+    _grv_frame_buffer_draw_horizontal_line_u8(fb, x1, x2, y2, color, clip_rect);
+    _grv_frame_buffer_draw_vertical_line_u8(fb, x1, y1, y2, color, clip_rect);
+    _grv_frame_buffer_draw_vertical_line_u8(fb, x2, y1, y2, color, clip_rect);
+}
+
 void grv_framebuffer_blit_img8(grv_frame_buffer_t* fb, grv_img8_t* img, i32 x, i32 y) {
     i32 x_start = x;
     i32 x_end = x + img->w - 1;
