@@ -38,7 +38,7 @@ GRV_INLINE grv_fixed32_t grv_fixed32_mula(grv_fixed32_t a, grv_fixed32_t b, grv_
     i64 acc = a.val;
     acc *= b.val;
     acc /= GRV_FIXED32_MUL;
-    acc += c;
+    acc += c.val;
     return (grv_fixed32_t) { .val=(i32)acc };
 }
 
@@ -50,7 +50,10 @@ GRV_INLINE grv_fixed32_t grv_fixed32_div(grv_fixed32_t a, grv_fixed32_t b) {
 }
 
 GRV_INLINE i32 grv_fixed32_round(grv_fixed32_t a) {
-    return (a.val + GRV_FIXED32_MUL / 2) / GRV_FIXED32_MUL;
+    i32 acc = a.val;
+    acc += (a.val > 0 ? GRV_FIXED32_MUL / 2 : -GRV_FIXED32_MUL / 2);
+    acc /= GRV_FIXED32_MUL;
+    return acc;
 }
 
 GRV_INLINE grv_fixed32_t grv_fixed32_abs(grv_fixed32_t a) {
