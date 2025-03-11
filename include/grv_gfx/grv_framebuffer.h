@@ -59,5 +59,6 @@ void grv_framebuffer_set_pixel_scaled_u8(grv_framebuffer_t* fb, vec2i pos, u32 s
 void grv_framebuffer_fill_rect_u8(grv_framebuffer_t* fb, recti_t rect, u8 color);
 void grv_framebuffer_draw_rect_u8(grv_framebuffer_t* fb, recti_t rect, u8 color);
 void grv_framebuffer_blit_img8(grv_framebuffer_t* fb, grv_img8_t* img, i32 x, i32 y);
-
+void grv_framebuffer_draw_circle_u8(grv_framebuffer_t* fb, i32 px, i32 py, i32 r, u8 color);
+void grv_framebuffer_fill_circle_u8(grv_framebuffer_t* fb, i32 px, i32 py, i32 r, u8 color);
 #endif

@@ -56,6 +56,10 @@ GRV_INLINE i32 grv_fixed32_round(grv_fixed32_t a) {
     return acc;
 }
 
+GRV_INLINE f32 grv_fixed32_to_f32(grv_fixed32_t a) {
+    return (f32)a.val / (f32)GRV_FIXED32_MUL;
+}
+
 GRV_INLINE grv_fixed32_t grv_fixed32_abs(grv_fixed32_t a) {
     return (grv_fixed32_t) { .val=(a.val < 0 ? -a.val : a.val) };
 }
