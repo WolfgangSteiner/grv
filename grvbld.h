@@ -197,6 +197,7 @@ typedef struct {
     bool debug;
     bool treat_warnings_as_errors;
     bool use_ccache;
+    bool run_tests;
     bool tests_only;
     int verbosity;
 } grvbld_config_t;
@@ -421,6 +422,7 @@ GRVBLD_INLINE grvbld_config_t* grvbld_config_new(int argc, char** argv) {
     config->treat_warnings_as_errors = false;
     config->verbosity = 0;
     config->use_ccache = true;
+    config->run_tests = true;
 
     grvbld_strarr_push(&config->inc, "include");
     grvbld_strarr_push(&config->warnings, "-Wall");
@@ -434,7 +436,8 @@ GRVBLD_INLINE grvbld_config_t* grvbld_config_new(int argc, char** argv) {
     if (grvbld_args_contain(argc, argv, "--debug")) config->debug = true;
     if (grvbld_args_contain(argc, argv, "--use-ccache")) config->use_ccache = true;
     if (grvbld_args_contain(argc, argv, "--no-use-ccache")) config->use_ccache = false;
-    if (grvbld_args_contain(argc, argv, "--tests")) config->tests_only = true;
+    if (grvbld_args_contain(argc, argv, "--tests-only")) config->tests_only = true;
+    if (grvbld_args_contain(argc, argv, "--no-tests")) config->run_tests = false;
     if (grvbld_args_contain(argc, argv, "-vv")) {
         config->verbosity = 2;
     } else if (grvbld_args_contain(argc, argv, "-v")) {

@@ -20,9 +20,10 @@ int main(int argc, char** argv) {
     grvbld_target_add_src(libgrv, "src/grv.c");
     grvbld_build_target(config, libgrv);
 
-    int result = grvbld_run_tests(config);
-
-    if (config->tests_only) return result; 
+    if (config->run_tests) {
+        int result = grvbld_run_tests(config);
+        if (config->tests_only) return result;
+    }
 
     grvbld_target_t* libgrvgfx = grvbld_target_create("grvgfx", GRVBLD_STATIC_LIBRARY);
     grvbld_target_add_src(libgrvgfx, "src/grv_gfx/grv_gfx.c");
