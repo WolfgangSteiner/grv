@@ -14,7 +14,7 @@ u8 _grv_bitmap_font_invert_byte(u8 byte) {
     return byte;
 }
 
-static void grv_put_char_u8(grv_frame_buffer_t* fb, char c, vec2i pos, grv_bitmap_font_t* font, i32 scale, u8 color) {
+static void grv_put_char_u8(grv_framebuffer_t* fb, char c, vec2i pos, grv_bitmap_font_t* font, i32 scale, u8 color) {
     u8* glyph_data = font->glyph_data + font->glyph_byte_count * (u32)c;
     u8 bytes_per_row = font->glyph_byte_count / font->glyph_height;
     u8* glyph_row_ptr = glyph_data + font->topskip * bytes_per_row;
@@ -26,7 +26,7 @@ static void grv_put_char_u8(grv_frame_buffer_t* fb, char c, vec2i pos, grv_bitma
                 bool has_pixel = (current_byte << x) & 0x80;
                 if (has_pixel) {
                     vec2i pixel_pos = vec2i_add(pos, (vec2i){scale*x, scale*y});
-                    grv_frame_buffer_set_pixel_scaled_u8(fb, pixel_pos, scale, color);
+                    grv_framebuffer_set_pixel_scaled_u8(fb, pixel_pos, scale, color);
                 }
             }
         }
@@ -56,12 +56,12 @@ vec2i grv_bitmap_font_glyph_size(grv_bitmap_font_t* font, char c) {
 }
 
 
-void grv_put_text_u8(grv_frame_buffer_t* fb, grv_str_t str, vec2i pos, grv_bitmap_font_t* font, u8 color) {
+void grv_put_text_u8(grv_framebuffer_t* fb, grv_str_t str, vec2i pos, grv_bitmap_font_t* font, u8 color) {
     grv_put_text_scaled_u8(fb, str, pos, font, 1, color);
     //grv_put_text_scaled_u8(fb, str, (vec2i){pos.x+1, pos.y}, font, 1, color);
 }
 
-void grv_put_text_scaled_u8(grv_frame_buffer_t* fb, grv_str_t str, vec2i pos, grv_bitmap_font_t* font, i32 scale, u8 color) {
+void grv_put_text_scaled_u8(grv_framebuffer_t* fb, grv_str_t str, vec2i pos, grv_bitmap_font_t* font, i32 scale, u8 color) {
     vec2i line_pos = pos;
     vec2i glyph_pos = pos;
     if (font == NULL) font = &grv_basic_font_8x8;

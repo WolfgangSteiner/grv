@@ -3,7 +3,7 @@
 
 #include "grv/grv_base.h"
 #include "grv/grv_str.h"
-#include "grv_frame_buffer.h"
+#include "grv_framebuffer.h"
 #include "grv/grv_arr.h"
 
 typedef enum {
@@ -27,7 +27,7 @@ typedef struct {
     grv_window_vertical_align_t vertical_align;
     f32 scale;
     grv_str_t title;
-    grv_frame_buffer_t frame_buffer;
+    grv_framebuffer_t framebuffer;
     bool should_close;
     bool borderless;
     bool use_int_scaling;

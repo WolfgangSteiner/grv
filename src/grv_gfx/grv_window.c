@@ -23,7 +23,7 @@ grv_window_t* grv_window_new(i32 width, i32 height, f32 scale, grv_str_t title) 
     w->should_close = false;
     w->borderless = false;
     w->use_int_scaling = true;
-    grv_frame_buffer_init(&w->frame_buffer, FRAME_BUFFER_INDEXED, width, height);
+    grv_framebuffer_init(&w->framebuffer, GRV_FRAMEBUFFER_INDEXED, width, height);
     w->handle = grv_alloc_zeros(sizeof(grv_window_impl_t));
     return w;
 }
@@ -110,7 +110,7 @@ void grv_window_present(grv_window_t* w) {
     SDL_Renderer* renderer = impl->sdl_renderer;
     SDL_Texture* texture = impl->sdl_texture;
     SDL_Surface* surface = impl->sdl_surface;
-    grv_frame_buffer_render_argb(&w->frame_buffer, surface->pixels, surface->pitch);
+    grv_framebuffer_render_argb(&w->framebuffer, surface->pixels, surface->pitch);
     SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);

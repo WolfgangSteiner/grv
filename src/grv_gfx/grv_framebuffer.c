@@ -1,6 +1,6 @@
 #include "grv/grv_common.h"
 #include "grv/grv_math.h"
-#include "grv_gfx/grv_frame_buffer.h"
+#include "grv_gfx/grv_framebuffer.h"
 #include <stdlib.h>
 #include <assert.h>
 
@@ -32,14 +32,14 @@ recti_t* grv_clipping_stack_top(grv_clipping_stack_t* stack) {
     return stack->size ? stack->stack + stack->size - 1 : NULL;
 }
 
-void grv_frame_buffer_init(grv_frame_buffer_t* fb, grv_frame_buffer_type_t type, i32 width, i32 height) {
+void grv_framebuffer_init(grv_framebuffer_t* fb, grv_framebuffer_type_t type, i32 width, i32 height) {
     fb->type = type;
     fb->width = width;
     fb->height = height;
     fb->row_skip = width;
     fb->clear_color_u8 = 0;
 
-    if (type == FRAME_BUFFER_INDEXED) {
+    if (type == GRV_FRAMEBUFFER_INDEXED) {
         color_palette_init_grayscale(&fb->palette, 16);
         fb->indexed_data = grv_alloc_zeros(width * height * sizeof(u8));
     } else {
@@ -53,16 +53,16 @@ void grv_frame_buffer_init(grv_frame_buffer_t* fb, grv_frame_buffer_type_t type,
     fb->span_buffer.capacity = height;
 }
 
-void grv_frame_buffer_clear(grv_frame_buffer_t* fb) {
+void grv_framebuffer_clear(grv_framebuffer_t* fb) {
     u32 count = fb->width * fb->height;
-    if (fb->type == FRAME_BUFFER_INDEXED) {
-        grv_frame_buffer_fill_u8(fb, fb->clear_color_u8);
+    if (fb->type == GRV_FRAMEBUFFER_INDEXED) {
+        grv_framebuffer_fill_u8(fb, fb->clear_color_u8);
     } else {
         memset(fb->rgba_data, 0x0, count * sizeof(u32));
     }
 }
 
-void grv_frame_buffer_fill_u8(grv_frame_buffer_t* fb, u8 color) {
+void grv_framebuffer_fill_u8(grv_framebuffer_t* fb, u8 color) {
     u8* row_ptr = fb->indexed_data;
     for (i32 y = 0; y < fb->height; ++y) {
         memset(row_ptr, color, fb->width);
@@ -70,7 +70,7 @@ void grv_frame_buffer_fill_u8(grv_frame_buffer_t* fb, u8 color) {
     }
 }
 
-recti_t grv_frame_buffer_get_clipping_rect(grv_frame_buffer_t* fb) {
+recti_t grv_framebuffer_get_clipping_rect(grv_framebuffer_t* fb) {
     recti_t* current_clipping_rect = grv_clipping_stack_top(&fb->clipping_stack);
     if (current_clipping_rect) {
         return *current_clipping_rect;
@@ -79,17 +79,17 @@ recti_t grv_frame_buffer_get_clipping_rect(grv_frame_buffer_t* fb) {
     }
 }
 
-u8* grv_frame_buffer_pixel_address_u8(grv_frame_buffer_t* fb, i32 x, i32 y) {
+u8* grv_framebuffer_pixel_address_u8(grv_framebuffer_t* fb, i32 x, i32 y) {
     assert(x >= 0 && x < fb->width);
     assert(y >= 0 && y < fb->height);
     return fb->indexed_data + y * fb->row_skip + x;
 }
 
-void grv_frame_buffer_clear_span_buffer(grv_frame_buffer_t* fb) {
+void grv_framebuffer_clear_span_buffer(grv_framebuffer_t* fb) {
     fb->span_buffer.count = 0;
 }
 
-void grv_frame_buffer_push_span(grv_frame_buffer_t* fb, i32 y, i32 x1, i32 x2) {
+void grv_framebuffer_push_span(grv_framebuffer_t* fb, i32 y, i32 x1, i32 x2) {
     if (fb->span_buffer.count == 0) {
         fb->span_buffer.y_start = y;
     } 
@@ -101,8 +101,8 @@ void grv_frame_buffer_push_span(grv_frame_buffer_t* fb, i32 y, i32 x1, i32 x2) {
     }
 }
 
-void grv_frame_buffer_render_argb(grv_frame_buffer_t* fb, u32* argb_data, i32 pitch) {
-    if (fb->type == FRAME_BUFFER_INDEXED) {
+void grv_framebuffer_render_argb(grv_framebuffer_t* fb, u32* argb_data, i32 pitch) {
+    if (fb->type == GRV_FRAMEBUFFER_INDEXED) {
         i32 num_colors = fb->palette.num_entries;
         u32* dst_row_ptr = argb_data;
         u8* src_row_ptr = fb->indexed_data;
@@ -138,57 +138,57 @@ void grv_frame_buffer_render_argb(grv_frame_buffer_t* fb, u32* argb_data, i32 pi
     }        
 }
 
-void grv_frame_buffer_set_pixel_u8(grv_frame_buffer_t* fb, vec2i pos, u8 color) {
+void grv_framebuffer_set_pixel_u8(grv_framebuffer_t* fb, vec2i pos, u8 color) {
     if (fb->use_clipping) {
-        recti_t clipping_rect = grv_frame_buffer_get_clipping_rect(fb);
+        recti_t clipping_rect = grv_framebuffer_get_clipping_rect(fb);
         if (!grv_recti_contains_point(clipping_rect, pos)) return;
     }
-    u8* pixel = grv_frame_buffer_pixel_address_u8(fb, pos.x, pos.y);
+    u8* pixel = grv_framebuffer_pixel_address_u8(fb, pos.x, pos.y);
     *pixel = color;
 }
 
-void grv_frame_buffer_set_pixel_scaled_u8(grv_frame_buffer_t* fb, vec2i pos, u32 scale, u8 color) {
+void grv_framebuffer_set_pixel_scaled_u8(grv_framebuffer_t* fb, vec2i pos, u32 scale, u8 color) {
     recti_t rect = {pos.x, pos.y, scale, scale};    
-    grv_frame_buffer_fill_rect_u8(fb, rect, color);
+    grv_framebuffer_fill_rect_u8(fb, rect, color);
 }
 
 
-void grv_frame_buffer_fill_rect_u8(grv_frame_buffer_t* fb, recti_t rect, u8 color) {
+void grv_framebuffer_fill_rect_u8(grv_framebuffer_t* fb, recti_t rect, u8 color) {
     if (fb->use_clipping) {
-        recti_t clipping_rect = grv_frame_buffer_get_clipping_rect(fb);
+        recti_t clipping_rect = grv_framebuffer_get_clipping_rect(fb);
         rect = grv_recti_intersect_rect(rect, clipping_rect);
     }
     if (rect.w <= 0 || rect.h <= 0) return;
 
     for (i32 y = recti_ymin(rect); y <= recti_ymax(rect); ++y) {
-        u8* pixel = grv_frame_buffer_pixel_address_u8(fb, rect.x, y);
+        u8* pixel = grv_framebuffer_pixel_address_u8(fb, rect.x, y);
         memset(pixel, color, rect.w);
     }
 }
 
-void _grv_frame_buffer_draw_horizontal_line_u8(
-    grv_frame_buffer_t* fb, i32 x1, i32 x2, i32 y, u8 color, recti_t clip_rect) {
+void _grv_framebuffer_draw_horizontal_line_u8(
+    grv_framebuffer_t* fb, i32 x1, i32 x2, i32 y, u8 color, recti_t clip_rect) {
     if (y < clip_rect.y || y >= clip_rect.y + clip_rect.h) return;
     i32 cx1 = clip_rect.x;
     i32 cx2 = clip_rect.x + clip_rect.w - 1;
     if (x1 > cx2 || x2 < cx1) return;
     i32 x = grv_clamp_i32(x1, cx1, cx2);
     x2 = grv_clamp_i32(x2, cx1, cx2);
-    u8* ptr = grv_frame_buffer_pixel_address_u8(fb, x, y);
+    u8* ptr = grv_framebuffer_pixel_address_u8(fb, x, y);
     while (x <= x2) {
         *ptr++ = color;
         x++;
     }
 }
 
-void _grv_frame_buffer_draw_vertical_line_u8(
-    grv_frame_buffer_t* fb, i32 x, i32 y1, i32 y2, u8 color, recti_t clip_rect) {
+void _grv_framebuffer_draw_vertical_line_u8(
+    grv_framebuffer_t* fb, i32 x, i32 y1, i32 y2, u8 color, recti_t clip_rect) {
     if (x < clip_rect.x || x >= clip_rect.x + clip_rect.w) return;
     i32 cy1 = clip_rect.y;
     i32 cy2 = clip_rect.y + clip_rect.w - 1;
     i32 y = grv_clamp_i32(y1, cy1, cy2);
     y2 = grv_clamp_i32(y2, cy1, cy2);
-    u8* ptr = grv_frame_buffer_pixel_address_u8(fb, x, y);
+    u8* ptr = grv_framebuffer_pixel_address_u8(fb, x, y);
     while (y <= y2) {
         *ptr = color;
         ptr += fb->row_skip;
@@ -196,10 +196,10 @@ void _grv_frame_buffer_draw_vertical_line_u8(
     }
 }
 
-void grv_frame_buffer_draw_rect_u8(grv_frame_buffer_t* fb, recti_t rect, u8 color) {
+void grv_framebuffer_draw_rect_u8(grv_framebuffer_t* fb, recti_t rect, u8 color) {
     recti_t clip_rect = {.x=0,.y=0,.w=fb->width,.h=fb->height};
     if (fb->use_clipping) {
-        clip_rect = grv_frame_buffer_get_clipping_rect(fb);
+        clip_rect = grv_framebuffer_get_clipping_rect(fb);
     }
 
     if (rect.w <= 0 || rect.h <= 0) return;
@@ -209,13 +209,13 @@ void grv_frame_buffer_draw_rect_u8(grv_frame_buffer_t* fb, recti_t rect, u8 colo
     i32 y1 = rect.y;
     i32 y2 = rect.y + rect.h - 1;
 
-    _grv_frame_buffer_draw_horizontal_line_u8(fb, x1, x2, y1, color, clip_rect);
-    _grv_frame_buffer_draw_horizontal_line_u8(fb, x1, x2, y2, color, clip_rect);
-    _grv_frame_buffer_draw_vertical_line_u8(fb, x1, y1, y2, color, clip_rect);
-    _grv_frame_buffer_draw_vertical_line_u8(fb, x2, y1, y2, color, clip_rect);
+    _grv_framebuffer_draw_horizontal_line_u8(fb, x1, x2, y1, color, clip_rect);
+    _grv_framebuffer_draw_horizontal_line_u8(fb, x1, x2, y2, color, clip_rect);
+    _grv_framebuffer_draw_vertical_line_u8(fb, x1, y1, y2, color, clip_rect);
+    _grv_framebuffer_draw_vertical_line_u8(fb, x2, y1, y2, color, clip_rect);
 }
 
-void grv_framebuffer_blit_img8(grv_frame_buffer_t* fb, grv_img8_t* img, i32 x, i32 y) {
+void grv_framebuffer_blit_img8(grv_framebuffer_t* fb, grv_img8_t* img, i32 x, i32 y) {
     i32 x_start = x;
     i32 x_end = x + img->w - 1;
     i32 y_start = y;
