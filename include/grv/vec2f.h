@@ -23,6 +23,7 @@ GRV_INLINE f32 vec2f_min_element(vec2f a) { return grv_min_f32(a.x, a.y); }
 GRV_INLINE vec2f vec2f_add(vec2f a, vec2f b) { return (vec2f){a.x + b.x, a.y + b.y}; }
 GRV_INLINE vec2f vec2f_sub(vec2f a, vec2f b) { return (vec2f){a.x - b.x, a.y - b.y}; }
 GRV_INLINE vec2f vec2f_smul(vec2f a, f32 b) { return (vec2f){a.x * b, a.y * b}; }
+GRV_INLINE vec2f vec2f_smula(vec2f a, f32 b, vec2f c) { return (vec2f){a.x*b+c.x, a.y*b+c.y}; }
 
 GRV_INLINE vec2f vec2f_clamp(vec2f v, vec2f a, vec2f b) {
     return (vec2f){.x=grv_clamp_f32(v.x,a.x,b.x),.y=grv_clamp_f32(v.y,a.y,b.y)};
