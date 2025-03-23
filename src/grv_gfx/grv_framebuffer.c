@@ -262,11 +262,13 @@ void grv_framebuffer_draw_circle_u8(grv_framebuffer_t* fb, i32 px, i32 py, i32 r
         grv_framebuffer_set_pixel_u8(fb, (vec2i){px - cy, py - cx}, color);
         
         cy += 1;
-        if (p > 0) {
+        if (p <= 0) {
+            p += 2*cy + 1;
+
+        } else {
             cx -= 1;
-            p -= -2*cx;
+            p += 2*cy + 1 - 2*cx;
         }
-        p += 2*cy + 1;
     }
 }
 
@@ -297,14 +299,16 @@ void grv_framebuffer_fill_circle_u8(grv_framebuffer_t* fb, i32 px, i32 py, i32 r
         grv_framebuffer_set_pixel_u8(fb, (vec2i){px - cy, py - cx}, color);
 
         cy += 1;
-        if (p > 0) {
+        if (p <= 0) {
+            p += 2*cy + 1;
+
+        } else {
             cx -= 1;
-            p -= -2*cx;
+            p += 2*cy + 1 - 2*cx;
             x1 = px - cy + 1;
             x2 = px + cy - 1;
             _grv_framebuffer_draw_horizontal_line_u8(fb, x1, x2, py+cx, color, clip_rect); 
             _grv_framebuffer_draw_horizontal_line_u8(fb, x1, x2, py-cx, color, clip_rect); 
         }
-        p += 2*cy + 1;
     }
 }
