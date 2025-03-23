@@ -73,12 +73,8 @@ bool grv_img8_load_from_bmp(grv_str_t file_name, grv_img8_t* img, grv_error_t* e
     }
 
     grv_log_info(grv_str_format(grv_str_ref("BPP: {int}"), (i32)dib_header->bits_per_pixel));
+    grv_log_info(grv_str_format(grv_str_ref("BMP size: {int}x{int}"), dib_header->w, dib_header->h));
     u8* pixel_data = (u8*)bmp_data + file_header->data_offset;
-    img->w = dib_header->w;
-    img->h = dib_header->h;
-    img->row_skip = img->w;
-
-    grv_log_info(grv_str_format(grv_str_ref("BMP size: {int}x{int}"), img->w, img->h));
 
     if (dib_header->compression_type != 0) {
         if (err) {
@@ -87,7 +83,14 @@ bool grv_img8_load_from_bmp(grv_str_t file_name, grv_img8_t* img, grv_error_t* e
         }
         goto end;
     } else {
-        img->pixel_data = grv_alloc_zeros(img->w * img->h);
+        if (img->owns_data && img->pixel_data) {
+            img->pixel_data = grv_realloc(img->pixel_data, dib_header->w * dib_header->h);
+        } else {
+            img->pixel_data = grv_alloc_zeros(dib_header->w * dib_header->h);
+        }
+        img->w = dib_header->w;
+        img->h = dib_header->h;
+        img->row_skip = img->w;
         img->owns_data = true;
         i32 bytes_per_row = img->w * dib_header->bits_per_pixel / 8;
         i32 bytes_per_row_padded = (bytes_per_row % 4) ? (bytes_per_row + 4) % 4 : bytes_per_row;
