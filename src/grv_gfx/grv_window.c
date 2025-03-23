@@ -22,6 +22,7 @@ grv_window_t* grv_window_new(i32 width, i32 height, f32 scale, grv_str_t title) 
     w->title = title;
     w->should_close = false;
     w->borderless = false;
+    w->resizable = true;
     w->use_int_scaling = true;
     grv_framebuffer_init(&w->framebuffer, GRV_FRAMEBUFFER_INDEXED, width, height);
     w->handle = grv_alloc_zeros(sizeof(grv_window_impl_t));
@@ -67,7 +68,8 @@ bool grv_window_show(grv_window_t* w) {
     int flags = SDL_WINDOW_SHOWN;
     if (w->borderless) {
         flags |= SDL_WINDOW_BORDERLESS;
-    } else {
+    }
+    if (w->resizable) {
         flags |= SDL_WINDOW_RESIZABLE;
     }
 

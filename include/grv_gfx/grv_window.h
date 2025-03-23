@@ -30,6 +30,7 @@ typedef struct {
     grv_framebuffer_t framebuffer;
     bool should_close;
     bool borderless;
+    bool resizable;
     bool use_int_scaling;
     void* handle;
 } grv_window_t;
