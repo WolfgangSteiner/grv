@@ -162,7 +162,8 @@ typedef struct {
 
 typedef enum {
     GRVBLD_EXECUTABLE,
-    GRVBLD_STATIC_LIBRARY
+    GRVBLD_STATIC_LIBRARY,
+    GRVBLD_DYNAMIC_LIBRARY
 } grvbld_target_type_t;
 
 
@@ -180,6 +181,8 @@ typedef struct grvbld_target_t{
     grvbld_strarr_t src_files;
     grvbld_strarr_t libs;
     grvbld_strarr_t data_files;
+    grvbld_strarr_t compile_options;
+    grvbld_strarr_t link_options;
     grvbld_target_arr_t linked_targets; 
     bool run_after_build;
 } grvbld_target_t;
@@ -206,20 +209,17 @@ typedef struct {
 //==============================================================================
 // grvbld_strarr
 //==============================================================================
-GRVBLD_INLINE void grvbld_strarr_init(grvbld_strarr_t* arr) {
-    arr->size = 0;
-    arr->capacity = 16;
-    arr->data = calloc(arr->capacity, sizeof(char*));
-}
-
 GRVBLD_INLINE grvbld_strarr_t* grvbld_strarr_new(void) { 
     grvbld_strarr_t* res = calloc(1, sizeof(grvbld_strarr_t));
-    grvbld_strarr_init(res);
     return res;
 }
 
 GRVBLD_INLINE void grvbld_strarr_push(grvbld_strarr_t* arr, char* str) {
-    if (arr->size >= arr->capacity) {
+    if (arr->capacity == 0) {
+        arr->capacity = 16;
+        arr->size = 0;
+        arr->data = calloc(arr->capacity, sizeof(char*));
+    } else if (arr->size >= arr->capacity) {
         arr->capacity *= 2;
         arr->data = realloc(arr->data, arr->capacity * sizeof(char*));
     }
@@ -411,11 +411,6 @@ GRVBLD_INLINE grvbld_config_t* grvbld_config_new(int argc, char** argv) {
     grvbld_config_t* config = calloc(1, sizeof(grvbld_config_t));
     config->cc = "gcc";
     config->std = "gnu11";
-    grvbld_strarr_init(&config->inc);
-    grvbld_strarr_init(&config->warnings);
-    grvbld_strarr_init(&config->libs);
-    grvbld_strarr_init(&config->library_dirs);
-    grvbld_strarr_init(&config->defines);
     config->build_dir = "build";
     config->test_dir = "test";
     config->debug = true;
@@ -546,9 +541,7 @@ GRVBLD_INLINE grvbld_strarr_t* get_files_in_dir(char* path) {
         exit(1);
     }
 
-    grvbld_strarr_t* result = calloc(1, sizeof(grvbld_strarr_t));
-    grvbld_strarr_init(result);
-
+    grvbld_strarr_t* result = grvbld_strarr_new();
 
 #ifdef _WIN32
     WIN32_FIND_DATAA find_data;
@@ -593,6 +586,11 @@ int grvbld_execute_build_cmd(grvbld_config_t* config, char* cmd) {
         cmd = grvbld_cstr_append_arg(cmd, "-fno-diagnostics-show-option");
         cmd = grvbld_cstr_append_arg(cmd, "-fno-diagnostics-show-caret");
     }
+    return system(cmd);
+}
+
+int grvbld_execute_link_cmd(grvbld_config_t* config, char* cmd) {
+    if (config->verbosity > 0) log_info("%s", cmd);
     return system(cmd);
 }
 
@@ -673,8 +671,6 @@ GRVBLD_INLINE grvbld_target_t* grvbld_target_create(char* name, grvbld_target_ty
     grvbld_target_t* target = calloc(1, sizeof(grvbld_target_t));
     target->name = grvbld_cstr_new(name);
     target->type = type;
-    grvbld_strarr_init(&target->src_files);
-    grvbld_strarr_init(&target->libs);
     target->linked_targets = (grvbld_target_arr_t){0};
     return target;
 }
@@ -685,6 +681,10 @@ GRVBLD_INLINE grvbld_target_t* grvbld_target_create_executable(char* name) {
 
 GRVBLD_INLINE grvbld_target_t* grvbld_target_create_static_library(char* name) {
     return grvbld_target_create(name, GRVBLD_STATIC_LIBRARY);
+}
+
+GRVBLD_INLINE grvbld_target_t* grvbld_target_create_dynamic_library(char* name) {
+    return grvbld_target_create(name, GRVBLD_DYNAMIC_LIBRARY);
 }
 
 GRVBLD_INLINE void grvbld_target_add_src(grvbld_target_t* target, char* src) {
@@ -704,6 +704,14 @@ GRVBLD_INLINE void grvbld_target_add_src_files(grvbld_target_t* target, ...) {
 
 GRVBLD_INLINE void grvbld_target_link_library(grvbld_target_t* target, char* lib) {
     grvbld_strarr_push(&target->libs, lib);
+}
+
+GRVBLD_INLINE void grvbld_target_add_compile_option(grvbld_target_t* target, char* option) {
+    grvbld_strarr_push(&target->compile_options, option);
+}
+
+GRVBLD_INLINE void grvbld_target_add_link_option(grvbld_target_t* target, char* option) {
+    grvbld_strarr_push(&target->link_options, option);
 }
 
 GRVBLD_INLINE void grvbld_target_link_libraries(grvbld_target_t* target, ...) {
@@ -848,6 +856,23 @@ int grvbld_run_tests(grvbld_config_t* config) {
     return success ? 0 : 1;
 }
 
+grvbld_strarr_t grvbld_build_data_files(grvbld_config_t* config, grvbld_target_t* target) {
+    grvbld_strarr_t data_obj_files = {0};
+    for (size_t i = 0; i < target->data_files.size; ++i) {
+        char* data_src = target->data_files.data[i];
+        char* data_dst = grvbld_cstr_filename(data_src);
+        char* data_obj_dir = grvbld_cstr_cat(config->build_dir, "/data");
+        make_path(data_obj_dir);
+        data_dst = grvbld_cstr_prepend_path(data_dst, data_obj_dir);
+        data_dst = grvbld_cstr_append(data_dst, ".o");
+        char* ld_cmd = grvbld_cstr_new_with_format("ld -r -b binary -o %s -z noexecstack %s", data_dst, data_src);
+        log_info("%s", ld_cmd);
+        system(ld_cmd);
+        grvbld_strarr_push(&data_obj_files, data_dst);
+    }
+    return data_obj_files;
+}
+
 //==============================================================================
 // grvbld main functions
 //==============================================================================
@@ -859,22 +884,25 @@ GRVBLD_INLINE void create_build_path(grvbld_config_t* config) {
     }
 }
 
+GRVBLD_INLINE char* grvbld_obj_file_for_src_file(grvbld_config_t* config, char* src) {
+    char* obj_file = grvbld_cstr_filename(src);
+    obj_file = grvbld_cstr_prepend_path(obj_file, config->build_dir);
+    obj_file = grvbld_cstr_replace_ext(obj_file, ".o");
+    return obj_file;
+}
 
 GRVBLD_INLINE int grvbld_build_static_library(grvbld_config_t* config, grvbld_target_t* target) {
     char* lib_file = grvbld_cstr_new_with_format("%s/lib%s.a", config->build_dir, target->name);
     char* ar_cmd = grvbld_cstr_new_with_format("rm -f %s && ar rcs %s", lib_file, lib_file);
-
-    char* cmd = grvbld_build_cmd(config);
-    cmd = grvbld_cstr_append_arg(cmd, "-c");
 
     log_info("BUILDING STATIC LIBRARY %s", target->name);
 
     // compile all of the source files
     for (size_t i = 0; i < target->src_files.size; ++i) {
         char* src_file = grvbld_cstr_new(target->src_files.data[i]);
-        char* obj_file = grvbld_cstr_filename(src_file);
-        obj_file = grvbld_cstr_prepend_path(obj_file, config->build_dir);
-        obj_file = grvbld_cstr_replace_ext(obj_file, ".o");
+        char* obj_file = grvbld_obj_file_for_src_file(config, src_file);
+        char* cmd = grvbld_build_cmd(config);
+        cmd = grvbld_cstr_append_arg(cmd, "-c");
         cmd = grvbld_cstr_append_arg(cmd, src_file);
         cmd = grvbld_cstr_append_arg_format(cmd, "-o %s", obj_file);
         cmd = grvbld_cstr_append_arg(cmd, "-c");
@@ -887,17 +915,9 @@ GRVBLD_INLINE int grvbld_build_static_library(grvbld_config_t* config, grvbld_ta
         }
     }
 
-    for (size_t i = 0; i < target->data_files.size; ++i) {
-        char* data_src = target->data_files.data[i];
-        char* data_dst = grvbld_cstr_filename(data_src);
-        char* data_obj_dir = grvbld_cstr_cat(config->build_dir, "/data");
-        make_path(data_obj_dir);
-        data_dst = grvbld_cstr_prepend_path(data_dst, data_obj_dir);
-        data_dst = grvbld_cstr_append(data_dst, ".o");
-        char* ld_cmd = grvbld_cstr_new_with_format("ld -r -b binary -o %s -z noexecstack %s", data_dst, data_src);
-        log_info("%s", ld_cmd);
-        system(ld_cmd);
-        ar_cmd = grvbld_cstr_append_arg(ar_cmd, data_dst);
+    grvbld_strarr_t data_obj_files = grvbld_build_data_files(config, target);
+    for (size_t i = 0; i < data_obj_files.size; ++i) {
+        ar_cmd = grvbld_cstr_append_arg(ar_cmd, data_obj_files.data[i]);
     }
 
     log_info("%s", ar_cmd);
@@ -909,6 +929,42 @@ GRVBLD_INLINE int grvbld_build_static_library(grvbld_config_t* config, grvbld_ta
     return result;
 }
 
+GRVBLD_INLINE int grvbld_build_dynamic_library(grvbld_config_t* config, grvbld_target_t* target) {
+    grvbld_strarr_t obj_files = {0};
+
+    for (size_t i = 0; i < target->src_files.size; i++) {
+        char* src = target->src_files.data[i];
+        char* obj = grvbld_obj_file_for_src_file(config, src);
+        char* cmd = grvbld_build_cmd(config);
+        cmd = grvbld_cstr_append_arg(cmd, "-fPIC -c");
+        cmd = grvbld_cstr_append_arg(cmd, "-o");
+        cmd = grvbld_cstr_append_arg(cmd, obj);
+        cmd = grvbld_cstr_append_arg(cmd, src);
+        grvbld_strarr_push(&obj_files, obj);
+        int result = grvbld_execute_build_cmd(config, cmd);
+        if (result != 0) return result;
+    }
+
+    char* link_cmd = grvbld_cstr_new_with_format(
+        "ld -shared -o %s/lib%s.so", config->build_dir, target->name);
+
+    for (size_t i = 0; i < obj_files.size; i++) {
+        link_cmd = grvbld_cstr_append_arg(link_cmd, obj_files.data[i]);
+    }
+
+    grvbld_strarr_t data_obj_files = grvbld_build_data_files(config, target);
+    for (size_t i = 0; i < data_obj_files.size; ++i) {
+        link_cmd = grvbld_cstr_append_arg(link_cmd, data_obj_files.data[i]);
+    }
+
+    for (size_t i = 0; i < target->libs.size; i++) {
+        link_cmd = grvbld_cstr_append_arg(link_cmd, "-l");
+        link_cmd = grvbld_cstr_append(link_cmd, target->libs.data[i]);
+    }
+    int result = grvbld_execute_link_cmd(config, link_cmd);
+    return result;
+}
+
 GRVBLD_INLINE int grvbld_build_target(grvbld_config_t* config, grvbld_target_t* target) {
     create_build_path(config);
 
@@ -916,10 +972,16 @@ GRVBLD_INLINE int grvbld_build_target(grvbld_config_t* config, grvbld_target_t* 
     
     if (target->type == GRVBLD_STATIC_LIBRARY) {
         return grvbld_build_static_library(config, target);
+    } else if (target->type == GRVBLD_DYNAMIC_LIBRARY) {
+        return grvbld_build_dynamic_library(config, target);
     } else if (target->type == GRVBLD_EXECUTABLE) {
         log_info("BUILDING EXECUTABLE %s", target->name);
         char* dst_file = grvbld_cstr_new_with_format("%s/%s", config->build_dir, target->name);
         cmd = grvbld_cstr_append_arg_format(cmd, "-o %s", dst_file);
+
+        for (size_t i = 0; i < target->compile_options.size; i++) {
+            cmd = grvbld_cstr_append_arg(cmd, target->compile_options.data[i]);
+        }
 
         for (size_t i = 0; i < target->src_files.size; ++i) {
             cmd = grvbld_cstr_append_arg(cmd, target->src_files.data[i]);
@@ -940,6 +1002,10 @@ GRVBLD_INLINE int grvbld_build_target(grvbld_config_t* config, grvbld_target_t* 
         }        
 
         cmd = grvbld_cstr_append_arg(cmd, "-lm");
+
+        for (size_t i = 0; i < target->link_options.size; i++) {
+            cmd = grvbld_cstr_append_arg(cmd, target->link_options.data[i]);
+        }
             
         int result = grvbld_execute_build_cmd(config, cmd);
 
