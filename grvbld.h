@@ -162,6 +162,7 @@ typedef struct {
 
 typedef enum {
     GRVBLD_EXECUTABLE,
+    GRVBLD_LIBRARY, // build dynamic or static depending on config
     GRVBLD_STATIC_LIBRARY,
     GRVBLD_DYNAMIC_LIBRARY
 } grvbld_target_type_t;
@@ -202,6 +203,7 @@ typedef struct {
     bool use_ccache;
     bool run_tests;
     bool tests_only;
+    bool dynamic; // build dynamic libraries
     int verbosity;
 } grvbld_config_t;
 
@@ -418,6 +420,7 @@ GRVBLD_INLINE grvbld_config_t* grvbld_config_new(int argc, char** argv) {
     config->verbosity = 0;
     config->use_ccache = true;
     config->run_tests = true;
+    config->dynamic = false;
 
     grvbld_strarr_push(&config->inc, "include");
     grvbld_strarr_push(&config->warnings, "-Wall");
@@ -426,13 +429,14 @@ GRVBLD_INLINE grvbld_config_t* grvbld_config_new(int argc, char** argv) {
     grvbld_strarr_push(&config->warnings, "-Werror=return-type");
     grvbld_strarr_push(&config->warnings, "-Werror=implicit-function-declaration");
     grvbld_strarr_push(&config->warnings, "-Werror=strict-prototypes"); 
-    grvbld_strarr_push(&config->libs, "-lm");
+    //grvbld_strarr_push(&config->libs, "-lm");
 
     if (grvbld_args_contain(argc, argv, "--debug")) config->debug = true;
     if (grvbld_args_contain(argc, argv, "--use-ccache")) config->use_ccache = true;
     if (grvbld_args_contain(argc, argv, "--no-use-ccache")) config->use_ccache = false;
     if (grvbld_args_contain(argc, argv, "--tests-only")) config->tests_only = true;
     if (grvbld_args_contain(argc, argv, "--no-tests")) config->run_tests = false;
+    if (grvbld_args_contain(argc, argv, "--dynamic")) config->dynamic = true;
     if (grvbld_args_contain(argc, argv, "-vv")) {
         config->verbosity = 2;
     } else if (grvbld_args_contain(argc, argv, "-v")) {
@@ -687,6 +691,10 @@ GRVBLD_INLINE grvbld_target_t* grvbld_target_create_dynamic_library(char* name) 
     return grvbld_target_create(name, GRVBLD_DYNAMIC_LIBRARY);
 }
 
+GRVBLD_INLINE grvbld_target_t* grvbld_target_create_library(char* name) {
+    return grvbld_target_create(name, GRVBLD_LIBRARY);
+}
+
 GRVBLD_INLINE void grvbld_target_add_src(grvbld_target_t* target, char* src) {
     grvbld_strarr_push(&target->src_files, src);
 }
@@ -905,7 +913,6 @@ GRVBLD_INLINE int grvbld_build_static_library(grvbld_config_t* config, grvbld_ta
         cmd = grvbld_cstr_append_arg(cmd, "-c");
         cmd = grvbld_cstr_append_arg(cmd, src_file);
         cmd = grvbld_cstr_append_arg_format(cmd, "-o %s", obj_file);
-        cmd = grvbld_cstr_append_arg(cmd, "-c");
         ar_cmd = grvbld_cstr_append_arg(ar_cmd, obj_file);
 
         int result = grvbld_execute_build_cmd(config, cmd);
@@ -970,9 +977,11 @@ GRVBLD_INLINE int grvbld_build_target(grvbld_config_t* config, grvbld_target_t* 
 
     char* cmd = grvbld_build_cmd(config);
     
-    if (target->type == GRVBLD_STATIC_LIBRARY) {
+    if (target->type == GRVBLD_STATIC_LIBRARY 
+        || (target->type == GRVBLD_LIBRARY && !config->dynamic)) {
         return grvbld_build_static_library(config, target);
-    } else if (target->type == GRVBLD_DYNAMIC_LIBRARY) {
+    } else if (target->type == GRVBLD_DYNAMIC_LIBRARY
+        || (target->type == GRVBLD_LIBRARY && config->dynamic)) {
         return grvbld_build_dynamic_library(config, target);
     } else if (target->type == GRVBLD_EXECUTABLE) {
         log_info("BUILDING EXECUTABLE %s", target->name);
@@ -993,7 +1002,7 @@ GRVBLD_INLINE int grvbld_build_target(grvbld_config_t* config, grvbld_target_t* 
 
         for (size_t i = 0; i < target->linked_targets.size; ++i) {
             grvbld_target_t* linked_target = target->linked_targets.arr[i];
-            if (linked_target->type == GRVBLD_STATIC_LIBRARY) {
+            if (linked_target->type == GRVBLD_STATIC_LIBRARY || linked_target->type == GRVBLD_LIBRARY) {
                 cmd = grvbld_cstr_append_arg_format(cmd, "-l%s", linked_target->name);
                 for (size_t j = 0; j < linked_target->libs.size; ++j) {
                     cmd = grvbld_cstr_append_arg_format(cmd, "-l%s", linked_target->libs.data[j]);
