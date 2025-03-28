@@ -31,6 +31,11 @@ void grv_abort(grv_error_t err) {
     exit(1);
 }
 
+void grv_exit(grv_str_t msg) {
+    grv_log_error(msg);
+    exit(1);
+}
+
 #define GRV_ERROR_TYPE_GET_STR_CASE(A) \
     case A: \
         return grv_str_ref(#A); \

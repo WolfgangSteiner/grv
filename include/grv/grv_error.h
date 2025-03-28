@@ -35,6 +35,7 @@ void grv_error_free(grv_error_t*);
 void grv_error_log(grv_error_t error);
 void grv_abort(grv_error_t err);
 grv_str_t grv_error_type_get_str(grv_error_type_t type);
+void grv_exit(grv_str_t msg);
 
 extern char* _grv_error_file_not_readable_cstr;
 extern char* _grv_error_file_not_writable_cstr;
