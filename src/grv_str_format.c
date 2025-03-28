@@ -278,6 +278,14 @@ grv_str_t grv_str_format(grv_str_t fmt, ...) {
     return res;
 }
 
+grv_str_t grv_str_format_cstr(char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    grv_str_t res = _str_vformat(grv_str_ref(fmt), &args);
+    va_end(args);
+    return res;
+}
+
 void grv_str_print_format(grv_str_t fmt, ...) {
     va_list args;
     va_start(args, fmt);

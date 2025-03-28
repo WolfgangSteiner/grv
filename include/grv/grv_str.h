@@ -115,6 +115,7 @@ grv_str_t grv_str_remove_trailing_newline(grv_str_t str);
 
 typedef grv_str_t(*grv_str_format_callback_t)(va_list*, grv_str_t pattern);
 grv_str_t grv_str_format(grv_str_t fmt, ...); 
+grv_str_t grv_str_format_cstr(char* fmt, ...);
 void grv_str_print_format(grv_str_t fmt, ...);
 void grv_str_format_register_pattern(grv_str_t pattern, grv_str_format_callback_t callback);
 
