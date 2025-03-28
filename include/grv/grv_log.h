@@ -30,7 +30,12 @@ void grv_log(int log_level, char* log_tag, grv_str_t msg);
 void grv_log_debug_impl(char* filename, int line, grv_str_t msg);
 
 void grv_log_info(grv_str_t msg);
+GRV_INLINE void grv_log_info_cstr(char* msg) {grv_log_info(grv_str_ref(msg));}
+
 void grv_log_error(grv_str_t msg);
+GRV_INLINE void grv_log_error_cstr(char* msg) {grv_log_error(grv_str_ref(msg));}
+
 void grv_log_warning(grv_str_t msg);
+GRV_INLINE void grv_log_warning_cstr(char* msg) {grv_log_warning(grv_str_ref(msg));}
 
 #endif
