@@ -39,6 +39,10 @@ static inline void grv_memmove(void* dst, void* src, size_t num_elements, size_t
     memmove(dst, src, num_elements * element_size);
 }
 
+GRV_INLINE void grv_memcpy(void* dst, void* src, size_t size) {
+    memcpy(dst, src, size);
+}
+
 void* grv_alloc(u64 size);
 void* grv_alloc_zeros(u64 size);
 void* grv_realloc(void* ptr, u64 size);
