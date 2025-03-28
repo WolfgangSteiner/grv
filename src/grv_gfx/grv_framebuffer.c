@@ -10,10 +10,10 @@ void grv_clipping_stack_init(grv_clipping_stack_t* stack) {
     stack->size = 0L;
 }
 
-void grv_clipping_stack_push(grv_clipping_stack_t* stack, recti_t rect) {
+void grv_clipping_stack_push(grv_clipping_stack_t* stack, rect_i32 rect) {
     if (stack->stack == NULL) {
         stack->capacity = 16;
-        stack->stack = malloc(16 * sizeof(recti_t));
+        stack->stack = malloc(16 * sizeof(rect_i32));
     } else if (stack->size == stack->capacity) {
         stack->capacity *= 2;
         stack->stack = realloc(stack->stack, stack->capacity);
@@ -21,14 +21,14 @@ void grv_clipping_stack_push(grv_clipping_stack_t* stack, recti_t rect) {
     stack->stack[stack->size++] = rect;
 }
 
-recti_t grv_clipping_stack_pop(grv_clipping_stack_t* stack) {
+rect_i32 grv_clipping_stack_pop(grv_clipping_stack_t* stack) {
     assert(stack->size);
-    recti_t result = stack->stack[stack->size - 1];
+    rect_i32 result = stack->stack[stack->size - 1];
     stack->size--;
     return result;
 }
 
-recti_t* grv_clipping_stack_top(grv_clipping_stack_t* stack) {
+rect_i32* grv_clipping_stack_top(grv_clipping_stack_t* stack) {
     return stack->size ? stack->stack + stack->size - 1 : NULL;
 }
 
@@ -70,12 +70,12 @@ void grv_framebuffer_fill_u8(grv_framebuffer_t* fb, u8 color) {
     }
 }
 
-recti_t grv_framebuffer_get_clipping_rect(grv_framebuffer_t* fb) {
-    recti_t* current_clipping_rect = grv_clipping_stack_top(&fb->clipping_stack);
+rect_i32 grv_framebuffer_get_clipping_rect(grv_framebuffer_t* fb) {
+    rect_i32* current_clipping_rect = grv_clipping_stack_top(&fb->clipping_stack);
     if (current_clipping_rect) {
         return *current_clipping_rect;
     } else {
-        return (recti_t){0, 0, fb->width, fb->height};
+        return (rect_i32){0, 0, fb->width, fb->height};
     }
 }
 
@@ -140,34 +140,34 @@ void grv_framebuffer_render_argb(grv_framebuffer_t* fb, u32* argb_data, i32 pitc
 
 void grv_framebuffer_set_pixel_u8(grv_framebuffer_t* fb, vec2i pos, u8 color) {
     if (fb->use_clipping) {
-        recti_t clipping_rect = grv_framebuffer_get_clipping_rect(fb);
-        if (!grv_recti_contains_point(clipping_rect, pos)) return;
+        rect_i32 clipping_rect = grv_framebuffer_get_clipping_rect(fb);
+        if (!rect_i32_contains_point(clipping_rect, pos)) return;
     }
     u8* pixel = grv_framebuffer_pixel_address_u8(fb, pos.x, pos.y);
     *pixel = color;
 }
 
 void grv_framebuffer_set_pixel_scaled_u8(grv_framebuffer_t* fb, vec2i pos, u32 scale, u8 color) {
-    recti_t rect = {pos.x, pos.y, scale, scale};    
+    rect_i32 rect = {pos.x, pos.y, scale, scale};    
     grv_framebuffer_fill_rect_u8(fb, rect, color);
 }
 
 
-void grv_framebuffer_fill_rect_u8(grv_framebuffer_t* fb, recti_t rect, u8 color) {
+void grv_framebuffer_fill_rect_u8(grv_framebuffer_t* fb, rect_i32 rect, u8 color) {
     if (fb->use_clipping) {
-        recti_t clipping_rect = grv_framebuffer_get_clipping_rect(fb);
-        rect = grv_recti_intersect_rect(rect, clipping_rect);
+        rect_i32 clipping_rect = grv_framebuffer_get_clipping_rect(fb);
+        rect = rect_i32_intersect_rect(rect, clipping_rect);
     }
     if (rect.w <= 0 || rect.h <= 0) return;
 
-    for (i32 y = recti_ymin(rect); y <= recti_ymax(rect); ++y) {
+    for (i32 y = rect_i32_ymin(rect); y <= rect_i32_ymax(rect); ++y) {
         u8* pixel = grv_framebuffer_pixel_address_u8(fb, rect.x, y);
         memset(pixel, color, rect.w);
     }
 }
 
 void _grv_framebuffer_draw_horizontal_line_u8(
-    grv_framebuffer_t* fb, i32 x1, i32 x2, i32 y, u8 color, recti_t clip_rect) {
+    grv_framebuffer_t* fb, i32 x1, i32 x2, i32 y, u8 color, rect_i32 clip_rect) {
     if (y < clip_rect.y || y >= clip_rect.y + clip_rect.h) return;
     i32 cx1 = clip_rect.x;
     i32 cx2 = clip_rect.x + clip_rect.w - 1;
@@ -182,7 +182,7 @@ void _grv_framebuffer_draw_horizontal_line_u8(
 }
 
 void _grv_framebuffer_draw_vertical_line_u8(
-    grv_framebuffer_t* fb, i32 x, i32 y1, i32 y2, u8 color, recti_t clip_rect) {
+    grv_framebuffer_t* fb, i32 x, i32 y1, i32 y2, u8 color, rect_i32 clip_rect) {
     if (x < clip_rect.x || x >= clip_rect.x + clip_rect.w) return;
     i32 cy1 = clip_rect.y;
     i32 cy2 = clip_rect.y + clip_rect.w - 1;
@@ -196,8 +196,8 @@ void _grv_framebuffer_draw_vertical_line_u8(
     }
 }
 
-void grv_framebuffer_draw_rect_u8(grv_framebuffer_t* fb, recti_t rect, u8 color) {
-    recti_t clip_rect = {.x=0,.y=0,.w=fb->width,.h=fb->height};
+void grv_framebuffer_draw_rect_u8(grv_framebuffer_t* fb, rect_i32 rect, u8 color) {
+    rect_i32 clip_rect = {.x=0,.y=0,.w=fb->width,.h=fb->height};
     if (fb->use_clipping) {
         clip_rect = grv_framebuffer_get_clipping_rect(fb);
     }
@@ -279,7 +279,7 @@ void grv_framebuffer_fill_circle_u8(grv_framebuffer_t* fb, i32 px, i32 py, i32 r
         return;
     }
 
-    recti_t clip_rect = {.x=0,.y=0,.w=fb->width,.h=fb->height};
+    rect_i32 clip_rect = {.x=0,.y=0,.w=fb->width,.h=fb->height};
     if (fb->use_clipping) {
         clip_rect = grv_framebuffer_get_clipping_rect(fb);
     }

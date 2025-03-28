@@ -2,7 +2,7 @@
 #define GRV_PSEUDO_RANDOM_H
 
 #include "grv/grv_base.h"
-#include "grv/grv_fixed32.h"
+#include "grv/fx32.h"
 
 extern u32 _grv_pseudo_random_seed_value_u32;
 u32 grv_pseudo_random_sequence_u32(u32 index);

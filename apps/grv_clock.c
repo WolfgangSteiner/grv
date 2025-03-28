@@ -19,7 +19,7 @@ u8 color_for_time(void) {
 
 void draw_seconds(grv_framebuffer_t* fb) {
     struct tm tm = grv_local_time();
-    recti_t rect = {0, 0, tm.tm_sec, fb->height};
+    rect_i32 rect = {0, 0, tm.tm_sec, fb->height};
     grv_framebuffer_fill_rect_u8(fb, rect, 1);
 }
 

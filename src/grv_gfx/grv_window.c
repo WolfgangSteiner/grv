@@ -63,6 +63,9 @@ bool grv_window_show(grv_window_t* w) {
     if (!SDL_WasInit(SDL_INIT_VIDEO)) {
         SDL_Init(SDL_INIT_VIDEO);
     }
+    if (!SDL_WasInit(SDL_INIT_TIMER)) {
+        SDL_Init(SDL_INIT_TIMER);
+    }
 
 
     int flags = SDL_WINDOW_SHOWN;

@@ -22,13 +22,13 @@ int main(int argc, char** argv) {
             for (i32 x = 0; x < 4; x++) {
                 u8 color = y * 4 + x;
                 u32 size = 32;
-                recti_t rect = {x*size, y*size, size, size};
+                rect_i32 rect = {x*size, y*size, size, size};
                 grv_framebuffer_fill_rect_u8(&w->framebuffer, rect, color);
                 grv_str_t index_str = grv_str_from_int(color);
                 vec2i text_size = grv_bitmap_font_calc_size(NULL, index_str);
-                recti_t text_rect = {0, 0, text_size.x, text_size.y};
-                text_rect = grv_recti_center_in_rect(text_rect, rect);
-                grv_put_text_u8(&w->framebuffer, index_str, recti_pos(text_rect), NULL, color | 0x80);
+                rect_i32 text_rect = {0, 0, text_size.x, text_size.y};
+                text_rect = rect_i32_center_in_rect(text_rect, rect);
+                grv_put_text_u8(&w->framebuffer, index_str, rect_i32_pos(text_rect), NULL, color | 0x80);
             }
         }
 
