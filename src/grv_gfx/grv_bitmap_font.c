@@ -14,15 +14,28 @@ u8 _grv_bitmap_font_invert_byte(u8 byte) {
     return byte;
 }
 
+u8* grv_bitmap_font_get_glyph_ptr(grv_bitmap_font_t* font, char c) {
+    if (font == NULL) font = &grv_basic_font_8x8;
+    if (c >= 'a' && c <= 'z' && font->uppercase_only) c -= 0x20;
+    if (c < font->glyph_start_idx || c >= font->glyph_start_idx + font->glyph_count) return NULL;
+    return font->glyph_data + font->glyph_byte_count * ((u32)c - font->glyph_start_idx);
+}
+
 static void grv_put_char_u8(grv_framebuffer_t* fb, char c, vec2i pos, grv_bitmap_font_t* font, i32 scale, u8 color) {
-    u8* glyph_data = font->glyph_data + font->glyph_byte_count * (u32)c;
+    u8* glyph_data = grv_bitmap_font_get_glyph_ptr(font, c);
+    if (glyph_data == NULL) {
+        pos.x += font->glyph_width / 2;
+        pos.y += font->glyph_height / 2;
+        grv_framebuffer_set_pixel_scaled_u8(fb, pos, scale, color);
+        return;
+    }
     u8 bytes_per_row = font->glyph_byte_count / font->glyph_height;
     u8* glyph_row_ptr = glyph_data + font->topskip * bytes_per_row;
     for (int y = 0; y < font->glyph_height; y++) {
         for (int byte_count = 0; byte_count < bytes_per_row; byte_count++) {
             u8 current_byte = *glyph_row_ptr++;
             if (font->mirrored_definition) current_byte = _grv_bitmap_font_invert_byte(current_byte);
-            for (int x = 0; x < 8; ++x) {
+            for (int x = 0; x < font->glyph_width; ++x) {
                 bool has_pixel = (current_byte << x) & 0x80;
                 if (has_pixel) {
                     vec2i pixel_pos = vec2i_add(pos, (vec2i){scale*x, scale*y});
@@ -33,15 +46,13 @@ static void grv_put_char_u8(grv_framebuffer_t* fb, char c, vec2i pos, grv_bitmap
     }
 }
 
-u8* grv_bitmap_font_get_glyph_ptr(grv_bitmap_font_t* font, char c) {
-    if (font == NULL) font = &grv_basic_font_8x8;
-    return font->glyph_data + font->glyph_height * (u32)c;
-}
-
 vec2i grv_bitmap_font_glyph_size(grv_bitmap_font_t* font, char c) {
     if (font == NULL) font = &grv_basic_font_8x8;
     i32 y1 = 0; i32 y2 = font->glyph_height - 1;
     u8* glyph_ptr = grv_bitmap_font_get_glyph_ptr(font, c);
+    if (glyph_ptr == NULL) {
+        return (vec2i){0,0};
+    }
     while (glyph_ptr[y1] == 0 && y1 < font->glyph_height) y1++;
     if (y1 == font->glyph_height) return (vec2i){0};
     while (glyph_ptr[y2] == 0 && y2 >= 0) y2--;

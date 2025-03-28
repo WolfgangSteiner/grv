@@ -8,6 +8,7 @@
 typedef struct {
     u8* glyph_data;
     u32 glyph_count;
+    u32 glyph_start_idx;
     u8 glyph_width;
     u8 glyph_height;
     u8 glyph_byte_count;
@@ -16,6 +17,7 @@ typedef struct {
     u8 em;
     u8 topskip;
     bool mirrored_definition;
+    bool uppercase_only;
 } grv_bitmap_font_t;
 
 void grv_put_text_u8(grv_framebuffer_t* fb, grv_str_t str, vec2i pos, grv_bitmap_font_t* font, u8 color);
