@@ -19,6 +19,14 @@ GRV_INLINE fx32 fx32_from_f32(f32 a) {
     return (fx32) { .val=(i32)(a*((f32)GRV_FIXED32_MUL)) };
 }
 
+GRV_INLINE fx32 fx32_from_f64(f64 a) {
+    return (fx32) { .val=(i32)(a*((f64)GRV_FIXED32_MUL)) };
+}
+
+GRV_INLINE f64 fx32_to_f64(fx32 a) {
+    return a.val / (f64)GRV_FIXED32_MUL;
+}
+
 GRV_INLINE fx32 fx32_add(fx32 a, fx32 b) {
     return (fx32) { .val=a.val + b.val };
 }
