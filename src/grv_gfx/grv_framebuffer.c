@@ -141,7 +141,7 @@ void grv_framebuffer_render_argb(grv_framebuffer_t* fb, u32* argb_data, i32 pitc
 void grv_framebuffer_set_pixel_u8(grv_framebuffer_t* fb, vec2i pos, u8 color) {
     if (fb->use_clipping) {
         rect_i32 clipping_rect = grv_framebuffer_get_clipping_rect(fb);
-        if (!rect_i32_contains_point(clipping_rect, pos)) return;
+        if (!rect_i32_point_inside(clipping_rect, pos)) return;
     }
     u8* pixel = grv_framebuffer_pixel_address_u8(fb, pos.x, pos.y);
     *pixel = color;
@@ -196,6 +196,25 @@ void _grv_framebuffer_draw_vertical_line_u8(
     }
 }
 
+void grv_framebuffer_fill_rect_chamfered_u8(grv_framebuffer_t* fb, rect_i32 rect, u8 color) {
+	rect_i32 clipped_rect = rect;
+    rect_i32 clipping_rect = grv_framebuffer_get_clipping_rect(fb);
+    if (fb->use_clipping) {
+        clipped_rect = rect_i32_intersect_rect(rect, clipping_rect);
+    }
+    if (clipped_rect.w <= 0 || clipped_rect.h <= 0) return;
+
+    for (i32 y = rect_i32_ymin(clipped_rect) + 1; y < rect_i32_ymax(clipped_rect); ++y) {
+        u8* pixel = grv_framebuffer_pixel_address_u8(fb, clipped_rect.x, y);
+        memset(pixel, color, clipped_rect.w);
+    }
+	_grv_framebuffer_draw_horizontal_line_u8(
+		fb, rect_i32_xmin(rect) + 1, rect_i32_xmax(rect) - 1, rect_i32_ymin(rect), color, clipping_rect);
+	_grv_framebuffer_draw_horizontal_line_u8(
+		fb, rect_i32_xmin(rect) + 1, rect_i32_xmax(rect) - 1, rect_i32_ymax(rect), color, clipping_rect);
+}
+
+
 void grv_framebuffer_draw_rect_u8(grv_framebuffer_t* fb, rect_i32 rect, u8 color) {
     rect_i32 clip_rect = {.x=0,.y=0,.w=fb->width,.h=fb->height};
     if (fb->use_clipping) {
@@ -213,6 +232,25 @@ void grv_framebuffer_draw_rect_u8(grv_framebuffer_t* fb, rect_i32 rect, u8 color
     _grv_framebuffer_draw_horizontal_line_u8(fb, x1, x2, y2, color, clip_rect);
     _grv_framebuffer_draw_vertical_line_u8(fb, x1, y1, y2, color, clip_rect);
     _grv_framebuffer_draw_vertical_line_u8(fb, x2, y1, y2, color, clip_rect);
+}
+
+void grv_framebuffer_draw_rect_chamfered_u8(grv_framebuffer_t* fb, rect_i32 rect, u8 color) {
+    rect_i32 clip_rect = {.x=0,.y=0,.w=fb->width,.h=fb->height};
+    if (fb->use_clipping) {
+        clip_rect = grv_framebuffer_get_clipping_rect(fb);
+    }
+
+    if (rect.w <= 0 || rect.h <= 0) return;
+
+    i32 x1 = rect.x;
+    i32 x2 = rect.x + rect.w - 1;
+    i32 y1 = rect.y;
+    i32 y2 = rect.y + rect.h - 1;
+
+    _grv_framebuffer_draw_horizontal_line_u8(fb, x1+1, x2-1, y1, color, clip_rect);
+    _grv_framebuffer_draw_horizontal_line_u8(fb, x1+1, x2-1, y2, color, clip_rect);
+    _grv_framebuffer_draw_vertical_line_u8(fb, x1, y1+1, y2-1, color, clip_rect);
+    _grv_framebuffer_draw_vertical_line_u8(fb, x2, y1+1, y2-1, color, clip_rect);
 }
 
 void grv_framebuffer_blit_img8(grv_framebuffer_t* fb, grv_img8_t* img, i32 x, i32 y) {
