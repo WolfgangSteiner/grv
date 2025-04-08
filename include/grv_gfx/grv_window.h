@@ -5,6 +5,12 @@
 #include "grv/grv_str.h"
 #include "grv_framebuffer.h"
 #include "grv/grv_arr.h"
+#include "grv/vec2i.h"
+#include "grv/vec2f.h"
+#include "grv_gfx/rect_i32.h"
+
+typedef vec2i vec2_i32;
+typedef vec2f vec2_f32;
 
 typedef enum {
     GRV_WINDOW_HORIZONTAL_ALIGN_CENTER,
@@ -22,6 +28,17 @@ typedef enum {
 
 
 typedef struct {
+	vec2_i32 initial_window_pos;
+	vec2_f32 initial_view_pos;
+	i32 click_count;
+	bool is_down;
+	bool was_down;
+} grv_mouse_button_info_t;
+
+
+#define GRV_WINDOW_MAX_MOUSE_BUTTON_ID 3
+
+typedef struct {
     i32 width, height;
     grv_window_horizontal_align_t horizontal_align;
     grv_window_vertical_align_t vertical_align;
@@ -33,6 +50,14 @@ typedef struct {
     bool resizable;
     bool use_int_scaling;
     void* handle;
+	vec2_i32 mouse_window_pos;
+	vec2_f32 mouse_view_pos;
+	bool is_in_drag;
+	vec2_i32 mouse_drag_initial_window_pos;
+	vec2_f32 mouse_drag_initial_view_pos;
+	grv_mouse_button_info_t mouse_button_info[GRV_WINDOW_MAX_MOUSE_BUTTON_ID + 1];
+	rect_i32 view_rect;
+	f32 view_scale;
 } grv_window_t;
 
 grv_window_t* grv_window_new(i32 width, i32 height, f32 scale, grv_str_t title);
