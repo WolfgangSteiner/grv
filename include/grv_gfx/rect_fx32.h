@@ -18,6 +18,10 @@ GRV_INLINE rect_fx32 rect_fx32_from_i32(i32 x, i32 y, i32 w, i32 h) {
     };
 }
 
+GRV_INLINE rect_fx32 rect_fx32_from_rect_i32(rect_i32 r) {
+	return rect_fx32_from_i32(r.x, r.y, r.w, r.h);
+}
+
 GRV_INLINE vec2_fx32 rect_fx32_pos(rect_fx32 rect) { return (vec2_fx32){.x=rect.x, .y=rect.y}; }
 GRV_INLINE vec2_fx32 rect_fx32_size(rect_fx32 rect) { return (vec2_fx32){.x=rect.w, .y=rect.h}; }
 
@@ -62,6 +66,15 @@ GRV_INLINE rect_fx32 rect_fx32_lower_part(rect_fx32 rect, fx32 factor) {
         .y = fx32_add(rect.y, fx32_sub(rect.h, h)),
         .w = rect.w,
         .h = h
+    };
+}
+
+GRV_INLINE rect_fx32 rect_fx32_expand(rect_fx32 rect, fx32 dx, fx32 dy) {
+    return (rect_fx32) {
+        .x = fx32_sub(rect.x, dx),
+        .y = fx32_sub(rect.y, dy),
+        .w = fx32_add(rect.w, fx32_mul_i32(dx, 2)),
+        .h = fx32_add(rect.h, fx32_mul_i32(dy, 2))
     };
 }
 

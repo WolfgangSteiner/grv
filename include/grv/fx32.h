@@ -102,12 +102,41 @@ GRV_INLINE fx32 fx32_max(fx32 a, fx32 b) {
     return (fx32) { .val=val };
 }
 
-GRV_INLINE fx32 fx32_clamp(
-    fx32 a,
-    fx32 b,
-    fx32 c) {
+GRV_INLINE fx32 fx32_clamp(fx32 a, fx32 b, fx32 c) {
     i32 val = a.val < b.val ? b.val : a.val > c.val ? c.val : a.val;
     return (fx32) { .val=val };
+}
+
+GRV_INLINE fx32 fx32_add_i32(fx32 a, i32 b) {
+	return fx32_add(a, fx32_from_i32(b));
+}
+
+GRV_INLINE fx32 fx32_mul_i32(fx32 a, i32 b) {
+	return (fx32) {.val=a.val*b};
+}
+
+GRV_INLINE fx32 fx32_mula_i32(fx32 a, i32 b, i32 c) {
+	return (fx32) {.val=a.val*b + c * GRV_FIXED32_MUL};
+}
+
+GRV_INLINE fx32 fx32_div_i32(fx32 a, i32 b) {
+	return (fx32) {.val=a.val/b};
+}
+
+GRV_INLINE fx32 fx32_mul_f64(fx32 a, f64 b) {
+	return fx32_mul(a, fx32_from_f64(b));
+}
+
+GRV_INLINE fx32 fx32_div_f64(fx32 a, f64 b) {
+	return fx32_div(a, fx32_from_f64(b));
+}
+
+GRV_INLINE fx32 fx32_add_f64(fx32 a, f64 b) {
+	return fx32_add(a, fx32_from_f64(b));
+}
+
+GRV_INLINE fx32 fx32_mula_f64(fx32 a, f64 b, f64 c) {
+	return fx32_add_f64(fx32_mul_f64(a, b), c);
 }
 
 #endif
