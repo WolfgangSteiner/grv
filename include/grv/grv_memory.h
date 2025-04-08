@@ -4,6 +4,10 @@
 #include "grv_base.h"
 #include <stdlib.h>
 
+#define GRV_KILOBYTES 1024ull
+#define GRV_MEGABYTES (GRV_KILOBYTES * GRV_KILOBYTES)
+#define GRV_GIGABYTES (GRV_KILOBYTES * GRV_MEGABYTES)
+
 typedef struct grv_allocator_s {
     void*(*alloc)(struct grv_allocator_s*, size_t);
     void*(*alloc_zero)(struct grv_allocator_s*, size_t);
