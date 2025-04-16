@@ -6,6 +6,7 @@
 
 #define PI_F32  3.141592653589793f
 #define TWO_PI_F32 (2.0f * PI_F32)
+#define HALF_PI_F32 (PI_F32 / 2.0f)
 
 typedef struct {
     f32 sin;
