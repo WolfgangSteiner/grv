@@ -939,6 +939,7 @@ GRVBLD_INLINE int grvbld_build_static_library(grvbld_config_t* config, grvbld_ta
 
 GRVBLD_INLINE int grvbld_build_dynamic_library(grvbld_config_t* config, grvbld_target_t* target) {
     grvbld_strarr_t obj_files = {0};
+    log_info("BUILDING DYNAMIC LIBRARY %s", target->name);
 
     for (size_t i = 0; i < target->src_files.size; i++) {
         char* src = target->src_files.data[i];
