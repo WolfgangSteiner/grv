@@ -34,9 +34,28 @@ rect_i32 rect_i32_align_to_rect(rect_i32 rect, rect_i32 to_rect, grv_alignment_t
     return rect;
 }
 
-rect_i32 rect_i32_split_lower(rect_i32 rect, i32 upper_weight, i32 lower_weight) {
-	i32 h = rect.h * lower_weight / (upper_weight + lower_weight);
-	rect.y += rect.h - h;
-	rect.h = h;
-	return rect;
+void rect_i32_split_vertically(
+	rect_i32 rect, 
+	i32 upper_weight, rect_i32* upper_rect, 
+	i32 lower_weight, rect_i32* lower_rect) {
+	i32 lower_h = rect.h * lower_weight / (upper_weight + lower_weight);
+	if (upper_rect) {
+		i32 upper_h = rect.h * upper_weight / (upper_weight + lower_weight);
+		*upper_rect = (rect_i32){
+			.x = rect.x,
+			.y = rect.y,
+			.w = rect.w,
+			.h = upper_h,
+		};
+	}
+	
+	if (lower_rect) {
+		i32 lower_h = rect.h * lower_weight / (upper_weight + lower_weight);
+		*lower_rect = (rect_i32) {
+			.x = rect.x,
+			.y = rect.y + rect.h - lower_h,
+			.w = rect.w,
+			.h = lower_h
+		};
+	}
 }
