@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <assert.h>
+#include <float.h>
 
 #define GRV_INLINE static inline
 #define GRV_UNUSED(X) (void)(X)
@@ -33,6 +34,7 @@ typedef double f64;
 #define GRV_MAX_I32 INT32_MAX
 #define GRV_MIN_I64 INT64_MIN
 #define GRV_MAX_I64 INT64_MAX
+#define GRV_MAX_F32 FLT_MAX
 
 GRV_INLINE u8 grv_max_value_u8(void) { return GRV_MAX_U8; }
 GRV_INLINE u16 grv_max_value_u16(void) { return GRV_MAX_U16; }
