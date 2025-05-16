@@ -57,6 +57,11 @@ GRV_INLINE fx32 fx32_div(fx32 a, fx32 b) {
     return (fx32) { .val=(i32)acc };
 }
 
+GRV_INLINE fx32 fx32_inv(fx32 a) {
+	grv_assert(a.val != 0);
+	return fx32_div(fx32_from_i32(1), a);
+}
+
 GRV_INLINE i32 fx32_round(fx32 a) {
     i32 acc = a.val;
     acc += (a.val > 0 ? GRV_FIXED32_MUL / 2 : -GRV_FIXED32_MUL / 2);
