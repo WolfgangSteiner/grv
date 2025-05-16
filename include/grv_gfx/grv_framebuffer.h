@@ -56,6 +56,7 @@ void grv_framebuffer_push_span(grv_framebuffer_t* fb, i32 y, i32 x_start, i32 x_
 void grv_framebuffer_render_argb(grv_framebuffer_t* fb, u32* rgba_data, i32 pitch);
 void grv_framebuffer_set_pixel_u8(grv_framebuffer_t* fb, vec2i pos, u8 color);
 void grv_framebuffer_set_pixel_scaled_u8(grv_framebuffer_t* fb, vec2i pos, u32 scale, u8 color);
+void grv_framebuffer_draw_line_u8(grv_framebuffer_t* fb, vec2i p1, vec2i p2, u8 color);
 void grv_framebuffer_fill_rect_u8(grv_framebuffer_t* fb, rect_i32 rect, u8 color);
 void grv_framebuffer_fill_rect_chamfered_u8(grv_framebuffer_t* fb, rect_i32 rect, u8 color);
 void grv_framebuffer_draw_rect_u8(grv_framebuffer_t* fb, rect_i32 rect, u8 color);
