@@ -81,6 +81,10 @@ GRV_INLINE rect_i32 rect_i32_shrink(rect_i32 r, i32 x, i32 y) {
 	r.x += x; r.y += y; r.w -= 2 * x; r.h -= 2 * y;
 	return r;
 }
+GRV_INLINE rect_i32 rect_i32_expand(rect_i32 r, i32 x, i32 y) {
+	r.x -= x; r.y -= y; r.w += 2 * x; r.h += 2 * y;
+	return r;
+}
 GRV_INLINE bool rect_i32_point_inside(rect_i32 rect, vec2_i32 point) {
    return point.x >= rect_i32_xmin(rect) && point.x <= rect_i32_xmax(rect) &&
           point.y >= rect_i32_ymin(rect) && point.y <= rect_i32_ymax(rect);
