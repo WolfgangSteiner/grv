@@ -11,6 +11,7 @@
 #include "grv_str.c"
 #include "grv_path.c"
 #include "grv_pseudo_random.c"
+#include "grv_ringbuffer.c"
 #include "grv_str_format.c"
 #include "grv_strarr.c"
 #include "grv_util.c"
