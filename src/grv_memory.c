@@ -87,8 +87,6 @@ void* grv_alloc_zeros(u64 size) {
 }
 
 void* grv_realloc(void* ptr, u64 size) {
-  assert(ptr != NULL);
-  assert(size != 0L);
 #ifdef GRV_DEBUG_MEMORY
   // always realloc to a new pointer
   void* new_ptr = grv_alloc(size);
