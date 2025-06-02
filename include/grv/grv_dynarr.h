@@ -7,6 +7,31 @@
 #define GRV_DYNARR_DEFAULT_CAPACITY 16
 #define GRV_DYNARR_GROWTH_FACTOR 2
 
+
+#define GRV_DYNARR_GROW_CAPACITY(ARR) \
+	ARR->capacity = ARR->capacity == 0 \
+		? GRV_DYNARR_DEFAULT_CAPACITY \
+		: GRV_DYNARR_GROWTH_FACTOR * ARR->capacity \
+
+#define GRV_DYNARR_PUSH(ARR, VALUE) \
+	if (ARR->size == ARR->capacity) { \
+		GRV_DYNARR_GROW_CAPACITY(ARR); \
+		ARR->arr = grv_realloc(ARR->arr, ARR->capacity * sizeof(VALUE)); \
+	} \
+	ARR->arr[ARR->size++] = VALUE;
+
+
+typedef struct {
+	u32* arr;
+	i64 size;
+	i64 capacity;
+} grv_dynarr_u32_t;
+
+void grv_dynarr_u32_push(grv_dynarr_u32_t* arr, u32 value);
+u32 grv_dynarr_u32_pop(grv_dynarr_u32_t* arr);
+void grv_dynarr_u32_free(grv_dynarr_u32_t* arr);
+
+
 typedef struct {
     size_t size;
     size_t capacity;
