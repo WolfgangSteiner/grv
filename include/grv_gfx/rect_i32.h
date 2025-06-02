@@ -42,6 +42,14 @@ GRV_INLINE vec2_i32 rect_i32_top_right(rect_i32 r) {
 	return (vec2_i32) {r.x + r.w - 1, r.y };
 }
 
+GRV_INLINE vec2_i32 rect_i32_center_left(rect_i32 r) {
+	return (vec2_i32) {r.x, r.y + (r.h - 1)/2};
+}
+
+GRV_INLINE vec2_i32 rect_i32_center_right(rect_i32 r) {
+	return (vec2_i32) {r.x + r.w - 1, r.y + (r.h - 1)/2};
+}
+
 GRV_INLINE vec2_i32 rect_i32_bottom_left(rect_i32 r) {
 	return (vec2_i32) {r.x, r.y + r.h - 1 };
 }
