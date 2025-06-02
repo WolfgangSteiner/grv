@@ -3,6 +3,7 @@
 #include "grv_common.c"
 #include "grv_cstr.c"
 #include "grv_error.c"
+#include "grv_hash.c"
 #include "grv_log.c"
 #include "grv_math.c"
 #include "grv_memory.c"
